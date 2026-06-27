@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build
+dist/
+
+# Environment
+.env
+.env.*
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Upload pengguna
+uploads/
+
+# Database lokal (jika ada)
+*.sqlite
+*.db
+
+# IDE
+.vscode/
+.idea/
+
+# Sistem operasi
+.DS_Store
+Thumbs.db
