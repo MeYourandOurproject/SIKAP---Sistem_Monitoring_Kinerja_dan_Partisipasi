@@ -1,4 +1,4 @@
-const { Classschedule, Timeslot, sequelize } = require("../models");
+const { Classschedule, Timeslot, Class, sequelize } = require("../models");
 const Sequelize = require("sequelize");
 
 class ClassscheduleController {
@@ -11,11 +11,94 @@ class ClassscheduleController {
     }
   }
 
-  static async getCurrentByClass(req, res, next) {
-    try {
-      const { class_name } = req.params;
+  // static async getTodaySchedules(req, res, next) {
+  //   try {
+  //     const user_id = req.user.id;
+  //     // const user_id = 8; // Hardcoded for testing purposes
 
-      const now = new Date();
+  //     // Cari Kelas
+  //     const student_class = await Class.findOne({
+  //       where: { classleader_id: user_id },
+  //     });
+  //     if (!student_class) {
+  //       return res
+  //         .status(404)
+  //         .json({ message: "Class not found for this user" });
+  //     }
+
+  //     const today = new Date();
+  //     const days = [
+  //       "Minggu",
+  //       "Senin",
+  //       "Selasa",
+  //       "Rabu",
+  //       "Kamis",
+  //       "Jumat",
+  //       "Sabtu",
+  //     ];
+  //     // const dayName = days[today.getDay()];
+  //     // Hardcoded for testing purposes
+  //     const dayName = "Senin";
+
+  //     const sql = `
+  //           SELECT
+  //               cs.id,
+  //               t.id teacher_id,
+  //               t.name teacher_name,
+  //               s.subject_name,
+  //               cr.classroom_name,
+  //               ts.start,
+  //               te.end
+  //           FROM Classschedules cs
+  //           JOIN Teachers t
+  //               ON cs.teacher_id=t.id
+  //           JOIN Subjects s
+  //               ON cs.subject_id=s.id
+  //           JOIN Classrooms cr
+  //               ON cs.classroom_id=cr.id
+  //           JOIN Timeslots ts
+  //               ON cs.start_timeslot_id=ts.id
+  //           JOIN Timeslots te
+  //               ON cs.end_timeslot_id=te.id
+  //           WHERE
+  //               cs.class_id=?
+  //           AND
+  //               cs.day=?
+  //           ORDER BY ts.start
+  //       `;
+
+  //     const rows = await sequelize.query(sql, {
+  //       replacements: [student_class.id, dayName],
+  //       type: Sequelize.QueryTypes.SELECT,
+  //     });
+
+  //     res.json({
+  //       class: student_class.class_name,
+  //       total: rows.length,
+  //       data: rows,
+  //     });
+  //   } catch (error) {
+  //     next(error);
+  //   }
+  // }
+
+  static async getTodaySchedules(req, res, next) {
+    try {
+      const user_id = req.user.id;
+
+      const student_class = await Class.findOne({
+        where: {
+          classleader_id: user_id,
+        },
+      });
+
+      if (!student_class) {
+        return res.status(404).json({
+          message: "Class not found for this user",
+        });
+      }
+
+      const today = new Date();
 
       const days = [
         "Minggu",
@@ -27,67 +110,80 @@ class ClassscheduleController {
         "Sabtu",
       ];
 
-      const dayName = req.query.day || days[now.getDay()];
+      // sementara
+      const dayName = "Senin";
+      // nanti
+      // const dayName = days[today.getDay()];
 
-      const hh = String(now.getHours()).padStart(2, "0");
-      const mm = String(now.getMinutes()).padStart(2, "0");
-      const ss = String(now.getSeconds()).padStart(2, "0");
+      // Production (WIB)
+      // const nowTime = today.toLocaleTimeString("en-GB", {
+      //   timeZone: "Asia/Jakarta",
+      //   hour12: false,
+      // });
 
-      let time = req.query.time || `${hh}:${mm}:${ss}`;
-
-      if (/^\d{2}:\d{2}$/.test(time)) {
-        time = `${time}:00`;
-      }
-
-      if (dayName === "Sabtu" || dayName === "Minggu") {
-        return res.json({
-          class_id: classId,
-          data: null,
-          note: "Hari libur",
-        });
-      }
+      // Testing
+      const nowTime = "13:30:00";
 
       const sql = `
       SELECT
-        c.id AS class_id,
-        c.class_name,
-        t.id AS teacher_id,
-        t.name AS teacher_name,
-        s.id AS subject_id,
-        s.subject_name,
-        cr.classroom_name,
-        ts.start,
-        te.end
+          cs.id,
+          t.id AS teacher_id,
+          t.name AS teacher_name,
+          s.subject_name,
+          cr.classroom_name,
+          ts.start,
+          te.end
       FROM Classschedules cs
-      JOIN Classes c ON cs.class_id = c.id
-      JOIN Teachers t ON cs.teacher_id = t.id
-      JOIN Subjects s ON cs.subject_id = s.id
-      JOIN Classrooms cr ON cs.classroom_id = cr.id
-      JOIN Timeslots ts ON cs.start_timeslot_id = ts.id
-      JOIN Timeslots te ON cs.end_timeslot_id = te.id
+      JOIN Teachers t
+          ON cs.teacher_id=t.id
+      JOIN Subjects s
+          ON cs.subject_id=s.id
+      JOIN Classrooms cr
+          ON cs.classroom_id=cr.id
+      JOIN Timeslots ts
+          ON cs.start_timeslot_id=ts.id
+      JOIN Timeslots te
+          ON cs.end_timeslot_id=te.id
       WHERE
-        cs.class_id = ?
-        AND cs.day = ?
-        AND ? BETWEEN ts.start AND te.end
-      LIMIT 1
+          cs.class_id=?
+      AND
+          cs.day=?
+      ORDER BY ts.start
     `;
 
       const rows = await sequelize.query(sql, {
-        replacements: [classId, dayName, time],
+        replacements: [student_class.id, dayName],
         type: Sequelize.QueryTypes.SELECT,
       });
 
-      if (!rows.length) {
-        return res.json({
-          class_id: classId,
-          data: null,
-          note: "Tidak ada jadwal KBM saat ini",
-        });
-      }
+      let current = null;
+
+      const schedules = rows.map((item) => {
+        let status = "upcoming";
+
+        if (nowTime > item.end) {
+          status = "finished";
+        } else if (nowTime >= item.start && nowTime <= item.end) {
+          status = "current";
+        }
+
+        const schedule = {
+          ...item,
+          status,
+          validated: false,
+        };
+
+        if (status === "current") {
+          current = schedule;
+        }
+
+        return schedule;
+      });
 
       res.json({
-        class_id: classId,
-        data: rows[0],
+        class: student_class.class_name,
+        current,
+        data: schedules,
       });
     } catch (error) {
       next(error);
@@ -107,7 +203,7 @@ class ClassscheduleController {
         "Sabtu",
       ];
       // const dayName = req.query.day || days[now.getDay()];
-      const dayName = 'Senin';
+      const dayName = "Senin";
       const hh = String(now.getHours()).padStart(2, "0");
       const mm = String(now.getMinutes()).padStart(2, "0");
       const ss = String(now.getSeconds()).padStart(2, "0");

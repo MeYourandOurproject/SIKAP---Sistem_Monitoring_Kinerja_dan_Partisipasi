@@ -1,15 +1,28 @@
 <template>
   <div class="student-layout">
-    <StudentSidebar />
+    <!-- ================= DESKTOP ================= -->
+    <template v-if="!isMobile">
+      <StudentSidebar class="sidebar" />
 
-    <div class="main-area-student">
-      <StudentNavbar :menu-title="currentMenuTitle" />
-      <StudentMobileNavbar />
+      <div class="desktop-wrapper">
+        <StudentNavbar class="desktop-navbar" :menu-title="currentMenuTitle" />
 
-      <main class="main-content">
+        <main class="desktop-content">
+          <router-view />
+        </main>
+      </div>
+    </template>
+
+    <!-- ================= MOBILE ================= -->
+    <template v-else>
+      <StudentMobileNavbar v-if="showMobileNavbar" />
+
+      <main class="mobile-content">
         <router-view />
       </main>
-    </div>
+
+      <StudentMobileBottomNavigation />
+    </template>
   </div>
 </template>
 
@@ -17,110 +30,126 @@
 import StudentNavbar from "@/components/student/StudentNavbar.vue";
 import StudentSidebar from "@/components/student/StudentSidebar.vue";
 import StudentMobileNavbar from "@/components/student/StudentMobileNavbar.vue";
+import StudentMobileBottomNavigation from "@/components/student/StudentMobileBottomNavigation.vue";
 
 export default {
-  name: "StudentLayout",
   components: {
     StudentNavbar,
     StudentSidebar,
     StudentMobileNavbar,
+    StudentMobileBottomNavigation,
   },
+
   data() {
     return {
-      sidebarOpen: false,
       currentMenuTitle: "Dashboard",
+      windowWidth: window.innerWidth,
     };
   },
-  watch: {
-    "$route.path"(newPath) {
-      this.updateMenuTitle(newPath);
-      this.sidebarOpen = false;
+
+  computed: {
+    isMobile() {
+      return this.windowWidth < 992;
+    },
+
+    showMobileNavbar() {
+      return this.$route.path === "/ketua-murid/dashboard";
     },
   },
+
+  watch: {
+    "$route.path"(path) {
+      this.updateMenuTitle(path);
+    },
+  },
+
   mounted() {
     this.updateMenuTitle(this.$route.path);
-    window.addEventListener("resize", this.handleResize);
+
+    window.addEventListener("resize", this.onResize);
   },
+
   beforeUnmount() {
-    window.removeEventListener("resize", this.handleResize);
+    window.removeEventListener("resize", this.onResize);
   },
+
   methods: {
+    onResize() {
+      this.windowWidth = window.innerWidth;
+    },
+
     updateMenuTitle(path) {
-      const titleMap = {
+      const map = {
         "/ketua-murid/dashboard": "Dashboard",
         "/ketua-murid/validasi": "Validasi Guru",
         "/ketua-murid/laporan": "Laporan",
       };
-      this.currentMenuTitle = titleMap[path] || "Dashboard";
-    },
-    handleResize() {
-      if (window.innerWidth >= 992) {
-        this.sidebarOpen = false;
-      }
+
+      this.currentMenuTitle = map[path] || "Dashboard";
     },
   },
 };
 </script>
 
-<style>
+<style scoped>
 .student-layout {
-  display: flex;
-  height: 100vh;
-  overflow: hidden;
-  background: #0f172a;
+  min-height: 100vh;
+  /* background: #f8fafc; */
 }
 
-:deep(.sidebar) {
-  position: fixed !important;
-  top: 0 !important;
+/* ==========================
+DESKTOP
+========================== */
+
+.sidebar {
+  position: fixed;
   left: 0;
-  height: 100vh !important;
-  width: 300px;
-  z-index: 1000;
-  overflow-y: auto;
-}
-
-.main-area-student {
-  margin-left: 300px;
-  width: calc(100% - 290px);
-  height: 100vh;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-:deep(.student-navbar) {
-  position: sticky;
   top: 0;
-  z-index: 900;
-  height: 70px;
+  width: 300px;
+  height: 100vh;
+  z-index: 1000;
+}
+
+.desktop-wrapper {
+  margin-left: 300px;
+
+  width: calc(100% - 300px);
+
+  min-height: 100vh;
+
   display: flex;
-  align-items: center;
+
+  flex-direction: column;
+  /* background-color: aqua; */
+}
+
+.desktop-navbar {
+  position: sticky;
+
+  top: 0;
+
+  z-index: 900;
+
   flex-shrink: 0;
 }
 
-.main-content {
-  padding: 0 1.5rem 2rem;
+.desktop-content {
   flex: 1;
+
+  padding: 24px;
+
+  overflow-x: hidden;
 }
 
-@media (max-width: 991px) {
-  .main-area-student {
-    margin-left: 0;
-    width: 100%;
-  }
+/* ==========================
+MOBILE
+========================== */
 
-  :deep(.sidebar) {
-    transform: translateX(-100%);
-    transition: 0.3s ease;
-  }
+.mobile-content {
+  padding: 16px;
 
-  :deep(.sidebar.open) {
-    transform: translateX(0);
-  }
-  .main-content {
-    padding-top: 1rem;
-    margin-bottom: 60px;
-  }
+  padding-bottom: 90px;
+
+  min-height: 100vh;
 }
 </style>

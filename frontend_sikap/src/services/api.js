@@ -36,7 +36,29 @@ export async function getTeachersCount() {
 // ======================
 
 export async function getClasses() {
-  const res = await fetch(`${API_URL}/api/classschedules/current`);
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${API_URL}/api/classschedules/current`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  return await res.json();
+}
+
+// ======================
+// GET CLASS SCHEDULES
+// ======================
+
+export async function getClassSchedules() {
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${API_URL}/api/classschedules/today`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
 
   return await res.json();
 }

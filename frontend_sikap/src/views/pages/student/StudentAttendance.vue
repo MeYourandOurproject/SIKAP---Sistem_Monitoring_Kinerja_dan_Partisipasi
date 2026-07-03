@@ -1,337 +1,856 @@
 <template>
-  <div class="attendance-page">
-    <div class="page-header">
-      <h3 class="page-title">Validasi Kehadiran Guru</h3>
+  <!-- Add your attendance content here -->
+  <div class="attendance-pages">
+    <div class="container-fluid">
+      <!-- HEADER -->
+      <div class="row d-flex align-items-center">
+        <div class="col-1">
+          <router-link
+            to="/ketua-murid/dashboard"
+            class="btn text-white p-0 m-0"
+            ><i class="bi back bi-arrow-left-short me-2"></i>
+          </router-link>
+        </div>
+        <div class="col-8 text-start pt-2 ms-2">
+          <h4>Validasi Kehadiran</h4>
+        </div>
+      </div>
 
-      <p class="page-subtitle">
-        Laporkan kondisi pembelajaran yang sedang berlangsung.
-      </p>
-    </div>
-
-    <!-- TIDAK ADA GURU -->
-
-    <div
-      v-if="!currentTeacher"
-      class="glass-card text-center"
-    >
-      Tidak ada jadwal mengajar saat ini
-    </div>
-
-    <!-- SUDAH DIVALIDASI -->
-
-    <div
-      v-else-if="alreadyValidated"
-      class="validated-card"
-    >
-      <i class="bi bi-check-circle-fill"></i>
-      Guru sudah divalidasi hari ini
-    </div>
-
-    <!-- FORM VALIDASI -->
-
-    <template v-else>
-
-      <div class="glass-card mb-4">
-        <div class="teacher-info">
-
-          <div class="teacher-avatar">
-            <i class="bi bi-person-workspace"></i>
-          </div>
-
+      <div class="attendance-page mt-4">
+        <!-- HEADER -->
+        <!-- <div class="page-header">
           <div>
-            <h4>{{ currentTeacher.teacher_name }}</h4>
+            <h3 class="page-title">Absensi KBM & Kegiatan</h3>
 
-            <p>
-              {{ currentTeacher.subject_name }}
+            <p class="page-subtitle">
+              Monitoring kehadiran guru dan aktivitas pembelajaran secara
+              real-time
             </p>
-
-            <small>
-              Ruang {{ currentTeacher.ruang }}
-              • JP {{ currentTeacher.jp_mulai }}
-              - {{ currentTeacher.jp_selesai }}
-            </small>
           </div>
 
+          <button class="scan-btn">
+            <i class="bi bi-qr-code-scan"></i>
+            Scan QR
+          </button>
+        </div> -->
+
+        <!-- STATS -->
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-xl-3">
+            <div class="stats-card blue">
+              <div>
+                <small>Total Absensi</small>
+                <h3>128</h3>
+              </div>
+
+              <i class="bi bi-journal-check"></i>
+            </div>
+          </div>
+
+          <div class="col-6 col-xl-3">
+            <div class="stats-card green">
+              <div>
+                <small>Hadir</small>
+                <h3>112</h3>
+              </div>
+
+              <i class="bi bi-check-circle-fill"></i>
+            </div>
+          </div>
+
+          <div class="col-6 col-xl-3">
+            <div class="stats-card orange">
+              <div>
+                <small>Terlambat</small>
+                <h3>9</h3>
+              </div>
+
+              <i class="bi bi-clock-history"></i>
+            </div>
+          </div>
+
+          <div class="col-6 col-xl-3">
+            <div class="stats-card red">
+              <div>
+                <small>Tidak Hadir</small>
+                <h3>7</h3>
+              </div>
+
+              <i class="bi bi-x-circle-fill"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4">
+          <!-- FORM -->
+          <div class="col-12 col-xl-5">
+            <div class="glass-card form-card">
+              <div class="section-header">
+                <div>
+                  <h5>Input Absensi</h5>
+                  <small>Isi data kehadiran guru</small>
+                </div>
+
+                <div class="live-badge">LIVE</div>
+              </div>
+
+              <div
+                v-if="message.text"
+                :class="[
+                  'custom-alert',
+                  message.type === 'success' ? 'success' : 'danger',
+                ]"
+              >
+                {{ message.text }}
+              </div>
+
+              <form @submit.prevent="submitAttendance">
+                <div class="input-group-custom">
+                  <label>Schedule ID</label>
+
+                  <div class="input-wrapper">
+                    <i class="bi bi-calendar-week"></i>
+
+                    <input
+                      v-model="form.scheduleId"
+                      type="number"
+                      placeholder="Masukkan schedule id"
+                    />
+                  </div>
+                </div>
+
+                <div class="row g-3">
+                  <div class="col-6">
+                    <div class="input-group-custom">
+                      <label>Guru ID</label>
+
+                      <div class="input-wrapper">
+                        <i class="bi bi-person-badge"></i>
+
+                        <input
+                          v-model="form.teacherId"
+                          type="number"
+                          placeholder="Guru"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-6">
+                    <div class="input-group-custom">
+                      <label>Kelas ID</label>
+
+                      <div class="input-wrapper">
+                        <i class="bi bi-building"></i>
+
+                        <input
+                          v-model="form.classroomId"
+                          type="number"
+                          placeholder="Kelas"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="input-group-custom">
+                  <label>Status Kehadiran</label>
+
+                  <div class="status-grid">
+                    <button
+                      type="button"
+                      class="status-option hadir"
+                      :class="{ active: form.attendanceStatus === 'hadir' }"
+                      @click="form.attendanceStatus = 'hadir'"
+                    >
+                      <i class="bi bi-check-circle-fill"></i>
+                      Hadir
+                    </button>
+
+                    <button
+                      type="button"
+                      class="status-option izin"
+                      :class="{ active: form.attendanceStatus === 'izin' }"
+                      @click="form.attendanceStatus = 'izin'"
+                    >
+                      <i class="bi bi-envelope-fill"></i>
+                      Izin
+                    </button>
+
+                    <button
+                      type="button"
+                      class="status-option sakit"
+                      :class="{ active: form.attendanceStatus === 'sakit' }"
+                      @click="form.attendanceStatus = 'sakit'"
+                    >
+                      <i class="bi bi-heart-pulse-fill"></i>
+                      Sakit
+                    </button>
+
+                    <button
+                      type="button"
+                      class="status-option alpha"
+                      :class="{ active: form.attendanceStatus === 'absen' }"
+                      @click="form.attendanceStatus = 'absen'"
+                    >
+                      <i class="bi bi-x-circle-fill"></i>
+                      Alpha
+                    </button>
+                  </div>
+                </div>
+
+                <div class="row g-3">
+                  <div class="col-6">
+                    <div class="input-group-custom">
+                      <label>Status Waktu</label>
+
+                      <select v-model="form.timeStatus">
+                        <option value="">Pilih Status</option>
+
+                        <option value="tepat_waktu">Tepat Waktu</option>
+
+                        <option value="terlambat">Terlambat</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="col-6">
+                    <div class="input-group-custom">
+                      <label>Pembelajaran</label>
+
+                      <select v-model="form.learningStatus">
+                        <option value="">Pilih Status</option>
+
+                        <option value="aktif">Aktif</option>
+
+                        <option value="kurang_aktif">Kurang Aktif</option>
+
+                        <option value="tidak_aktif">Tidak Aktif</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="input-group-custom">
+                  <label>Catatan</label>
+
+                  <textarea
+                    v-model="form.note"
+                    rows="4"
+                    placeholder="Tambahkan catatan absensi..."
+                  ></textarea>
+                </div>
+
+                <button
+                  type="submit"
+                  class="submit-btn"
+                  :disabled="isSubmitting"
+                >
+                  <i class="bi bi-save-fill"></i>
+
+                  {{ isSubmitting ? "Menyimpan..." : "Simpan Absensi" }}
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- TABLE -->
+          <div class="col-12 col-xl-7">
+            <div class="glass-card history-card">
+              <div class="section-header mb-4">
+                <div>
+                  <h5>Riwayat Absensi</h5>
+                  <small>Data absensi terbaru guru</small>
+                </div>
+
+                <div class="history-total">{{ records.length }} Data</div>
+              </div>
+
+              <div v-if="records.length" class="attendance-list">
+                <div
+                  class="attendance-item"
+                  v-for="record in records"
+                  :key="record.id"
+                >
+                  <div class="attendance-left">
+                    <div
+                      class="attendance-avatar"
+                      :class="record.attendanceStatus"
+                    >
+                      <i
+                        class="bi"
+                        :class="getAttendanceIcon(record.attendanceStatus)"
+                      ></i>
+                    </div>
+
+                    <div>
+                      <h6>Guru ID {{ record.teacherId }}</h6>
+
+                      <small>
+                        Schedule {{ record.scheduleId }} • Kelas
+                        {{ record.classroomId }}
+                      </small>
+                    </div>
+                  </div>
+
+                  <div class="attendance-right">
+                    <span class="status-badge" :class="record.attendanceStatus">
+                      {{ record.attendanceStatus }}
+                    </span>
+
+                    <small>
+                      {{
+                        record.timeStatus === "terlambat"
+                          ? "Terlambat"
+                          : "Tepat Waktu"
+                      }}
+                    </small>
+                  </div>
+                </div>
+              </div>
+
+              <div v-else class="empty-state">
+                <i class="bi bi-journal-x"></i>
+
+                <h5>Belum Ada Absensi</h5>
+
+                <p>Data absensi guru akan muncul di sini</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="glass-card">
-
-        <div class="input-group-custom">
-          <label>Status Kehadiran Guru</label>
-
-          <select v-model="form.status_hadir">
-            <option value="hadir">Hadir</option>
-            <option value="tidak_hadir">Tidak Hadir</option>
-          </select>
+      <!-- STUDENT ATTENDANCE CONTENT -->
+      <!-- <div class="row py-4">
+        <div class="col-md-12 col-12">
+          <div class="row row-cols-4 text-center">
+            <div class="col card">
+              <div class="row d-flex align-items-center justify-content-center">
+                <div class="col"><h4>36</h4></div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div> -->
 
-        <div class="input-group-custom">
-          <label>Status Pembelajaran</label>
-
-          <select v-model="form.status_pembelajaran">
-            <option value="mengajar">Mengajar</option>
-            <option value="praktik">Praktik</option>
-            <option value="diskusi">Diskusi</option>
-            <option value="tugas">Memberi Tugas</option>
-            <option value="kelas_kosong">Kelas Kosong</option>
-          </select>
-        </div>
-
-        <div class="input-group-custom">
-          <label>Keterlambatan</label>
-
-          <select v-model="form.terlambat">
-            <option value="tidak">Tidak</option>
-            <option value="ya">Ya</option>
-          </select>
-        </div>
-
-        <div class="input-group-custom">
-          <label>Catatan</label>
-
-          <textarea
-            rows="4"
-            v-model="form.catatan"
-            placeholder="Catatan tambahan..."
-          />
-        </div>
-
-        <button
-          class="submit-btn"
-          @click="saveAttendance"
-          :disabled="loading"
-        >
-          {{ loading ? "Menyimpan..." : "Simpan Validasi" }}
-        </button>
-
-      </div>
-
-    </template>
+      <!-- TEACHER ATTENDANCE CONTENT -->
+      <!-- <div class="row">
+        <div class="col-md-12 col-12"> -->
+      <!-- Add your teacher attendance content here -->
+      <!-- </div>
+      </div> -->
+    </div>
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from "vue";
+<script>
+// import { attendanceAPI } from "@/utils/api";
 
-import {
-  saveAttendanceKBM,
-  getCurrentTeacher,
-  checkValidation,
-} from "@/services/api.js";
+export default {
+  name: "PersonResponsibleAttendance",
 
-// ======================
-// STATE
-// ======================
+  data() {
+    return {
+      form: {
+        scheduleId: "",
+        teacherId: "",
+        classroomId: "",
+        attendanceStatus: "",
+        timeStatus: "",
+        learningStatus: "",
+        note: "",
+      },
 
-const currentTeacher = ref(null);
-const alreadyValidated = ref(false);
-const loading = ref(false);
+      records: [],
 
-const form = ref({
-  status_hadir: "hadir",
-  status_pembelajaran: "mengajar",
-  terlambat: "tidak",
-  validator: "Ketua Murid",
-  catatan: "",
-});
+      message: {
+        text: "",
+        type: "success",
+      },
 
-// ======================
-// USER LOGIN
-// ======================
+      isSubmitting: false,
+    };
+  },
 
-const user = JSON.parse(localStorage.getItem("user"));
+  mounted() {
+    this.fetchRecords();
+  },
 
-const classId = user?.class_id || 1;
+  methods: {
+    async fetchRecords() {
+      const response = await attendanceAPI.getAll();
 
-// ======================
-// CEK VALIDASI
-// ======================
+      if (response.success) {
+        this.records = response.data;
+      }
+    },
 
-async function loadValidationStatus() {
-  try {
-    if (!currentTeacher.value) return;
+    async submitAttendance() {
+      if (
+        !this.form.scheduleId ||
+        !this.form.teacherId ||
+        !this.form.classroomId ||
+        !this.form.attendanceStatus ||
+        !this.form.timeStatus ||
+        !this.form.learningStatus
+      ) {
+        this.message = {
+          text: "Semua field wajib diisi.",
+          type: "danger",
+        };
 
-    const response = await checkValidation(
-      currentTeacher.value.teacher_id,
-      classId
-    );
+        return;
+      }
 
-    if (response.success) {
-      alreadyValidated.value = response.already_validated;
-    }
-  } catch (error) {
-    console.log(error);
-  }
-}
+      this.isSubmitting = true;
 
-// ======================
-// LOAD GURU SAAT INI
-// ======================
+      const response = await attendanceAPI.create({
+        scheduleId: Number(this.form.scheduleId),
 
-async function loadCurrentTeacher() {
-  try {
-    const response = await getCurrentTeacher(classId);
+        teacherId: Number(this.form.teacherId),
 
-    if (response.success) {
-      currentTeacher.value = response;
+        classroomId: Number(this.form.classroomId),
 
-      await loadValidationStatus();
-    } else {
-      currentTeacher.value = null;
-    }
-  } catch (error) {
-    console.log(error);
-  }
-}
+        attendanceStatus: this.form.attendanceStatus,
 
-// ======================
-// SAVE VALIDASI
-// ======================
+        timeStatus: this.form.timeStatus,
 
-async function saveAttendance() {
-  if (!currentTeacher.value) {
-    alert("Tidak ada guru yang sedang mengajar");
-    return;
-  }
+        learningStatus: this.form.learningStatus,
 
-  if (alreadyValidated.value) {
-    alert("Guru sudah divalidasi hari ini");
-    return;
-  }
+        note: this.form.note,
+      });
 
-  try {
-    loading.value = true;
+      if (response.success) {
+        this.message = {
+          text: "Absensi berhasil dicatat.",
+          type: "success",
+        };
 
-    await saveAttendanceKBM({
-      teacher_id: currentTeacher.value.teacher_id,
-      class_id: classId,
-      status_hadir: form.value.status_hadir,
-      status_pembelajaran: form.value.status_pembelajaran,
-      terlambat: form.value.terlambat,
-      validator: form.value.validator,
-      catatan: form.value.catatan,
-    });
+        this.form = {
+          scheduleId: "",
+          teacherId: "",
+          classroomId: "",
+          attendanceStatus: "",
+          timeStatus: "",
+          learningStatus: "",
+          note: "",
+        };
 
-    alreadyValidated.value = true;
+        this.fetchRecords();
+      } else {
+        this.message = {
+          text: response.error || "Gagal mencatat absensi.",
 
-    alert("Validasi berhasil disimpan");
-  } catch (error) {
-    console.log(error);
-    alert("Gagal menyimpan validasi");
-  } finally {
-    loading.value = false;
-  }
-}
+          type: "danger",
+        };
+      }
 
-// ======================
-// INIT
-// ======================
+      this.isSubmitting = false;
+    },
 
-onMounted(() => {
-  loadCurrentTeacher();
-});
+    getAttendanceIcon(status) {
+      switch (status) {
+        case "hadir":
+          return "bi-check-circle-fill";
+
+        case "izin":
+          return "bi-envelope-fill";
+
+        case "sakit":
+          return "bi-heart-pulse-fill";
+
+        default:
+          return "bi-x-circle-fill";
+      }
+    },
+  },
+};
 </script>
 
 <style scoped>
-.attendance-page {
+.attendance-pages {
+  /* margin: 1rem 0; */
+  /* padding: 1rem 0; */
+  /* margin: 0; */
+  /* background-color: #1e293b; */
   color: white;
 }
+.back {
+  font-size: 25px;
+}
 
+.attendance-page {
+  color: white;
+  padding-bottom: 100px;
+}
+
+/* HEADER */
 .page-header {
-  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .page-title {
-  font-size: 1.7rem;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
 }
 
 .page-subtitle {
   color: #94a3b8;
+  margin: 0;
+  font-size: 14px;
 }
 
-.glass-card {
-  background: rgba(15, 23, 42, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.scan-btn {
+  border: none;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  padding: 12px 18px;
+  border-radius: 16px;
+  font-weight: 600;
+}
+
+/* STATS */
+.stats-card {
   border-radius: 24px;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+.stats-card h3 {
+  font-size: 32px;
+  margin: 6px 0 0;
+}
+
+.stats-card i {
+  font-size: 34px;
+}
+
+.blue {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+.green {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+}
+
+.orange {
+  background: linear-gradient(135deg, #ea580c, #c2410c);
+}
+
+.red {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+/* CARD */
+.glass-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 28px;
   padding: 24px;
+  backdrop-filter: blur(16px);
 }
 
-.mb-4 {
-  margin-bottom: 16px;
-}
-
-.teacher-info {
+.section-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 20px;
 }
 
-.teacher-avatar {
-  width: 70px;
-  height: 70px;
-  border-radius: 18px;
-  background: rgba(16, 185, 129, 0.2);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 28px;
-}
-
-.teacher-info h4 {
+.section-header h5 {
   margin: 0;
+  font-weight: 700;
 }
 
-.teacher-info p {
-  margin: 0;
-  color: #cbd5e1;
-}
-
-.teacher-info small {
+.section-header small {
   color: #94a3b8;
 }
 
+.live-badge {
+  background: rgba(34, 197, 94, 0.16);
+  color: #4ade80;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ALERT */
+.custom-alert {
+  padding: 14px;
+  border-radius: 16px;
+  margin: 20px 0;
+  font-size: 14px;
+}
+
+.custom-alert.success {
+  background: rgba(34, 197, 94, 0.12);
+  color: #4ade80;
+}
+
+.custom-alert.danger {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+}
+
+/* INPUT */
 .input-group-custom {
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .input-group-custom label {
   display: block;
   margin-bottom: 8px;
+  font-size: 13px;
+  color: #cbd5e1;
+}
+
+.input-wrapper {
+  height: 52px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  gap: 10px;
+}
+
+.input-wrapper i {
+  color: #60a5fa;
+}
+
+.input-wrapper input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
 }
 
 select,
 textarea {
   width: 100%;
-  padding: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 16px;
-  border: none;
-  background: rgba(255, 255, 255, 0.05);
+  padding: 14px;
   color: white;
+  outline: none;
 }
 
+select option {
+  background: #0f172a;
+}
+
+textarea::placeholder,
+input::placeholder {
+  color: #64748b;
+}
+
+/* STATUS */
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.status-option {
+  border: none;
+  border-radius: 16px;
+  padding: 14px;
+  color: white;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.05);
+  transition: 0.3s;
+}
+
+.status-option.active {
+  transform: scale(0.98);
+}
+
+.status-option.hadir.active {
+  background: rgba(34, 197, 94, 0.2);
+  border: 1px solid #22c55e;
+}
+
+.status-option.izin.active {
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid #3b82f6;
+}
+
+.status-option.sakit.active {
+  background: rgba(168, 85, 247, 0.2);
+  border: 1px solid #a855f7;
+}
+
+.status-option.alpha.active {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid #ef4444;
+}
+
+/* BUTTON */
 .submit-btn {
   width: 100%;
   border: none;
-  padding: 14px;
   border-radius: 18px;
-  background: #10b981;
+  padding: 15px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
   color: white;
-  font-weight: bold;
-  cursor: pointer;
+  font-weight: 700;
+  margin-top: 10px;
 }
 
-.validated-card {
-  background: rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(16, 185, 129, 0.4);
-  color: #6ee7b7;
+/* HISTORY */
+.history-total {
+  background: rgba(59, 130, 246, 0.16);
+  color: #60a5fa;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.attendance-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.attendance-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 20px;
-  padding: 20px;
-  text-align: center;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.attendance-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.attendance-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.attendance-avatar.hadir {
+  background: rgba(34, 197, 94, 0.16);
+  color: #4ade80;
+}
+
+.attendance-avatar.izin {
+  background: rgba(59, 130, 246, 0.16);
+  color: #60a5fa;
+}
+
+.attendance-avatar.sakit {
+  background: rgba(168, 85, 247, 0.16);
+  color: #c084fc;
+}
+
+.attendance-avatar.absen {
+  background: rgba(239, 68, 68, 0.16);
+  color: #f87171;
+}
+
+.attendance-left h6 {
+  margin: 0;
   font-weight: 600;
 }
 
-.validated-card i {
-  margin-right: 10px;
+.attendance-left small {
+  color: #94a3b8;
+}
+
+.attendance-right {
+  text-align: right;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  text-transform: capitalize;
+  margin-bottom: 6px;
+}
+
+.status-badge.hadir {
+  background: rgba(34, 197, 94, 0.16);
+  color: #4ade80;
+}
+
+.status-badge.izin {
+  background: rgba(59, 130, 246, 0.16);
+  color: #60a5fa;
+}
+
+.status-badge.sakit {
+  background: rgba(168, 85, 247, 0.16);
+  color: #c084fc;
+}
+
+.status-badge.absen {
+  background: rgba(239, 68, 68, 0.16);
+  color: #f87171;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 70px 20px;
+}
+
+.empty-state i {
+  font-size: 60px;
+  color: #475569;
+  margin-bottom: 18px;
+}
+
+.empty-state p {
+  color: #94a3b8;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .scan-btn {
+    width: 100%;
+  }
+
+  .attendance-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .attendance-right {
+    text-align: left;
+  }
+
+  .status-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

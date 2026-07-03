@@ -4,14 +4,27 @@
       <div class="container-fluid px-4 py-2">
         <div class="row d-flex align-items-center justify-content-between">
           <div class="col-8 d-flex align-items-center gap-3">
-            <img src="../../assets/sikap_logo.PNG" alt="SIKAP Logo" style="height: 50px" />
+            <img
+              src="../../assets/sikap_logo.PNG"
+              alt="SIKAP Logo"
+              style="height: 50px"
+            />
             <div class="row text-start">
-              <div class="col-12 text-success fw-bold" style="font-size: 20px; letter-spacing: 10px">SIKAP</div>
-              <div class="col-12 text-white" style="font-size: 9px">Sistem Informasi Kinerja & Partisipasi</div>
+              <div
+                class="col-12 text-success fw-bold"
+                style="font-size: 20px; letter-spacing: 10px"
+              >
+                SIKAP
+              </div>
+              <div class="col-12 text-white" style="font-size: 9px">
+                Sistem Informasi Kinerja & Partisipasi
+              </div>
             </div>
           </div>
 
-          <div class="col-4 d-flex justify-content-end align-items-center gap-1">
+          <div
+            class="col-4 d-flex justify-content-end align-items-center gap-1"
+          >
             <div class="dropdown user-dropdown-mobile">
               <button
                 class="btn btn-icon"
@@ -21,11 +34,19 @@
                 aria-expanded="false"
                 aria-label="User menu"
               >
-                <span class="user-avatar-mobile">{{ userName.charAt(0).toUpperCase() }}</span>
+                <span class="user-avatar-mobile">{{
+                  userName.charAt(0).toUpperCase()
+                }}</span>
               </button>
-              <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="userMenuMobile">
+              <ul
+                class="dropdown-menu dropdown-menu-end shadow-sm"
+                aria-labelledby="userMenuMobile"
+              >
                 <li>
-                  <button class="dropdown-item text-danger" @click="handleLogout">
+                  <button
+                    class="dropdown-item text-danger"
+                    @click="handleLogout"
+                  >
                     <i class="bi bi-box-arrow-right me-2"></i>
                     Logout
                   </button>
@@ -36,32 +57,15 @@
         </div>
       </div>
     </nav>
-
-    <div class="mobile-bottom-nav">
-      <router-link to="/ketua-murid/dashboard" class="bottom-nav-item" active-class="active">
-        <i class="bi bi-grid-fill"></i>
-        <span>Dashboard</span>
-      </router-link>
-
-      <router-link to="/ketua-murid/validasi" class="bottom-nav-item" active-class="active">
-        <i class="bi bi-check2-square"></i>
-        <span>Validasi</span>
-      </router-link>
-
-      <router-link to="/ketua-murid/laporan" class="bottom-nav-item" active-class="active">
-        <i class="bi bi-journal-text"></i>
-        <span>Laporan</span>
-      </router-link>
-    </div>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'StudentMobileNavbar',
+  name: "StudentMobileNavbar",
   data() {
     return {
-      userName: 'Ketua Murid',
+      userName: "Ketua Murid",
     };
   },
   mounted() {
@@ -70,17 +74,17 @@ export default {
   methods: {
     loadUserName() {
       try {
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        this.userName = user.fullname || user.name || 'Ketua Murid';
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        this.userName = user.fullname || user.name || "Ketua Murid";
       } catch (error) {
-        console.error('Error loading user name:', error);
+        console.error("Error loading user name:", error);
       }
     },
     handleLogout() {
-      if (confirm('Apakah Anda yakin ingin logout?')) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        this.$router.push('/');
+      if (confirm("Apakah Anda yakin ingin logout?")) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        this.$router.push("/");
       }
     },
   },
@@ -114,7 +118,7 @@ export default {
   width: 36px;
   /* height: 36px; */
   border-radius: 50%;
-  background: #10B981;
+  background: #10b981;
   color: #ffffff;
   display: inline-flex;
   align-items: center;

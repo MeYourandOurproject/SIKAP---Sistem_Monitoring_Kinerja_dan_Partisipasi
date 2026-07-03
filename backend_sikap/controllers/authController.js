@@ -26,9 +26,9 @@ class AuthController {
         success: true,
         token,
         user: {
-          id: user.id,
-          username: user.username,
-          name: user.name,
+          // id: user.id,
+          // username: user.username,
+          // name: user.name,
           role: user.role,
         },
       });

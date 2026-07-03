@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      Class.hasMany(models.Enrollment, { foreignKey: 'class_id' });
+      // Class.hasMany(models.Enrollment, { foreignKey: 'class_id' });
       Class.belongsTo(models.Teacher, { foreignKey: 'classteacher_id', as: 'classTeacher' });
       Class.belongsTo(models.User, { foreignKey: 'classleader_id', as: 'classLeader' });
     }
@@ -19,9 +19,7 @@ module.exports = (sequelize, DataTypes) => {
       major: { type: DataTypes.STRING, allowNull: false },
       level: { type: DataTypes.STRING, allowNull: false },
       classleader_id: { type: DataTypes.INTEGER, allowNull: true },
-      classleader_contact: { type: DataTypes.STRING, allowNull: true },
       classteacher_id: { type: DataTypes.INTEGER, allowNull: true },
-      classteacher_contact: { type: DataTypes.STRING, allowNull: true },
       total_student: { type: DataTypes.INTEGER, allowNull: false },
     },
     {

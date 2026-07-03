@@ -75,53 +75,7 @@
       </div>
     </nav>
 
-    <!-- Mobile Bottom Navigation -->
-    <div class="mobile-bottom-nav">
-      <router-link
-        to="/kepala-sekolah/dashboard"
-        class="bottom-nav-item"
-        active-class="active"
-      >
-        <i class="bi bi-grid-fill"></i>
-        <span>Dashboard</span>
-      </router-link>
-
-      <router-link
-        to="/kepala-sekolah/kbm"
-        class="bottom-nav-item"
-        active-class="active"
-      >
-        <i class="bi bi-activity"></i>
-        <span>KBM</span>
-      </router-link>
-
-      <router-link
-        to="/kepala-sekolah/partisipasi-guru"
-        class="bottom-nav-item"
-        active-class="active"
-      >
-        <i class="bi bi-bar-chart-fill"></i>
-        <span>Partisipasi</span>
-      </router-link>
-
-      <router-link
-        to="/kepala-sekolah/laporan"
-        class="bottom-nav-item"
-        active-class="active"
-      >
-        <i class="bi bi-file-earmark-text-fill"></i>
-        <span>Laporan</span>
-      </router-link>
-
-      <router-link
-        to="/kepala-sekolah/profile"
-        class="bottom-nav-item"
-        active-class="active"
-      >
-        <i class="bi bi-person-fill"></i>
-        <span>Profil</span>
-      </router-link>
-    </div>
+    
   </div>
 </template>
 

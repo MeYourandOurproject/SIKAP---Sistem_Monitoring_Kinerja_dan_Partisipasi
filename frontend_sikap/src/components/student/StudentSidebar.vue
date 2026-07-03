@@ -113,7 +113,7 @@ export default {
   width: 290px;
   box-sizing: border-box;
   color: #e7f5e7;
-  border-right: 3px solid rgba(166, 255, 175, 0.12);
+  /* border-right: 3px solid rgba(166, 255, 175, 0.12); */
   overflow-y: auto;
   display: flex;
   flex-direction: column;

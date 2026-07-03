@@ -7,7 +7,8 @@
     <div class="main-area">
       <!-- Navbar -->
       <headmasterNavbar :menu-title="currentMenuTitle" />
-      <HeadmasterMobileNavbar />
+      <HeadmasterMobileNavbar v-if="showMobileNavbar" />
+      <HeadmasterMobileBottomNavigation />
 
       <!-- Content -->
       <main class="main-content">
@@ -18,16 +19,18 @@
 </template>
 
 <script>
-import headmasterNavbar from "@/components/headmaster/HeadmasterNavbar.vue";
+import HeadmasterNavbar from "@/components/headmaster/HeadmasterNavbar.vue";
 import HeadmasterMobileNavbar from "@/components/headmaster/HeadmasterMobileNavbar.vue";
-import headmasterSidebar from "@/components/headmaster/HeadmasterSidebar.vue";
+import HeadmasterSidebar from "@/components/headmaster/HeadmasterSidebar.vue";
+import HeadmasterMobileBottomNavigation from "@/components/headmaster/HeadmasterMobileBottomNavigation.vue";
 
 export default {
   name: "headmasterLayout",
   components: {
-    headmasterNavbar,
+    HeadmasterNavbar,
     HeadmasterMobileNavbar,
-    headmasterSidebar,
+    HeadmasterSidebar,
+    HeadmasterMobileBottomNavigation,
   },
   data() {
     return {
@@ -52,15 +55,15 @@ export default {
   methods: {
     updateMenuTitle(path) {
       const titleMap = {
-        "/headmaster/dashboard": "Dashboard",
-        "/headmaster/journal": "Jurnal",
-        "/headmaster/attendance": "Absensi",
-        "/headmaster/assessment": "Penilaian",
-        "/headmaster/report": "Laporan",
-        "/headmaster/industry-info": "Info Industri",
-        "/headmaster/announcements": "Pengumuman",
-        "/headmaster/settings": "Pengaturan",
-        "/headmaster/profile": "Profil",
+        "/kepala-sekolah/dashboard": "Dashboard",
+        "/kepala-sekolah/journal": "Jurnal",
+        "/kepala-sekolah/attendance": "Absensi",
+        "/kepala-sekolah/assessment": "Penilaian",
+        "/kepala-sekolah/report": "Laporan",
+        "/kepala-sekolah/industry-info": "Info Industri",
+        "/kepala-sekolah/announcements": "Pengumuman",
+        "/kepala-sekolah/settings": "Pengaturan",
+        "/kepala-sekolah/profile": "Profil",
       };
       this.currentMenuTitle = titleMap[path] || "Dashboard";
     },
@@ -70,13 +73,18 @@ export default {
       }
     },
   },
+  computed: {
+    showMobileNavbar() {
+      return this.$route.path === "/kepala-sekolah/dashboard";
+    },
+  },
 };
 </script>
 
 <style>
 .headmaster-layout {
   display: flex;
-  height: 100vh; /* ganti min-height */
+  min-height: 100vh; /* ganti min-height */
   overflow: hidden; /* cegah scroll parent */
   background: #0f172a;
 }

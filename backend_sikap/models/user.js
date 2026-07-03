@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
         values: ["student", "teacher", "admin", "headmaster", "responsible"],
         allowNull: false,
       },
+      contact: { type: DataTypes.STRING, allowNull: true },
       // class_id and teacher_id removed; use Enrollments and ClassTeachers
     },
     {
