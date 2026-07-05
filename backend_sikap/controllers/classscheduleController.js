@@ -116,13 +116,15 @@ class ClassscheduleController {
       // const dayName = days[today.getDay()];
 
       // Production (WIB)
-      // const nowTime = today.toLocaleTimeString("en-GB", {
-      //   timeZone: "Asia/Jakarta",
-      //   hour12: false,
-      // });
+      const nowTime = today.toLocaleTimeString("en-GB", {
+        timeZone: "Asia/Jakarta",
+        hour12: false,
+      });
 
       // Testing
-      const nowTime = "13:30:00";
+      // const nowTime = "09:30:00";
+
+      const todayDate = today.toISOString().slice(0, 10);
 
       const sql = `
       SELECT
@@ -132,7 +134,8 @@ class ClassscheduleController {
           s.subject_name,
           cr.classroom_name,
           ts.start,
-          te.end
+          te.end,
+          CASE WHEN ta.count > 0 THEN 1 ELSE 0 END AS validated
       FROM Classschedules cs
       JOIN Teachers t
           ON cs.teacher_id=t.id
@@ -144,6 +147,12 @@ class ClassscheduleController {
           ON cs.start_timeslot_id=ts.id
       JOIN Timeslots te
           ON cs.end_timeslot_id=te.id
+      LEFT JOIN (
+        SELECT classschedule_id, COUNT(*) AS count
+        FROM Classteacherattendances
+        WHERE DATE(date) = DATE(?)
+        GROUP BY classschedule_id
+      ) ta ON ta.classschedule_id = cs.id
       WHERE
           cs.class_id=?
       AND
@@ -152,7 +161,7 @@ class ClassscheduleController {
     `;
 
       const rows = await sequelize.query(sql, {
-        replacements: [student_class.id, dayName],
+        replacements: [todayDate, student_class.id, dayName],
         type: Sequelize.QueryTypes.SELECT,
       });
 
@@ -170,7 +179,7 @@ class ClassscheduleController {
         const schedule = {
           ...item,
           status,
-          validated: false,
+          validated: !!item.validated,
         };
 
         if (status === "current") {
@@ -207,8 +216,8 @@ class ClassscheduleController {
       const hh = String(now.getHours()).padStart(2, "0");
       const mm = String(now.getMinutes()).padStart(2, "0");
       const ss = String(now.getSeconds()).padStart(2, "0");
-      //   let time = req.query.time || `${hh}:${mm}:${ss}`;
-      let time = "08:40:50";
+        let time = req.query.time || `${hh}:${mm}:${ss}`;
+      // let time = "09:30:00";
 
       if (/^\d{2}:\d{2}$/.test(time)) {
         time = `${time}:00`;
@@ -233,6 +242,8 @@ class ClassscheduleController {
         });
       }
 
+      const todayDate = now.toISOString().slice(0, 10);
+
       const sql = `
         SELECT
           c.id AS class_id,
@@ -241,7 +252,8 @@ class ClassscheduleController {
           s.subject_name,
           cr.classroom_name,
           ts.start,
-          te.end
+          te.end,
+          CASE WHEN ta.count > 0 THEN 1 ELSE 0 END AS validated
         FROM Classschedules cs
         JOIN Classes c ON cs.class_id = c.id
         JOIN Teachers t ON cs.teacher_id = t.id
@@ -249,18 +261,59 @@ class ClassscheduleController {
         JOIN Classrooms cr ON cs.classroom_id = cr.id
         JOIN Timeslots ts ON cs.start_timeslot_id = ts.id
         JOIN Timeslots te ON cs.end_timeslot_id = te.id
+        LEFT JOIN (
+          SELECT classschedule_id, COUNT(*) AS count
+          FROM Classteacherattendances
+          WHERE DATE(date) = DATE(?)
+          GROUP BY classschedule_id
+        ) ta ON ta.classschedule_id = cs.id
         WHERE cs.day = ? AND ? BETWEEN ts.start AND te.end
         ORDER BY c.id ASC
       `;
 
       const rows = await sequelize.query(sql, {
-        replacements: [dayName, time],
+        replacements: [todayDate, dayName, time],
         type: Sequelize.QueryTypes.SELECT,
       });
 
+      const mapped = rows.map((r) => {
+        const validated = !!r.validated;
+
+        // determine status and color for FE
+        // rows come from current time window (time BETWEEN start AND end)
+        const nowTimeStr = time; // formatted earlier
+
+        let status;
+        let color;
+        let terlambat;
+
+        // If there is no validation record for this schedule today,
+        // show as 'Belum divalidasi' rather than 'Terlambat'.
+        if (!validated) {
+          status = "Belum divalidasi";
+          color = "red";
+          terlambat = "tidak";
+        } else {
+          // validated === true -> active teaching status
+          status = "Mengajar";
+          color = "green";
+          // We currently don't compute lateness from validation timestamp here;
+          // mark as not late by default when validated.
+          terlambat = "tidak";
+        }
+
+        return {
+          ...r,
+          validated,
+          status,
+          color,
+          terlambat,
+        };
+      });
+
       res.json({
-        total: rows.length,
-        data: rows,
+        total: mapped.length,
+        data: mapped,
       });
     } catch (error) {
       next(error);

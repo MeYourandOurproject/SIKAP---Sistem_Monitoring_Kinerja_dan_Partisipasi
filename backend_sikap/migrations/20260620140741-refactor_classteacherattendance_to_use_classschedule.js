@@ -40,13 +40,6 @@ module.exports = {
       "lateness",
     );
 
-    // // 6. add validator_id column
-    // await queryInterface.addColumn("Classteacherattendances", "validator_id", {
-    //   type: Sequelize.DATE,
-    //   allowNull: true,
-    //   after: "activity_status",
-    // });
-
     await queryInterface.addIndex(
       "Classteacherattendances",
       ["date", "classschedule_id"],

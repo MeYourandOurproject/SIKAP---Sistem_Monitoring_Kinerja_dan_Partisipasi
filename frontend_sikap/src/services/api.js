@@ -64,6 +64,31 @@ export async function getClassSchedules() {
 }
 
 // ======================
+// CREATE CLASS TEACHER ATTENDANCE
+// ======================
+
+export async function createClassTeacherAttendance(payload) {
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${API_URL}/api/classteacherattendances`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    const error = new Error(data?.message || "Failed to create class teacher attendance");
+    error.status = res.status;
+    throw error;
+  }
+
+  return data;
+}
+
+// ======================
 // GET ATTENDANCE KBM
 // ======================
 
