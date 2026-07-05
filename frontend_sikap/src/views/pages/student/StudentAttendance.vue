@@ -3,7 +3,7 @@
   <div class="attendance-pages">
     <div class="container-fluid">
       <!-- HEADER -->
-      <div class="row d-flex align-items-center">
+      <div class="row d-flex align-items-center d-md-none">
         <div class="col-1">
           <router-link
             to="/ketua-murid/dashboard"
@@ -12,463 +12,599 @@
           </router-link>
         </div>
         <div class="col-8 text-start pt-2 ms-2">
-          <h4>Validasi Kehadiran</h4>
+          <h4><i class="bi bi-back"></i></h4>
         </div>
       </div>
 
-      <div class="attendance-page mt-4">
+      <div class="attendance-page mt-4 mt-md-0">
         <!-- HEADER -->
-        <!-- <div class="page-header">
+        <div class="page-header text-start mb-4">
           <div>
-            <h3 class="page-title">Absensi KBM & Kegiatan</h3>
+            <h3 class="page-title">Input Kehadiran Siswa dan Guru</h3>
 
             <p class="page-subtitle">
-              Monitoring kehadiran guru dan aktivitas pembelajaran secara
-              real-time
+              Monitoring kehadiran siswa dan guru beserta aktivitas pembelajaran
+              secara real-time
             </p>
           </div>
+          <div class="gap-3 d-flex flex-column flex-md-row">
+            <button class="student-btn bg-primary">
+              <i class="bi bi-person-plus me-2"></i>
+              Input Absensi Siswa
+            </button>
+            <button class="teacher-btn bg-success">
+              <i class="bi bi-person-plus me-2"></i>
+              Input Absensi Guru
+            </button>
+          </div>
+        </div>
 
-          <button class="scan-btn">
-            <i class="bi bi-qr-code-scan"></i>
-            Scan QR
-          </button>
-        </div> -->
+        <div class="row g-4 text-start">
+          <div class="col-12 col-md-6">
+            <div class="glass-card">
+              <div class="section-header mb-2">
+                <h5>Tabel Kehadiran Siswa</h5>
+                <!-- <small>Input kehadiran siswa secara real-time</small> -->
+              </div>
+              <p class="page-subtitle mb-3">
+                Silakan pilih nama siswa dan keterangan kehadiran untuk
+                menginput data kehadiran siswa secara real-time.
+              </p>
 
-        <!-- STATS -->
-        <div class="row g-3 mb-4">
-          <div class="col-6 col-xl-3">
-            <div class="stats-card blue">
-              <div>
-                <small>Total Absensi</small>
-                <h3>128</h3>
+              <div class="row d-flex align-items-center">
+                <div class="col-12 col-md-6 mb-3">
+                  <select class="p-2 rounded-2" placeholder="Nama Siswa">
+                    <option value="">Nama Siswa</option>
+                    <option value="Ruly">Ruly</option>
+                    <option value="Andi">Andi</option>
+                    <option value="Budi">Budi</option>
+                    <option value="Citra">Citra</option>
+                  </select>
+                </div>
+                <div class="col col-md-4 mb-3">
+                  <select class="p-2 rounded-2" placeholder="Keterangan">
+                    <option value="">Keterangan</option>
+                    <option value="hadir">Hadir</option>
+                    <option value="terlambat">Terlambat</option>
+                    <option value="tidak-hadir">Tidak Hadir</option>
+                  </select>
+                </div>
+                <div class="col-auto col-md-2 mb-3">
+                  <button class="btn btn-primary w-100">
+                    <i class="bi bi-send"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="row d-flex align-items-center mt-3">
+                <p class="page-subtitle mb-3">
+                  Tabel di bawah ini menampilkan daftar kehadiran siswa yang
+                  telah diinput secara real-time. Silakan periksa data kehadiran
+                  siswa untuk memastikan keakuratan informasi.
+                </p>
+                <!-- TABEL -->
+                <div class="table-responsive">
+                  <table
+                    class="table table-hover table-striped table-bordered align-middle"
+                  >
+                    <thead>
+                      <tr>
+                        <th>Nama Siswa</th>
+                        <th>Keterangan</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Ruly</td>
+                        <td class="fw-bold">Hadir</td>
+                      </tr>
+                      <tr>
+                        <td>Andi</td>
+                        <td class="fw-bold">Terlambat</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
-              <i class="bi bi-journal-check"></i>
+              <!-- <button class="submit-btn">Input Kehadiran Siswa</button> -->
             </div>
           </div>
 
-          <div class="col-6 col-xl-3">
-            <div class="stats-card green">
-              <div>
-                <small>Hadir</small>
-                <h3>112</h3>
+          <div class="col-12 col-md-6">
+            <div class="glass-card">
+              <div class="section-header mb-3">
+                <div>
+                  <h5 class="section-header mb-2">Validasi Kehadiran Guru</h5>
+
+                  <p class="page-subtitle">
+                    Pantau jadwal guru yang sedang berlangsung dan status
+                    validasi.
+                  </p>
+                </div>
               </div>
 
-              <i class="bi bi-check-circle-fill"></i>
-            </div>
-          </div>
+              <div class="row">
+                <div class="col-12">
+                  <div class="current-validation" v-if="dashboard.current">
+                    <div class="col-12">
+                      <div class="current-tag bg-success text-white">
+                        <i class="bi bi-play-circle-fill me-2"></i>Sedang
+                        Berlangsung
+                      </div>
+                    </div>
+                    <div class="current-row">
+                      <div>
+                        <h6 class="current-subject">
+                          {{ dashboard.current.subject_name }}
+                        </h6>
 
-          <div class="col-6 col-xl-3">
-            <div class="stats-card orange">
-              <div>
-                <small>Terlambat</small>
-                <h3>9</h3>
+                        <p class="teacher-name mb-1">
+                          <i class="bi bi-person"></i>
+                          {{ dashboard.current.teacher_name }}
+                        </p>
+
+                        <div class="compact-info">
+                          <i class="bi bi-clock"></i>
+                          {{ dashboard.current.start }} -
+                          {{ dashboard.current.end }}
+                        </div>
+
+                        <div class="compact-info">
+                          <i class="bi bi-geo-alt"></i>
+                          {{ dashboard.current.classroom_name }}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="validation-line mt-3" v-if="dashboard.current">
+                      <div class="row">
+                        <div class="col-auto">
+                          <span
+                            class="validation-badge"
+                            :class="
+                              dashboard.current.validated
+                                ? 'validated'
+                                : 'not-validated'
+                            "
+                          >
+                            {{
+                              dashboard.current.validated
+                                ? "Sudah divalidasi"
+                                : "Belum divalidasi"
+                            }}
+                          </span>
+                        </div>
+                        <div class="col-auto">
+                          <button
+                            type="button"
+                            class="btn btn-primary btn-sm"
+                            @click="openValidationForm"
+                          >
+                            Tambah
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      class="validation-form mt-3"
+                      v-if="showValidationForm && dashboard.current"
+                    >
+                      <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                          <label class="form-label">Kehadiran Guru</label>
+                          <select
+                            v-model="validationForm.attendance_status"
+                            class="form-select"
+                          >
+                            <option value="present">Hadir</option>
+                            <option value="permission">Izin</option>
+                            <option value="absent">Tidak Hadir</option>
+                          </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                          <label class="form-label">Status Aktivitas</label>
+                          <select
+                            v-model="validationForm.activity_status"
+                            class="form-select"
+                          >
+                            <option value="teaching">Mengajar</option>
+                            <option value="empty">Kosong</option>
+                            <option value="assignment">Tugas</option>
+                          </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                          <label class="form-label"
+                            >Keterlambatan (menit)</label
+                          >
+                          <input
+                            type="number"
+                            min="0"
+                            v-model.number="validationForm.lateness"
+                            class="form-control"
+                          />
+                        </div>
+                        <div class="col-12">
+                          <label class="form-label">Catatan</label>
+                          <textarea
+                            v-model="validationForm.notes"
+                            class="form-control"
+                            rows="2"
+                            placeholder="Catatan opsional"
+                          ></textarea>
+                        </div>
+                        <div class="col-12 d-flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            class="btn btn-success"
+                            :disabled="isSubmitting"
+                            @click="submitValidationForm"
+                          >
+                            {{
+                              isSubmitting ? "Menyimpan..." : "Submit Validasi"
+                            }}
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-secondary"
+                            @click="showValidationForm = false"
+                          >
+                            Batal
+                          </button>
+                        </div>
+                        <div class="col-12" v-if="validationError">
+                          <p class="text-danger small mb-0">
+                            {{ validationError }}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <i class="bi bi-clock-history"></i>
-            </div>
-          </div>
-
-          <div class="col-6 col-xl-3">
-            <div class="stats-card red">
-              <div>
-                <small>Tidak Hadir</small>
-                <h3>7</h3>
-              </div>
-
-              <i class="bi bi-x-circle-fill"></i>
+              <!--  -->
             </div>
           </div>
         </div>
 
-        <div class="row g-4">
-          <!-- FORM -->
-          <div class="col-12 col-xl-5">
-            <div class="glass-card form-card">
-              <div class="section-header">
-                <div>
-                  <h5>Input Absensi</h5>
-                  <small>Isi data kehadiran guru</small>
-                </div>
-
-                <div class="live-badge">LIVE</div>
+        <div class="row mt-4">
+          <div class="col-12">
+            <div class="glass-card">
+              <div class="section-header mb-3">
+                <h5>Jadwal Guru Hari Ini</h5>
               </div>
-
-              <div
-                v-if="message.text"
-                :class="[
-                  'custom-alert',
-                  message.type === 'success' ? 'success' : 'danger',
-                ]"
-              >
-                {{ message.text }}
-              </div>
-
-              <form @submit.prevent="submitAttendance">
-                <div class="input-group-custom">
-                  <label>Schedule ID</label>
-
-                  <div class="input-wrapper">
-                    <i class="bi bi-calendar-week"></i>
-
-                    <input
-                      v-model="form.scheduleId"
-                      type="number"
-                      placeholder="Masukkan schedule id"
-                    />
-                  </div>
-                </div>
-
-                <div class="row g-3">
-                  <div class="col-6">
-                    <div class="input-group-custom">
-                      <label>Guru ID</label>
-
-                      <div class="input-wrapper">
-                        <i class="bi bi-person-badge"></i>
-
-                        <input
-                          v-model="form.teacherId"
-                          type="number"
-                          placeholder="Guru"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="col-6">
-                    <div class="input-group-custom">
-                      <label>Kelas ID</label>
-
-                      <div class="input-wrapper">
-                        <i class="bi bi-building"></i>
-
-                        <input
-                          v-model="form.classroomId"
-                          type="number"
-                          placeholder="Kelas"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="input-group-custom">
-                  <label>Status Kehadiran</label>
-
-                  <div class="status-grid">
-                    <button
-                      type="button"
-                      class="status-option hadir"
-                      :class="{ active: form.attendanceStatus === 'hadir' }"
-                      @click="form.attendanceStatus = 'hadir'"
-                    >
-                      <i class="bi bi-check-circle-fill"></i>
-                      Hadir
-                    </button>
-
-                    <button
-                      type="button"
-                      class="status-option izin"
-                      :class="{ active: form.attendanceStatus === 'izin' }"
-                      @click="form.attendanceStatus = 'izin'"
-                    >
-                      <i class="bi bi-envelope-fill"></i>
-                      Izin
-                    </button>
-
-                    <button
-                      type="button"
-                      class="status-option sakit"
-                      :class="{ active: form.attendanceStatus === 'sakit' }"
-                      @click="form.attendanceStatus = 'sakit'"
-                    >
-                      <i class="bi bi-heart-pulse-fill"></i>
-                      Sakit
-                    </button>
-
-                    <button
-                      type="button"
-                      class="status-option alpha"
-                      :class="{ active: form.attendanceStatus === 'absen' }"
-                      @click="form.attendanceStatus = 'absen'"
-                    >
-                      <i class="bi bi-x-circle-fill"></i>
-                      Alpha
-                    </button>
-                  </div>
-                </div>
-
-                <div class="row g-3">
-                  <div class="col-6">
-                    <div class="input-group-custom">
-                      <label>Status Waktu</label>
-
-                      <select v-model="form.timeStatus">
-                        <option value="">Pilih Status</option>
-
-                        <option value="tepat_waktu">Tepat Waktu</option>
-
-                        <option value="terlambat">Terlambat</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div class="col-6">
-                    <div class="input-group-custom">
-                      <label>Pembelajaran</label>
-
-                      <select v-model="form.learningStatus">
-                        <option value="">Pilih Status</option>
-
-                        <option value="aktif">Aktif</option>
-
-                        <option value="kurang_aktif">Kurang Aktif</option>
-
-                        <option value="tidak_aktif">Tidak Aktif</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="input-group-custom">
-                  <label>Catatan</label>
-
-                  <textarea
-                    v-model="form.note"
-                    rows="4"
-                    placeholder="Tambahkan catatan absensi..."
-                  ></textarea>
-                </div>
-
-                <button
-                  type="submit"
-                  class="submit-btn"
-                  :disabled="isSubmitting"
-                >
-                  <i class="bi bi-save-fill"></i>
-
-                  {{ isSubmitting ? "Menyimpan..." : "Simpan Absensi" }}
-                </button>
-              </form>
-            </div>
-          </div>
-
-          <!-- TABLE -->
-          <div class="col-12 col-xl-7">
-            <div class="glass-card history-card">
-              <div class="section-header mb-4">
-                <div>
-                  <h5>Riwayat Absensi</h5>
-                  <small>Data absensi terbaru guru</small>
-                </div>
-
-                <div class="history-total">{{ records.length }} Data</div>
-              </div>
-
-              <div v-if="records.length" class="attendance-list">
+              <div class="timeline">
                 <div
-                  class="attendance-item"
-                  v-for="record in records"
-                  :key="record.id"
+                  class="timeline-item"
+                  v-for="(item, index) in scheduleList"
+                  :key="index"
                 >
-                  <div class="attendance-left">
-                    <div
-                      class="attendance-avatar"
-                      :class="record.attendanceStatus"
-                    >
-                      <i
-                        class="bi"
-                        :class="getAttendanceIcon(record.attendanceStatus)"
-                      ></i>
-                    </div>
-
-                    <div>
-                      <h6>Guru ID {{ record.teacherId }}</h6>
-
-                      <small>
-                        Schedule {{ record.scheduleId }} • Kelas
-                        {{ record.classroomId }}
-                      </small>
-                    </div>
+                  <div class="timeline-connector">
+                    <span
+                      class="timeline-dot"
+                      :class="{
+                        current: item.status === 'current',
+                        finished: item.status === 'finished',
+                      }"
+                    ></span>
+                    <span class="timeline-time fw-bold">{{ item.start }}</span>
                   </div>
-
-                  <div class="attendance-right">
-                    <span class="status-badge" :class="record.attendanceStatus">
-                      {{ record.attendanceStatus }}
-                    </span>
-
-                    <small>
-                      {{
-                        record.timeStatus === "terlambat"
-                          ? "Terlambat"
-                          : "Tepat Waktu"
-                      }}
-                    </small>
+                  <div class="timeline-content text-start">
+                    <div class="timeline-card">
+                      <div class="timeline-card-header">
+                        <span
+                          class="status-badge"
+                          :class="
+                            item.status === 'finished'
+                              ? 'badge-success'
+                              : 'badge-blue'
+                          "
+                        >
+                          {{
+                            item.status === "finished"
+                              ? "Selesai"
+                              : "Berikutnya"
+                          }}
+                        </span>
+                      </div>
+                      <div class="row gap-1">
+                        <h6 class="timeline-subject">
+                          {{ item.subject_name }}
+                        </h6>
+                        <p class="timeline-teacher">
+                          <i class="bi bi-person me-2"></i>
+                          {{ item.teacher_name }}
+                        </p>
+                        <p class="timeline-room">
+                          <i class="bi bi-geo-alt me-2"></i>
+                          {{ item.classroom_name }}
+                        </p>
+                        <span
+                          class="validation-badge mt-2"
+                          :class="
+                            item.validated ? 'validated' : 'not-validated'
+                          "
+                        >
+                          {{
+                            item.validated
+                              ? "Sudah divalidasi"
+                              : "Belum divalidasi"
+                          }}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              <div v-else class="empty-state">
-                <i class="bi bi-journal-x"></i>
-
-                <h5>Belum Ada Absensi</h5>
-
-                <p>Data absensi guru akan muncul di sini</p>
+                <div class="timeline-empty" v-if="scheduleList.length === 0">
+                  Tidak ada jadwal hari ini.
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- STUDENT ATTENDANCE CONTENT -->
-      <!-- <div class="row py-4">
-        <div class="col-md-12 col-12">
-          <div class="row row-cols-4 text-center">
-            <div class="col card">
-              <div class="row d-flex align-items-center justify-content-center">
-                <div class="col"><h4>36</h4></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div> -->
-
-      <!-- TEACHER ATTENDANCE CONTENT -->
-      <!-- <div class="row">
-        <div class="col-md-12 col-12"> -->
-      <!-- Add your teacher attendance content here -->
-      <!-- </div>
-      </div> -->
     </div>
   </div>
 </template>
 
-<script>
-// import { attendanceAPI } from "@/utils/api";
+<script setup>
+import { ref, computed, onMounted } from "vue";
+import {
+  getClassSchedules,
+  createClassTeacherAttendance,
+} from "@/services/api";
 
-export default {
-  name: "PersonResponsibleAttendance",
+const dashboard = ref({
+  class: "",
+  current: null,
+  data: [],
+});
 
-  data() {
-    return {
-      form: {
-        scheduleId: "",
-        teacherId: "",
-        classroomId: "",
-        attendanceStatus: "",
-        timeStatus: "",
-        learningStatus: "",
-        note: "",
-      },
+const scheduleList = computed(() => {
+  if (!dashboard.value.data) return [];
+  return dashboard.value.data.filter((i) => i.status !== "current");
+});
 
-      records: [],
+const showValidationForm = ref(false);
+const validationForm = ref({
+  attendance_status: "present",
+  activity_status: "teaching",
+  lateness: 0,
+  notes: "",
+});
+const validationError = ref("");
+const isSubmitting = ref(false);
 
-      message: {
-        text: "",
-        type: "success",
-      },
+async function fetchSchedules() {
+  dashboard.value = await getClassSchedules();
+}
 
-      isSubmitting: false,
+function openValidationForm() {
+  showValidationForm.value = true;
+  validationError.value = "";
+}
+
+async function submitValidationForm() {
+  if (!dashboard.value.current) return;
+
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  const payload = {
+    date: new Date().toISOString(),
+    classschedule_id: dashboard.value.current.id,
+    attendance_status: validationForm.value.attendance_status,
+    activity_status: validationForm.value.activity_status,
+    validator_id: user.id || null,
+    validated_at: new Date().toISOString(),
+    lateness: Number(validationForm.value.lateness) || 0,
+    notes: validationForm.value.notes,
+  };
+
+  try {
+    isSubmitting.value = true;
+    await createClassTeacherAttendance(payload);
+    // refresh schedules so `validated` flags come from backend
+    await fetchSchedules();
+    showValidationForm.value = false;
+    validationForm.value = {
+      attendance_status: "present",
+      activity_status: "teaching",
+      lateness: 0,
+      notes: "",
     };
-  },
+  } catch (error) {
+    console.error(error);
+    validationError.value = "Gagal menyimpan validasi. Coba lagi.";
+  } finally {
+    isSubmitting.value = false;
+  }
+}
 
-  mounted() {
-    this.fetchRecords();
-  },
-
-  methods: {
-    async fetchRecords() {
-      const response = await attendanceAPI.getAll();
-
-      if (response.success) {
-        this.records = response.data;
-      }
-    },
-
-    async submitAttendance() {
-      if (
-        !this.form.scheduleId ||
-        !this.form.teacherId ||
-        !this.form.classroomId ||
-        !this.form.attendanceStatus ||
-        !this.form.timeStatus ||
-        !this.form.learningStatus
-      ) {
-        this.message = {
-          text: "Semua field wajib diisi.",
-          type: "danger",
-        };
-
-        return;
-      }
-
-      this.isSubmitting = true;
-
-      const response = await attendanceAPI.create({
-        scheduleId: Number(this.form.scheduleId),
-
-        teacherId: Number(this.form.teacherId),
-
-        classroomId: Number(this.form.classroomId),
-
-        attendanceStatus: this.form.attendanceStatus,
-
-        timeStatus: this.form.timeStatus,
-
-        learningStatus: this.form.learningStatus,
-
-        note: this.form.note,
-      });
-
-      if (response.success) {
-        this.message = {
-          text: "Absensi berhasil dicatat.",
-          type: "success",
-        };
-
-        this.form = {
-          scheduleId: "",
-          teacherId: "",
-          classroomId: "",
-          attendanceStatus: "",
-          timeStatus: "",
-          learningStatus: "",
-          note: "",
-        };
-
-        this.fetchRecords();
-      } else {
-        this.message = {
-          text: response.error || "Gagal mencatat absensi.",
-
-          type: "danger",
-        };
-      }
-
-      this.isSubmitting = false;
-    },
-
-    getAttendanceIcon(status) {
-      switch (status) {
-        case "hadir":
-          return "bi-check-circle-fill";
-
-        case "izin":
-          return "bi-envelope-fill";
-
-        case "sakit":
-          return "bi-heart-pulse-fill";
-
-        default:
-          return "bi-x-circle-fill";
-      }
-    },
-  },
-};
+onMounted(() => {
+  fetchSchedules();
+});
 </script>
 
 <style scoped>
+.current-validation {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.current-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.current-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(13, 81, 38, 0.15);
+  color: #4ade80;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.current-subject {
+  margin-top: 12px;
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.validation-line {
+  margin-top: 14px;
+}
+
+.validation-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.validation-badge.validated {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.validation-badge.not-validated {
+  background: rgba(248, 113, 113, 0.12);
+  color: #f87171;
+}
+
+.timeline {
+  position: relative;
+  display: grid;
+  gap: 24px;
+  padding: 20px 0;
+}
+
+.timeline::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 30px;
+  width: 2px;
+  height: 100%;
+  /* background: rgba(148, 163, 184, 0.2); */
+}
+
+.timeline-item {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  align-items: flex-start;
+  gap: 18px;
+  position: relative;
+}
+
+.timeline-connector {
+  grid-column: 1 / 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.timeline-content {
+  grid-column: 2 / 3;
+  width: 100%;
+}
+
+.timeline-card {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.22);
+}
+
+.timeline-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.timeline-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #38bdf8;
+  background: rgba(56, 189, 248, 0.15);
+}
+
+.timeline-dot.current {
+  border-color: #22c55e;
+  background: rgba(34, 197, 94, 0.2);
+}
+
+.timeline-dot.finished {
+  border-color: #64748b;
+  background: rgba(100, 116, 139, 0.2);
+}
+
+.timeline-time {
+  color: #94a3b8;
+  font-size: 12px;
+  text-align: center;
+  max-width: 90px;
+}
+
+.timeline-subject {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: white;
+}
+
+.timeline-teacher,
+.timeline-room {
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 13px;
+}
+
+.timeline-empty {
+  color: #94a3b8;
+  padding: 24px 0;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .timeline {
+    padding: 10px 0;
+  }
+
+  .timeline::before {
+    left: 26px;
+  }
+
+  .timeline-item {
+    grid-template-columns: 40px 1fr;
+  }
+
+  .timeline-connector {
+    grid-column: 1 / 2;
+    align-items: center;
+  }
+
+  .timeline-card {
+    max-width: none;
+  }
+}
+
 .attendance-pages {
   /* margin: 1rem 0; */
   /* padding: 1rem 0; */
@@ -491,7 +627,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 1.5rem;
+  /* margin-bottom: 1.5rem; */
 }
 
 .page-title {
@@ -506,9 +642,18 @@ export default {
   font-size: 14px;
 }
 
-.scan-btn {
+.student-btn {
   border: none;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  /* background: linear-gradient(135deg, #2563eb, #1d4ed8); */
+  color: white;
+  padding: 12px 18px;
+  border-radius: 16px;
+  font-weight: 600;
+}
+
+.teacher-btn {
+  border: none;
+  /* background: linear-gradient(135deg, #39eb25, #34d011); */
   color: white;
   padding: 12px 18px;
   border-radius: 16px;
@@ -574,68 +719,6 @@ export default {
   color: #94a3b8;
 }
 
-.live-badge {
-  background: rgba(34, 197, 94, 0.16);
-  color: #4ade80;
-  padding: 7px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-/* ALERT */
-.custom-alert {
-  padding: 14px;
-  border-radius: 16px;
-  margin: 20px 0;
-  font-size: 14px;
-}
-
-.custom-alert.success {
-  background: rgba(34, 197, 94, 0.12);
-  color: #4ade80;
-}
-
-.custom-alert.danger {
-  background: rgba(239, 68, 68, 0.12);
-  color: #f87171;
-}
-
-/* INPUT */
-.input-group-custom {
-  margin-bottom: 18px;
-}
-
-.input-group-custom label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 13px;
-  color: #cbd5e1;
-}
-
-.input-wrapper {
-  height: 52px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  padding: 0 14px;
-  gap: 10px;
-}
-
-.input-wrapper i {
-  color: #60a5fa;
-}
-
-.input-wrapper input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  color: white;
-}
-
 select,
 textarea {
   width: 100%;
@@ -654,47 +737,6 @@ select option {
 textarea::placeholder,
 input::placeholder {
   color: #64748b;
-}
-
-/* STATUS */
-.status-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-.status-option {
-  border: none;
-  border-radius: 16px;
-  padding: 14px;
-  color: white;
-  font-weight: 600;
-  background: rgba(255, 255, 255, 0.05);
-  transition: 0.3s;
-}
-
-.status-option.active {
-  transform: scale(0.98);
-}
-
-.status-option.hadir.active {
-  background: rgba(34, 197, 94, 0.2);
-  border: 1px solid #22c55e;
-}
-
-.status-option.izin.active {
-  background: rgba(59, 130, 246, 0.2);
-  border: 1px solid #3b82f6;
-}
-
-.status-option.sakit.active {
-  background: rgba(168, 85, 247, 0.2);
-  border: 1px solid #a855f7;
-}
-
-.status-option.alpha.active {
-  background: rgba(239, 68, 68, 0.2);
-  border: 1px solid #ef4444;
 }
 
 /* BUTTON */
@@ -852,5 +894,195 @@ input::placeholder {
   .status-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ===== DARK TABLE ===== */
+.table {
+  --bs-table-bg: transparent;
+  --bs-table-color: #e2e8f0;
+  --bs-table-border-color: rgba(255, 255, 255, 0.08);
+  --bs-table-striped-bg: rgba(255, 255, 255, 0.03);
+  --bs-table-hover-bg: rgba(59, 130, 246, 0.12);
+  --bs-table-hover-color: #ffffff;
+
+  background: transparent;
+  color: #e2e8f0;
+  margin-bottom: 0;
+  border-radius: 200px;
+}
+
+.table thead th {
+  background: #1e293b;
+  color: #f8fafc;
+  border-color: rgba(255, 255, 255, 0.08);
+  font-weight: 600;
+}
+
+.table tbody td {
+  background: transparent;
+  color: #e2e8f0;
+  border-color: rgba(255, 255, 255, 0.08);
+  vertical-align: middle;
+}
+
+.table tbody tr:hover td {
+  background: rgba(59, 130, 246, 0.12);
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+  background: rgba(255, 255, 255, 0.03);
+  color: #e2e8f0;
+}
+
+.table-bordered {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* CURRENT */
+
+.current-card {
+  background: #1b2338;
+
+  border-radius: 24px;
+
+  padding: 35px;
+
+  margin-bottom: 45px;
+
+  border: 1px solid rgba(255, 255, 255, 0.05);
+
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+}
+
+.current-tag {
+  display: inline-block;
+
+  padding: 8px 18px;
+
+  border-radius: 10px;
+
+  background: #22c55e;
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+.current-card h2 {
+  font-weight: 700;
+}
+
+.teacher {
+  /* font-size: 20px; */
+
+  color: #dbeafe;
+}
+
+.current-card small {
+  color: #94a3b8;
+}
+
+.current-card h5 {
+  margin-top: 6px;
+
+  font-weight: 600;
+}
+
+/* SECTION */
+
+.section-title {
+  margin-bottom: 20px;
+
+  font-weight: 700;
+}
+
+/* SCHEDULE */
+
+.schedule-item {
+  display: flex;
+
+  align-items: center;
+
+  background: #1b2338;
+
+  border-radius: 18px;
+
+  margin-bottom: 18px;
+
+  padding: 22px;
+
+  transition: 0.25s;
+
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.schedule-item:hover {
+  transform: translateY(-4px);
+
+  border-color: #3b82f6;
+}
+
+.schedule-left {
+  width: 120px;
+}
+
+.schedule-time {
+  font-size: 22px;
+
+  font-weight: bold;
+}
+
+.schedule-time small {
+  display: block;
+
+  color: #94a3b8;
+
+  font-size: 14px;
+}
+
+.schedule-body {
+  flex: 1;
+}
+
+.schedule-body h5 {
+  margin-bottom: 12px;
+
+  font-weight: 700;
+}
+
+.teacher-name {
+  color: #dbeafe;
+
+  margin-bottom: 8px;
+}
+
+.room {
+  color: #94a3b8;
+}
+
+.schedule-right {
+  width: 140px;
+
+  text-align: right;
+}
+
+.status {
+  display: inline-block;
+
+  padding: 10px 18px;
+
+  border-radius: 30px;
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+.finished {
+  background: #374151;
+}
+
+.upcoming {
+  background: #2563eb;
 }
 </style>
