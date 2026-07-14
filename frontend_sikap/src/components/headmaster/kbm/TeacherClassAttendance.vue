@@ -14,7 +14,7 @@
 
       <select class="form-select form-select-sm chart-filter">
         <option>Hari Ini</option>
-        <option>Kemarin</option>
+        <option>Kemarin</option> 
       </select>
     </div>
 
@@ -91,14 +91,7 @@
             <strong>{{ occupiedClasses }}</strong>
           </div>
 
-          <div class="status-item">
-            <div class="status-left">
-              <span class="dot warning"></span>
-              <span>Terlambat</span>
-            </div>
-
-            <strong>{{ lateCount }}</strong>
-          </div>
+          <!-- Terlambat dihitung ke Aktif; tidak tampil terpisah -->
 
           <div class="status-item">
             <div class="status-left">
@@ -158,16 +151,30 @@
                   </div>
                 </div>
 
-                <div class="d-flex mb-3" style="gap: 8px">
-                  <span class="status-badge" :class="item.badgeClass">
-                    {{ item.activityLabel }}
-                  </span>
-
+                <div class="d-flex mb-2" style="gap: 8px" v-if="item.validated">
                   <span
                     class="status-badge attendance-badge"
                     :class="item.attendanceBadgeClass"
                   >
                     {{ item.attendanceLabel }}
+                  </span>
+                  <span class="status-badge" :class="item.badgeClass">
+                    {{ item.activityLabel }}
+                  </span>
+                </div>
+                <div class="d-flex mb-3" style="gap: 8px" v-if="item.validated && item.activityNormalized !== 'empty' && item.attendanceNormalized === 'present'">
+                  <span
+                    class="status-badge"
+                    :class="item.lateness > 0 ? 'badge-warning' : 'badge-success'"
+                  >
+                    {{ item.lateness > 0
+                      ? `Terlambat ${item.lateness} menit`
+                      : 'Tepat Waktu' }}
+                  </span>
+                </div>
+                <div class="d-flex mb-3" style="gap: 8px" v-if="!item.validated && (!item.attendanceLabel || item.attendanceLabel === '-')">
+                  <span class="status-badge badge-blue">
+                    Belum divalidasi
                   </span>
                 </div>
 
@@ -267,7 +274,7 @@ const allClasses = computed(() => {
       activityLabel = "Mengajar";
     } else if (/tugas|assignment/.test(rawStatus)) {
       activity = "assignment";
-      activityLabel = "Tugas";
+      activityLabel = "Memeberi Tugas";
     } else if (/kosong|empty|kelas_kosong/.test(rawStatus)) {
       activity = "empty";
       activityLabel = "Kosong";
@@ -375,23 +382,14 @@ const allClasses = computed(() => {
       activityLabel,
       attendanceLabel,
       attendanceBadgeClass,
+      activityNormalized: activity,
+      attendanceNormalized: attendance,
     };
   });
 });
 
 const activeStatuses = ["mengajar", "praktik", "diskusi", "tugas"];
 
-const occupiedClasses = computed(() => {
-  return monitoringData.value.filter((item) =>
-    activeStatuses.includes(item.status?.toLowerCase()),
-  ).length;
-});
-
-const emptyClasses = computed(() => {
-  return monitoringData.value.filter(
-    (item) => item.status?.toLowerCase() === "kelas_kosong",
-  ).length;
-});
 
 // const unvalidatedCount = computed(() => {
 //   return monitoringData.value.filter(
@@ -399,8 +397,24 @@ const emptyClasses = computed(() => {
 //   ).length;
 // });
 
-const lateCount = computed(() => {
-  return monitoringData.value.filter((item) => item.terlambat === "ya").length;
+const emptyClasses = computed(() => {
+  return allClasses.value.filter((item) => {
+    const act = ((item.activityNormalized || "") + "").toLowerCase();
+    return act === "empty" || (item.displayStatus && item.displayStatus === "Kosong");
+  }).length;
+});
+
+const unvalidatedCount = computed(() => {
+  return allClasses.value.filter((item) => item.validated === false).length;
+});
+
+const occupiedClasses = computed(() => {
+  const total = totalClasses.value || allClasses.value.length;
+  const empty = emptyClasses.value;
+  const unvalidated = unvalidatedCount.value;
+
+  const occupied = total - empty - unvalidated;
+  return occupied >= 0 ? occupied : 0;
 });
 
 const occupancyPercent = computed(() => {
@@ -442,9 +456,7 @@ const countStatus = (status) => {
   return 0;
 };
 
-const unvalidatedCount = computed(() => {
-  return monitoringData.value.filter((item) => item.validated === false).length;
-});
+// `unvalidatedCount` didefinisikan di atas sebagai jumlah item yang `validated === false`
 
 onMounted(() => {
   loadMonitoring();

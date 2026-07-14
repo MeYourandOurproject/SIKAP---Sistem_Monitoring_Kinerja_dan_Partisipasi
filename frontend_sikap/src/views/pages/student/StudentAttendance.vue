@@ -160,42 +160,22 @@
                         <div class="col-auto">
                           <span
                             class="validation-badge"
-                            :class="
-                              dashboard.current.validated
-                                ? 'validated'
-                                : 'not-validated'
-                            "
+                            :class="dashboard.current.validated ? 'validated' : 'not-validated'"
                           >
-                            {{
-                              dashboard.current.validated
-                                ? "Sudah divalidasi"
-                                : "Belum divalidasi"
-                            }}
+                            {{ dashboard.current.validated ? 'Sudah divalidasi' : 'Belum divalidasi' }}
                           </span>
                         </div>
                         <div class="col-auto">
-                          <button
-                            type="button"
-                            class="btn btn-primary btn-sm"
-                            @click="openValidationForm"
-                          >
-                            Tambah
-                          </button>
+                          <button type="button" class="btn btn-primary btn-sm" @click="openInlineForm(dashboard.current)">{{ dashboard.current.validated ? 'Edit' : 'Tambah' }}</button>
                         </div>
                       </div>
                     </div>
 
-                    <div
-                      class="validation-form mt-3"
-                      v-if="showValidationForm && dashboard.current"
-                    >
+                    <div class="validation-form mt-3" v-if="dashboard.current && showInlineForms[dashboard.current.id]">
                       <div class="row g-3">
                         <div class="col-12 col-md-6">
                           <label class="form-label">Kehadiran Guru</label>
-                          <select
-                            v-model="validationForm.attendance_status"
-                            class="form-select"
-                          >
+                          <select v-model="validationForm.attendance_status" class="form-select">
                             <option value="present">Hadir</option>
                             <option value="permission">Izin</option>
                             <option value="absent">Tidak Hadir</option>
@@ -203,59 +183,25 @@
                         </div>
                         <div class="col-12 col-md-6">
                           <label class="form-label">Status Aktivitas</label>
-                          <select
-                            v-model="validationForm.activity_status"
-                            class="form-select"
-                          >
+                          <select v-model="validationForm.activity_status" class="form-select">
                             <option value="teaching">Mengajar</option>
                             <option value="empty">Kosong</option>
                             <option value="assignment">Tugas</option>
                           </select>
                         </div>
                         <div class="col-12 col-md-6">
-                          <label class="form-label"
-                            >Keterlambatan (menit)</label
-                          >
-                          <input
-                            type="number"
-                            min="0"
-                            v-model.number="validationForm.lateness"
-                            class="form-control"
-                          />
+                          <label class="form-label">Keterlambatan (menit)</label>
+                          <input type="number" min="0" v-model.number="validationForm.lateness" class="form-control" />
                         </div>
                         <div class="col-12">
                           <label class="form-label">Catatan</label>
-                          <textarea
-                            v-model="validationForm.notes"
-                            class="form-control"
-                            rows="2"
-                            placeholder="Catatan opsional"
-                          ></textarea>
+                          <textarea v-model="validationForm.notes" class="form-control" rows="2" placeholder="Catatan opsional"></textarea>
                         </div>
                         <div class="col-12 d-flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            class="btn btn-success"
-                            :disabled="isSubmitting"
-                            @click="submitValidationForm"
-                          >
-                            {{
-                              isSubmitting ? "Menyimpan..." : "Submit Validasi"
-                            }}
-                          </button>
-                          <button
-                            type="button"
-                            class="btn btn-secondary"
-                            @click="showValidationForm = false"
-                          >
-                            Batal
-                          </button>
+                          <button type="button" class="btn btn-success" :disabled="isSubmitting" @click="submitValidationForm">{{ isSubmitting ? 'Menyimpan...' : (dashboard.current.validated ? 'Simpan Perubahan' : 'Submit Validasi') }}</button>
+                          <button type="button" class="btn btn-secondary" @click="showInlineForms[dashboard.current.id] = false">Batal</button>
                         </div>
-                        <div class="col-12" v-if="validationError">
-                          <p class="text-danger small mb-0">
-                            {{ validationError }}
-                          </p>
-                        </div>
+                        <div class="col-12" v-if="validationError"><p class="text-danger small mb-0">{{ validationError }}</p></div>
                       </div>
                     </div>
                   </div>
@@ -274,70 +220,68 @@
                 <h5>Jadwal Guru Hari Ini</h5>
               </div>
               <div class="timeline">
-                <div
-                  class="timeline-item"
-                  v-for="(item, index) in scheduleList"
-                  :key="index"
-                >
+                <div class="timeline-item" v-for="(item, index) in scheduleList" :key="index">
                   <div class="timeline-connector">
-                    <span
-                      class="timeline-dot"
-                      :class="{
-                        current: item.status === 'current',
-                        finished: item.status === 'finished',
-                      }"
-                    ></span>
+                    <span class="timeline-dot" :class="{ current: item.status === 'current', finished: item.status === 'finished' }"></span>
                     <span class="timeline-time fw-bold">{{ item.start }}</span>
                   </div>
+
                   <div class="timeline-content text-start">
                     <div class="timeline-card">
                       <div class="timeline-card-header">
-                        <span
-                          class="status-badge"
-                          :class="
-                            item.status === 'finished'
-                              ? 'badge-success'
-                              : 'badge-blue'
-                          "
-                        >
-                          {{
-                            item.status === "finished"
-                              ? "Selesai"
-                              : "Berikutnya"
-                          }}
+                        <span class="status-badge" :class="item.status === 'finished' ? 'badge-success' : 'badge-blue'">
+                          {{ item.status === 'finished' ? 'Selesai' : 'Berikutnya' }}
                         </span>
+                        <!-- show add/edit only for finished or current; scheduleList excludes current, so this covers finished only -->
+                        <div v-if="item.status === 'finished'" style="margin-left:8px">
+                          <button class="btn btn-sm btn-outline-primary" @click.prevent="openInlineForm(item)">{{ item.validated ? 'Edit' : 'Tambah' }}</button>
+                        </div>
                       </div>
+
                       <div class="row gap-1">
-                        <h6 class="timeline-subject">
-                          {{ item.subject_name }}
-                        </h6>
-                        <p class="timeline-teacher">
-                          <i class="bi bi-person me-2"></i>
-                          {{ item.teacher_name }}
-                        </p>
-                        <p class="timeline-room">
-                          <i class="bi bi-geo-alt me-2"></i>
-                          {{ item.classroom_name }}
-                        </p>
-                        <span
-                          class="validation-badge mt-2"
-                          :class="
-                            item.validated ? 'validated' : 'not-validated'
-                          "
-                        >
-                          {{
-                            item.validated
-                              ? "Sudah divalidasi"
-                              : "Belum divalidasi"
-                          }}
-                        </span>
+                        <h6 class="timeline-subject">{{ item.subject_name }}</h6>
+                        <p class="timeline-teacher"><i class="bi bi-person me-2"></i>{{ item.teacher_name }}</p>
+                        <p class="timeline-room"><i class="bi bi-geo-alt me-2"></i>{{ item.classroom_name }}</p>
+                        <span class="validation-badge mt-2" :class="item.validated ? 'validated' : 'not-validated'">{{ item.validated ? 'Sudah divalidasi' : 'Belum divalidasi' }}</span>
+
+                        <div class="mt-3" v-if="showInlineForms[item.id]">
+                          <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                              <label class="form-label">Kehadiran Guru</label>
+                              <select v-model="validationForm.attendance_status" class="form-select">
+                                <option value="present">Hadir</option>
+                                <option value="permission">Izin</option>
+                                <option value="absent">Tidak Hadir</option>
+                              </select>
+                            </div>
+                            <div class="col-12 col-md-6">
+                              <label class="form-label">Status Aktivitas</label>
+                              <select v-model="validationForm.activity_status" class="form-select">
+                                <option value="teaching">Mengajar</option>
+                                <option value="empty">Kosong</option>
+                                <option value="assignment">Tugas</option>
+                              </select>
+                            </div>
+                            <div class="col-12 col-md-6">
+                              <label class="form-label">Keterlambatan (menit)</label>
+                              <input type="number" min="0" v-model.number="validationForm.lateness" class="form-control" />
+                            </div>
+                            <div class="col-12">
+                              <label class="form-label">Catatan</label>
+                              <textarea v-model="validationForm.notes" class="form-control" rows="2" placeholder="Catatan opsional"></textarea>
+                            </div>
+                            <div class="col-12 d-flex gap-2">
+                              <button type="button" class="btn btn-success" :disabled="isSubmitting" @click="submitValidationForm">{{ isSubmitting ? 'Menyimpan...' : (item.validated ? 'Simpan Perubahan' : 'Submit Validasi') }}</button>
+                              <button type="button" class="btn btn-secondary" @click="showInlineForms[item.id] = false">Batal</button>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div class="timeline-empty" v-if="scheduleList.length === 0">
-                  Tidak ada jadwal hari ini.
-                </div>
+
+                <div class="timeline-empty" v-if="scheduleList.length === 0">Tidak ada jadwal hari ini.</div>
               </div>
             </div>
           </div>
@@ -374,14 +318,48 @@ const validationForm = ref({
 });
 const validationError = ref("");
 const isSubmitting = ref(false);
+const showInlineForms = ref({});
+const selectedInline = ref(null);
 
 async function fetchSchedules() {
   dashboard.value = await getClassSchedules();
 }
 
+function prefillValidationFormFrom(item) {
+  if (!item) return;
+  validationForm.value.attendance_status = item.attendance_status || item.status_hadir || item.statusHadir || item.status || "present";
+  validationForm.value.activity_status = item.activity_status || item.status_pembelajaran || item.statusPembelajaran || item.activity || "teaching";
+  validationForm.value.lateness = Number(item.lateness || 0);
+  validationForm.value.notes = item.notes || item.catatan || "";
+}
+
+function openInlineForm(item) {
+  if (!item) return;
+  // close all others
+  showInlineForms.value = {};
+  // do NOT change dashboard.current when opening inline for finished items
+  selectedInline.value = item;
+  prefillValidationFormFrom(item);
+  showInlineForms.value[item.id] = true;
+}
+
+function closeInlineForm(item) {
+  if (!item) return;
+  showInlineForms.value[item.id] = false;
+  if (selectedInline.value && selectedInline.value.id === item.id) selectedInline.value = null;
+}
+
 function openValidationForm() {
-  showValidationForm.value = true;
+  if (!dashboard.value.current) return;
+  // prefill from current
+  selectedInline.value = dashboard.value.current;
+  validationForm.value.attendance_status = dashboard.value.current.attendance_status || dashboard.value.current.status_hadir || dashboard.value.current.statusHadir || dashboard.value.current.status || "present";
+  validationForm.value.activity_status = dashboard.value.current.activity_status || dashboard.value.current.status_pembelajaran || dashboard.value.current.statusPembelajaran || dashboard.value.current.activity || "teaching";
+  validationForm.value.lateness = Number(dashboard.value.current.lateness || 0);
+  validationForm.value.notes = dashboard.value.current.notes || dashboard.value.current.catatan || "";
+
   validationError.value = "";
+  showValidationForm.value = true;
 }
 
 async function submitValidationForm() {
@@ -391,7 +369,7 @@ async function submitValidationForm() {
 
   const payload = {
     date: new Date().toISOString(),
-    classschedule_id: dashboard.value.current.id,
+    classschedule_id: (selectedInline.value || dashboard.value.current).id,
     attendance_status: validationForm.value.attendance_status,
     activity_status: validationForm.value.activity_status,
     validator_id: user.id || null,
@@ -406,6 +384,10 @@ async function submitValidationForm() {
     // refresh schedules so `validated` flags come from backend
     await fetchSchedules();
     showValidationForm.value = false;
+    // close inline if open for this item
+    const target = selectedInline.value || dashboard.value.current;
+    if (target && showInlineForms.value[target.id]) showInlineForms.value[target.id] = false;
+    selectedInline.value = null;
     validationForm.value = {
       attendance_status: "present",
       activity_status: "teaching",

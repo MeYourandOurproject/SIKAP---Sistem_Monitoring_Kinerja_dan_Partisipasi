@@ -256,7 +256,8 @@ class ClassscheduleController {
           ta.id AS attendance_id,
           ta.attendance_status,
           ta.activity_status,
-          ta.validated_at
+          ta.validated_at,
+          ta.lateness
         FROM Classschedules cs
         JOIN Classes c ON cs.class_id = c.id
         JOIN Teachers t ON cs.teacher_id = t.id
@@ -321,6 +322,7 @@ class ClassscheduleController {
           status,
           color,
           terlambat,
+          lateness: Number(r.lateness) || 0,
         };
       });
 
