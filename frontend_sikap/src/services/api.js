@@ -1,19 +1,43 @@
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
+function clearSessionAndRedirect() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  window.location.href = "/login";
+}
+
+async function fetchJson(url, options = {}) {
+  const res = await fetch(url, options);
+
+  if (res.status === 401) {
+    clearSessionAndRedirect();
+    throw new Error("Unauthorized");
+  }
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    const error = new Error(data?.message || "Request failed");
+    error.status = res.status;
+    error.data = data;
+    throw error;
+  }
+
+  return data;
+}
+
 // ======================
 // LOGIN
 // ======================
 
 export async function login(payload) {
-  const res = await fetch(`${API_URL}/api/auth/login`, {
+  return fetchJson(`${API_URL}/api/auth/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
   });
-
-  return await res.json();
 }
 
 // ======================
@@ -37,14 +61,12 @@ export async function getTeachersCount() {
 
 export async function getClasses() {
   const token = localStorage.getItem("token");
-  const res = await fetch(`${API_URL}/api/classschedules/current`, {
+  return fetchJson(`${API_URL}/api/classschedules/current`, {
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
   });
-
-  return await res.json();
 }
 
 // ======================
@@ -53,14 +75,12 @@ export async function getClasses() {
 
 export async function getClassSchedules() {
   const token = localStorage.getItem("token");
-  const res = await fetch(`${API_URL}/api/classschedules/today`, {
+  return fetchJson(`${API_URL}/api/classschedules/today`, {
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
   });
-
-  return await res.json();
 }
 
 // ======================
@@ -69,7 +89,7 @@ export async function getClassSchedules() {
 
 export async function createClassTeacherAttendance(payload) {
   const token = localStorage.getItem("token");
-  const res = await fetch(`${API_URL}/api/classteacherattendances`, {
+  return fetchJson(`${API_URL}/api/classteacherattendances`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -77,15 +97,6 @@ export async function createClassTeacherAttendance(payload) {
     },
     body: JSON.stringify(payload),
   });
-
-  const data = await res.json();
-  if (!res.ok) {
-    const error = new Error(data?.message || "Failed to create class teacher attendance");
-    error.status = res.status;
-    throw error;
-  }
-
-  return data;
 }
 
 // ======================
@@ -93,9 +104,11 @@ export async function createClassTeacherAttendance(payload) {
 // ======================
 
 export async function getAttendanceKBM() {
-  const res = await fetch(`${API_URL}/api/attendance/kbm`);
-
-  return await res.json();
+  return fetchJson(`${API_URL}/api/attendance/kbm`, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 }
 
 // ======================
