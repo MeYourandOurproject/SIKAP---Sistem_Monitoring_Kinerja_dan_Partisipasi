@@ -14,7 +14,7 @@
 
       <select class="form-select form-select-sm chart-filter">
         <option>Hari Ini</option>
-        <option>Kemarin</option>
+        <option>Kemarin</option> 
       </select>
     </div>
 
@@ -91,14 +91,7 @@
             <strong>{{ occupiedClasses }}</strong>
           </div>
 
-          <div class="status-item">
-            <div class="status-left">
-              <span class="dot warning"></span>
-              <span>Terlambat</span>
-            </div>
-
-            <strong>{{ lateCount }}</strong>
-          </div>
+          <!-- Terlambat dihitung ke Aktif; tidak tampil terpisah -->
 
           <div class="status-item">
             <div class="status-left">
@@ -151,19 +144,45 @@
                   <div class="problem-icon" :class="item.statusClass">
                     <i :class="item.icon"></i>
                   </div>
+                  <div class="text-start me-5">
+                    <h6 class="class-name">
+                      {{ item.class }}
+                    </h6>
+                  </div>
+                </div>
 
+                <div class="d-flex mb-2" style="gap: 8px" v-if="item.validated">
+                  <span
+                    class="status-badge attendance-badge"
+                    :class="item.attendanceBadgeClass"
+                  >
+                    {{ item.attendanceLabel }}
+                  </span>
                   <span class="status-badge" :class="item.badgeClass">
-                    {{ item.status }}
+                    {{ item.activityLabel }}
+                  </span>
+                </div>
+                <div class="d-flex mb-3" style="gap: 8px" v-if="item.validated && item.activityNormalized !== 'empty' && item.attendanceNormalized === 'present'">
+                  <span
+                    class="status-badge"
+                    :class="item.lateness > 0 ? 'badge-warning' : 'badge-success'"
+                  >
+                    {{ item.lateness > 0
+                      ? `Terlambat ${item.lateness} menit`
+                      : 'Tepat Waktu' }}
+                  </span>
+                </div>
+                <div class="d-flex mb-3" style="gap: 8px" v-if="!item.validated && (!item.attendanceLabel || item.attendanceLabel === '-')">
+                  <span class="status-badge badge-blue">
+                    Belum divalidasi
                   </span>
                 </div>
 
                 <!-- CLASS -->
-                <h6 class="class-name">
-                  {{ item.class }}
-                </h6>
 
                 <!-- TEACHER -->
                 <p class="teacher-name">
+                  <i class="bi bi-person"></i>
                   {{ item.teacher }}
                 </p>
 
@@ -224,27 +243,124 @@ const loadMonitoring = async () => {
 
 const allClasses = computed(() => {
   return monitoringData.value.map((item) => {
-    let badgeClass = "badge-blue";
-    let statusClass = "icon-blue";
+    // DEBUG: tampilkan data mentah dari API supaya bisa verifikasi field
+    console.debug("monitoring mapping item:", item);
+    // defaults
+    let cardColor = item.color || "";
+    let badgeClass = "badge-neutral";
+    let statusClass = "icon-neutral";
     let icon = "bi bi-question-circle-fill";
 
-    if (item.color === "green") {
-      badgeClass = "badge-success";
-      statusClass = "icon-success";
-      icon = "bi bi-check-circle-fill";
+    // normalize activity/status (DB may use various field names)
+    const rawStatus = (
+      item.status_pembelajaran ||
+      item.statusPembelajaran ||
+      item.status ||
+      item.activity ||
+      ""
+    )
+      .toString()
+      .toLowerCase();
+    let activity = rawStatus;
+    let activityLabel =
+      item.status_pembelajaran ||
+      item.statusPembelajaran ||
+      item.status ||
+      item.activity ||
+      "-";
+
+    if (/teach|mengajar/.test(rawStatus)) {
+      activity = "teaching";
+      activityLabel = "Mengajar";
+    } else if (/tugas|assignment/.test(rawStatus)) {
+      activity = "assignment";
+      activityLabel = "Memeberi Tugas";
+    } else if (/kosong|empty|kelas_kosong/.test(rawStatus)) {
+      activity = "empty";
+      activityLabel = "Kosong";
     }
 
-    if (item.color === "yellow") {
-      badgeClass = "badge-warning";
-      statusClass = "icon-warning";
-      icon = "bi bi-clock-fill";
+    // normalize attendance (check common DB field names)
+    const rawAtt = (
+      item.status_hadir ||
+      item.statusHadir ||
+      item.attendance_status ||
+      item.attendanceStatus ||
+      item.attendance ||
+      item.kehadiran ||
+      ""
+    )
+      .toString()
+      .toLowerCase();
+
+    let attendance = rawAtt;
+    let attendanceLabel = rawAtt ? rawAtt : "-";
+
+    if (/present|hadir/.test(rawAtt)) {
+      attendance = "present";
+      attendanceLabel = "Hadir";
+    } else if (/permission|izin/.test(rawAtt)) {
+      attendance = "permission";
+      attendanceLabel = "Izin";
+    } else if (/absent|alpa|tidak/.test(rawAtt)) {
+      attendance = "absent";
+      attendanceLabel = "Tidak Hadir";
     }
 
-    if (item.color === "red") {
+    // Determine color rules (priority: not validated -> blue)
+    if (item.validated === false) {
+      cardColor = "biru";
+      badgeClass = "badge-blue";
+      statusClass = "icon-blue";
+      icon = "bi bi-info-circle-fill";
+    } else if (activity === "empty" && attendance === "absent") {
+      cardColor = "red";
       badgeClass = "badge-danger";
       statusClass = "icon-danger";
       icon = "bi bi-x-circle-fill";
+    } else if (
+      (attendance === "permission" || attendance === "absent") &&
+      activity === "assignment"
+    ) {
+      cardColor = "yellow";
+      badgeClass = "badge-warning";
+      statusClass = "icon-warning";
+      icon = "bi bi-clock-fill";
+    } else if (attendance === "present" && activity === "teaching") {
+      cardColor = "green";
+      badgeClass = "badge-success";
+      statusClass = "icon-success";
+      icon = "bi bi-check-circle-fill";
+    } else {
+      // fallback to provided color if exists
+      if (item.color === "green") {
+        cardColor = "green";
+        badgeClass = "badge-success";
+        statusClass = "icon-success";
+        icon = "bi bi-check-circle-fill";
+      } else if (item.color === "yellow") {
+        cardColor = "yellow";
+        badgeClass = "badge-warning";
+        statusClass = "icon-warning";
+        icon = "bi bi-clock-fill";
+      } else if (item.color === "red") {
+        cardColor = "red";
+        badgeClass = "badge-danger";
+        statusClass = "icon-danger";
+        icon = "bi bi-x-circle-fill";
+      } else if (item.validated === true) {
+        badgeClass = "badge-neutral";
+        statusClass = "icon-neutral";
+        icon = "bi bi-question-circle-fill";
+      }
     }
+
+    let attendanceBadgeClass = "badge-neutral";
+    if (item.validated === false) attendanceBadgeClass = "badge-blue";
+    else if (attendance === "present") attendanceBadgeClass = "badge-success";
+    else if (attendance === "permission")
+      attendanceBadgeClass = "badge-warning";
+    else if (attendance === "absent") attendanceBadgeClass = "badge-danger";
 
     return {
       ...item,
@@ -261,23 +377,19 @@ const allClasses = computed(() => {
       badgeClass,
       statusClass,
       icon,
+      color: cardColor,
+
+      activityLabel,
+      attendanceLabel,
+      attendanceBadgeClass,
+      activityNormalized: activity,
+      attendanceNormalized: attendance,
     };
   });
 });
 
 const activeStatuses = ["mengajar", "praktik", "diskusi", "tugas"];
 
-const occupiedClasses = computed(() => {
-  return monitoringData.value.filter((item) =>
-    activeStatuses.includes(item.status?.toLowerCase()),
-  ).length;
-});
-
-const emptyClasses = computed(() => {
-  return monitoringData.value.filter(
-    (item) => item.status?.toLowerCase() === "kelas_kosong",
-  ).length;
-});
 
 // const unvalidatedCount = computed(() => {
 //   return monitoringData.value.filter(
@@ -285,8 +397,24 @@ const emptyClasses = computed(() => {
 //   ).length;
 // });
 
-const lateCount = computed(() => {
-  return monitoringData.value.filter((item) => item.terlambat === "ya").length;
+const emptyClasses = computed(() => {
+  return allClasses.value.filter((item) => {
+    const act = ((item.activityNormalized || "") + "").toLowerCase();
+    return act === "empty" || (item.displayStatus && item.displayStatus === "Kosong");
+  }).length;
+});
+
+const unvalidatedCount = computed(() => {
+  return allClasses.value.filter((item) => item.validated === false).length;
+});
+
+const occupiedClasses = computed(() => {
+  const total = totalClasses.value || allClasses.value.length;
+  const empty = emptyClasses.value;
+  const unvalidated = unvalidatedCount.value;
+
+  const occupied = total - empty - unvalidated;
+  return occupied >= 0 ? occupied : 0;
 });
 
 const occupancyPercent = computed(() => {
@@ -328,9 +456,7 @@ const countStatus = (status) => {
   return 0;
 };
 
-const unvalidatedCount = computed(() => {
-  return monitoringData.value.filter((item) => item.validated === false).length;
-});
+// `unvalidatedCount` didefinisikan di atas sebagai jumlah item yang `validated === false`
 
 onMounted(() => {
   loadMonitoring();
@@ -405,7 +531,7 @@ onBeforeUnmount(() => {
 }
 
 .card-subtitle {
-  color: #94a3b8;
+  color: #ffffff;
 }
 
 .percent-badge {
@@ -624,7 +750,7 @@ onBeforeUnmount(() => {
 }
 
 .teacher-name {
-  color: #94a3b8;
+  color: #ffffff;
 
   font-size: 12px;
 
@@ -636,7 +762,7 @@ onBeforeUnmount(() => {
 }
 
 .compact-info {
-  color: #cbd5e1;
+  color: #ffffff;
 
   font-size: 12px;
 

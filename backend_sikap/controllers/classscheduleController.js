@@ -116,13 +116,13 @@ class ClassscheduleController {
       // const dayName = days[today.getDay()];
 
       // Production (WIB)
-      const nowTime = today.toLocaleTimeString("en-GB", {
-        timeZone: "Asia/Jakarta",
-        hour12: false,
-      });
+      // const nowTime = today.toLocaleTimeString("en-GB", {
+      //   timeZone: "Asia/Jakarta",
+      //   hour12: false,
+      // });
 
       // Testing
-      // const nowTime = "09:30:00";
+      const nowTime = "09:30:00";
 
       const todayDate = today.toISOString().slice(0, 10);
 
@@ -216,8 +216,8 @@ class ClassscheduleController {
       const hh = String(now.getHours()).padStart(2, "0");
       const mm = String(now.getMinutes()).padStart(2, "0");
       const ss = String(now.getSeconds()).padStart(2, "0");
-        let time = req.query.time || `${hh}:${mm}:${ss}`;
-      // let time = "09:30:00";
+        // let time = req.query.time || `${hh}:${mm}:${ss}`;
+      let time = "09:30:00";
 
       if (/^\d{2}:\d{2}$/.test(time)) {
         time = `${time}:00`;
@@ -253,7 +253,11 @@ class ClassscheduleController {
           cr.classroom_name,
           ts.start,
           te.end,
-          CASE WHEN ta.count > 0 THEN 1 ELSE 0 END AS validated
+          ta.id AS attendance_id,
+          ta.attendance_status,
+          ta.activity_status,
+          ta.validated_at,
+          ta.lateness
         FROM Classschedules cs
         JOIN Classes c ON cs.class_id = c.id
         JOIN Teachers t ON cs.teacher_id = t.id
@@ -261,12 +265,11 @@ class ClassscheduleController {
         JOIN Classrooms cr ON cs.classroom_id = cr.id
         JOIN Timeslots ts ON cs.start_timeslot_id = ts.id
         JOIN Timeslots te ON cs.end_timeslot_id = te.id
-        LEFT JOIN (
-          SELECT classschedule_id, COUNT(*) AS count
-          FROM Classteacherattendances
-          WHERE DATE(date) = DATE(?)
-          GROUP BY classschedule_id
-        ) ta ON ta.classschedule_id = cs.id
+        LEFT JOIN Classteacherattendances ta ON ta.id = (
+          SELECT id FROM Classteacherattendances
+          WHERE classschedule_id = cs.id AND DATE(date) = DATE(?)
+          ORDER BY date DESC LIMIT 1
+        )
         WHERE cs.day = ? AND ? BETWEEN ts.start AND te.end
         ORDER BY c.id ASC
       `;
@@ -277,37 +280,49 @@ class ClassscheduleController {
       });
 
       const mapped = rows.map((r) => {
-        const validated = !!r.validated;
+        const hasAttendance = !!r.attendance_id;
 
-        // determine status and color for FE
-        // rows come from current time window (time BETWEEN start AND end)
-        const nowTimeStr = time; // formatted earlier
+        // determine status and color for FE based on attendance/activity
+        let status = "Belum divalidasi";
+        let color = "red";
+        let terlambat = "tidak";
 
-        let status;
-        let color;
-        let terlambat;
-
-        // If there is no validation record for this schedule today,
-        // show as 'Belum divalidasi' rather than 'Terlambat'.
-        if (!validated) {
+        if (!hasAttendance) {
           status = "Belum divalidasi";
           color = "red";
-          terlambat = "tidak";
         } else {
-          // validated === true -> active teaching status
-          status = "Mengajar";
-          color = "green";
-          // We currently don't compute lateness from validation timestamp here;
-          // mark as not late by default when validated.
-          terlambat = "tidak";
+          const activity = (r.activity_status || "").toString().toLowerCase();
+          const attendance = (r.attendance_status || "").toString().toLowerCase();
+
+          // map activity to human label
+          if (activity === "teaching") status = "Mengajar";
+          else if (activity === "empty") status = "Kelas Kosong";
+          else if (activity === "assignment") status = "Tugas";
+          else status = r.activity_status || "-";
+
+          // apply color rules described by FE requirements
+          if (activity === "empty" && attendance === "absent") {
+            color = "red"; // empty + absent -> merah
+          } else if ((attendance === "permission" || attendance === "absent") && activity === "assignment") {
+            color = "yellow"; // izin/tidak hadir tetapi memberi tugas -> kuning
+          } else if (attendance === "present" && activity === "teaching") {
+            color = "green"; // hadir dan mengajar -> hijau
+          } else {
+            // fallback
+            color = "yellow";
+          }
+
+          // terlambat: try to infer from lateness/validated_at if present
+          terlambat = r.lateness && Number(r.lateness) > 0 ? "ya" : "tidak";
         }
 
         return {
           ...r,
-          validated,
+          validated: hasAttendance,
           status,
           color,
           terlambat,
+          lateness: Number(r.lateness) || 0,
         };
       });
 

@@ -115,8 +115,12 @@ async function handleLogin() {
     // SIMPAN SESSION
     // =========================
 
+    const sessionDurationMs = 60 * 60 * 1000; // 1 jam
+    const expiresAt = Date.now() + sessionDurationMs;
+
     localStorage.setItem("token", result.token);
     localStorage.setItem("user", JSON.stringify(result.user));
+    localStorage.setItem("session_expires_at", expiresAt.toString());
 
     // =========================
     // REDIRECT ROLE

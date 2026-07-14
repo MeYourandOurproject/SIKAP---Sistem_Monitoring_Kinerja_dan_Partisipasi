@@ -198,20 +198,33 @@ const router = createRouter({
 // ROUTE GUARD
 // =========================
 
+function clearSession() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  localStorage.removeItem("session_expires_at");
+}
+
+function isSessionExpired() {
+  const expiresAt = Number(localStorage.getItem("session_expires_at"));
+  return !expiresAt || Date.now() > expiresAt;
+}
+
 router.beforeEach((to, from, next) => {
-  // ambil user dari localStorage
+  // ambil user dan token dari localStorage
   const user = JSON.parse(localStorage.getItem("user"));
+  const token = localStorage.getItem("token");
 
   // cek apakah route butuh login
   if (to.meta.requiresAuth) {
     // =========================
-    // BELUM LOGIN
+    // BELUM LOGIN / SESSION EXPIRED
     // =========================
 
-    if (!user) {
-      alert("Silakan login terlebih dahulu");
+    if (!user || !token || isSessionExpired()) {
+      clearSession();
+      alert("Sesi Anda telah habis. Silakan login kembali.");
 
-      return next("/");
+      return next("/login");
     }
 
     // =========================
