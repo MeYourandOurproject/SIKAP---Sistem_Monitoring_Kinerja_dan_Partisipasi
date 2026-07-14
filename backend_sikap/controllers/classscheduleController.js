@@ -111,9 +111,9 @@ class ClassscheduleController {
       ];
 
       // sementara
-      // const dayName = "Senin";
+      const dayName = "Senin";
       // nanti
-      const dayName = days[today.getDay()];
+      // const dayName = days[today.getDay()];
 
       // Production (WIB)
       const nowTime = today.toLocaleTimeString("en-GB", {
@@ -211,8 +211,8 @@ class ClassscheduleController {
         "Jumat",
         "Sabtu",
       ];
-      const dayName = req.query.day || days[now.getDay()];
-      // const dayName = "Senin";
+      // const dayName = req.query.day || days[now.getDay()];
+      const dayName = "Senin";
       const hh = String(now.getHours()).padStart(2, "0");
       const mm = String(now.getMinutes()).padStart(2, "0");
       const ss = String(now.getSeconds()).padStart(2, "0");
