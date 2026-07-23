@@ -1,20 +1,26 @@
 <template>
   <div class="headmaster-layout">
-    <!-- Sidebar (fixed kiri full) -->
-    <headmasterSidebar />
+    <!-- ================= DESKTOP ================= -->
+    <template v-if="!isMobile">
+      <HeadmasterSidebar class="sidebar" />
 
-    <!-- Area kanan -->
-    <div class="main-area">
-      <!-- Navbar -->
-      <headmasterNavbar :menu-title="currentMenuTitle" />
+      <div class="desktop-wrapper">
+        <HeadmasterNavbar class="desktop-navbar" :menu-title="currentMenuTitle" />
+
+        <main class="desktop-content">
+          <router-view />
+        </main>
+      </div>
+    </template>
+
+    <!-- ================= MOBILE ================= -->
+    <template v-else>
       <HeadmasterMobileNavbar v-if="showMobileNavbar" />
-      <HeadmasterMobileBottomNavigation />
-
-      <!-- Content -->
-      <main class="main-content">
+      <main class="mobile-content">
         <router-view />
       </main>
-    </div>
+      <HeadmasterMobileBottomNavigation />
+    </template>
   </div>
 </template>
 
@@ -32,29 +38,47 @@ export default {
     HeadmasterSidebar,
     HeadmasterMobileBottomNavigation,
   },
+
   data() {
     return {
-      sidebarOpen: false,
       currentMenuTitle: "Dashboard",
+      windowWidth: window.innerWidth,
     };
   },
-  watch: {
-    "$route.path"(newPath) {
-      this.updateMenuTitle(newPath);
-      this.sidebarOpen = false; // Close sidebar on route change
+
+  computed: {
+    isMobile() {
+      return this.windowWidth < 992;
+    },
+
+    showMobileNavbar() {
+      return this.$route.path === "/kepala-sekolah/dashboard";
     },
   },
+
+  watch: {
+    "$route.path"(path) {
+      this.updateMenuTitle(path);
+    },
+  },
+
   mounted() {
     this.updateMenuTitle(this.$route.path);
-    // Close sidebar on screen resize if opening
-    window.addEventListener("resize", this.handleResize);
+
+    window.addEventListener("resize", this.onResize);
   },
+
   beforeUnmount() {
-    window.removeEventListener("resize", this.handleResize);
+    window.removeEventListener("resize", this.onResize);
   },
+
   methods: {
+    onResize() {
+      this.windowWidth = window.innerWidth;
+    },
+
     updateMenuTitle(path) {
-      const titleMap = {
+      const map = {
         "/kepala-sekolah/dashboard": "Dashboard",
         "/kepala-sekolah/journal": "Jurnal",
         "/kepala-sekolah/attendance": "Absensi",
@@ -65,86 +89,68 @@ export default {
         "/kepala-sekolah/settings": "Pengaturan",
         "/kepala-sekolah/profile": "Profil",
       };
-      this.currentMenuTitle = titleMap[path] || "Dashboard";
-    },
-    handleResize() {
-      if (window.innerWidth >= 992) {
-        this.sidebarOpen = false;
-      }
-    },
-  },
-  computed: {
-    showMobileNavbar() {
-      return this.$route.path === "/kepala-sekolah/dashboard";
+
+      this.currentMenuTitle = map[path] || "Dashboard";
     },
   },
 };
 </script>
 
-<style>
+<style scoped>
 .headmaster-layout {
-  display: flex;
-  min-height: 100vh; /* ganti min-height */
-  overflow: hidden; /* cegah scroll parent */
-  background: #0f172a;
+  min-height: 100vh;
 }
 
-/* ===== SIDEBAR FIX ===== */
-:deep(.sidebar) {
-  position: fixed !important;
-  top: 0 !important;
+/* ==========================
+DESKTOP
+========================== */
+
+.sidebar {
+  position: fixed;
   left: 0;
-  height: 100vh !important;
+  top: 0;
   width: 300px;
+  height: 100vh;
   z-index: 1000;
-  overflow-y: auto; /* kalau menu sidebar panjang */
 }
 
-/* ===== AREA KANAN ===== */
-.main-area {
-  /* margin-left: 300px; aktifkan lagi */
+.desktop-wrapper {
+  margin-left: 300px;
+
   width: calc(100% - 300px);
-  height: 100vh;
-  overflow-y: auto; /* hanya konten kanan yang scroll */
+
+  min-height: 100vh;
+
   display: flex;
+
   flex-direction: column;
 }
 
-/* ===== NAVBAR ===== */
-:deep(.headmaster-navbar) {
+.desktop-navbar {
   position: sticky;
+
   top: 0;
+
   z-index: 900;
-  height: 70px;
-  display: flex;
-  align-items: center;
+
   flex-shrink: 0;
 }
 
-/* ===== CONTENT ===== */
-.main-content {
-  padding: 0 1.5rem 2rem;
+.desktop-content {
   flex: 1;
+
+  padding: 24px;
+
+  overflow-x: hidden;
 }
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 991px) {
-  .main-area {
-    margin-left: 0;
-    width: 100%;
-  }
+/* ==========================
+MOBILE
+========================== */
 
-  :deep(.sidebar) {
-    transform: translateX(-100%);
-    transition: 0.3s ease;
-  }
+.mobile-content {
+  padding: 16px;
 
-  :deep(.sidebar.open) {
-    transform: translateX(0);
-  }
-  .main-content {
-    padding-top: 1rem;
-    margin-bottom: 60px;
-  }
+  padding-bottom: 90px;
 }
 </style>
