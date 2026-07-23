@@ -65,7 +65,7 @@
             </router-link>
           </li>
 
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <router-link
               to="/kepala-sekolah/penilaian"
               class="nav-link"
@@ -75,7 +75,7 @@
               <i class="bi bi-star-fill text-white"></i>
               <span class="text-white">Penilaian</span>
             </router-link>
-          </li>
+          </li> -->
 
           <li class="nav-item">
             <router-link
@@ -89,7 +89,7 @@
             </router-link>
           </li>
 
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <router-link
               to="/kepala-sekolah/pengumuman"
               class="nav-link"
@@ -99,9 +99,9 @@
               <i class="bi bi-megaphone-fill text-white"></i>
               <span class="text-white">Pengumuman</span>
             </router-link>
-          </li>
+          </li> -->
 
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <router-link
               to="/kepala-sekolah/settings"
               class="nav-link"
@@ -112,7 +112,7 @@
               <i class="bi bi-gear-fill text-white"></i>
               <span class="text-white">Pengaturan</span>
             </router-link>
-          </li>
+          </li> -->
         </ul>
       </nav>
 

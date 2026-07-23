@@ -37,14 +37,14 @@
       <span>Laporan</span>
     </router-link>
 
-    <router-link
+    <!-- <router-link
       to="/kepala-sekolah/profile"
       class="bottom-nav-item"
       active-class="active"
     >
       <i class="bi bi-person-fill"></i>
       <span>Profil</span>
-    </router-link>
+    </router-link> -->
   </div>
 </template>
 

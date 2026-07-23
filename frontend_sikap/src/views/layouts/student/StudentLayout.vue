@@ -16,11 +16,9 @@
     <!-- ================= MOBILE ================= -->
     <template v-else>
       <StudentMobileNavbar v-if="showMobileNavbar" />
-
       <main class="mobile-content">
         <router-view />
       </main>
-
       <StudentMobileBottomNavigation />
     </template>
   </div>
