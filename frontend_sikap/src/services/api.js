@@ -45,14 +45,165 @@ export async function login(payload) {
 // ======================
 
 export async function getTeachers() {
-  const res = await fetch(`${API_URL}/api/teachers`);
-  return await res.json();
+  const token = localStorage.getItem("token");
+  try {
+    const data = await fetchJson(`${API_URL}/api/teachers`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
 }
 
 export async function getTeachersCount() {
   const res = await fetch(`${API_URL}/api/teachers/count`);
 
   return await res.json();
+}
+
+// ======================
+// ACTIVITY
+// ======================
+
+export async function getActivities() {
+  const token = localStorage.getItem("token");
+  try {
+    const data = await fetchJson(`${API_URL}/api/activities`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+}
+
+export async function createActivity(payload) {
+  const token = localStorage.getItem("token");
+  try {
+    const data = await fetchJson(`${API_URL}/api/activities`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+}
+
+export async function deleteActivity(id) {
+  const token = localStorage.getItem("token");
+  try {
+    await fetchJson(`${API_URL}/api/activities/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+}
+
+export async function updateActivity(id, payload) {
+  const token = localStorage.getItem("token");
+  try {
+    const data = await fetchJson(`${API_URL}/api/activities/${id}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+}
+
+// ======================
+// ACTIVITY SESSION
+// ======================
+
+export async function getActivitySessions() {
+  const token = localStorage.getItem("token");
+  try {
+    const data = await fetchJson(`${API_URL}/api/activitysessions`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+}
+
+export async function createActivitySession(payload) {
+  const token = localStorage.getItem("token");
+  try {
+    const data = await fetchJson(`${API_URL}/api/activitysessions`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+}
+
+// ======================
+// TEACHER ASSIGNMENT
+// ======================
+
+export async function getTeacherAssignments() {
+  const token = localStorage.getItem("token");
+  try {
+    const data = await fetchJson(`${API_URL}/api/teacherassignments`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+}
+
+export async function createTeacherAssignment(payload) {
+  const token = localStorage.getItem("token");
+  try {
+    const data = await fetchJson(`${API_URL}/api/teacherassignments`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
 }
 
 // ======================

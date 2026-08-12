@@ -43,7 +43,7 @@
 
           <li class="nav-item">
             <router-link
-              to="/super-admin/guru"
+              to="/super-admin/teacher"
               class="nav-link"
               :class="{ active: isActive('/super-admin/guru') }"
               @click="closeSidebar"
@@ -55,7 +55,7 @@
 
           <li class="nav-item">
             <router-link
-              to="/super-admin/jadwal"
+              to="/super-admin/schedule"
               class="nav-link"
               :class="{ active: isActive('/super-admin/jadwal') }"
               @click="closeSidebar"
@@ -67,7 +67,7 @@
 
           <li class="nav-item">
             <router-link
-              to="/super-admin/pengguna"
+              to="/super-admin/user"
               class="nav-link"
               :class="{ active: isActive('/super-admin/pengguna') }"
               @click="closeSidebar"
@@ -79,7 +79,7 @@
 
           <li class="nav-item">
             <router-link
-              to="/super-admin/pengaturan"
+              to="/super-admin/settings"
               class="nav-link"
               :class="{ active: isActive('/super-admin/pengaturan') }"
               @click="closeSidebar"

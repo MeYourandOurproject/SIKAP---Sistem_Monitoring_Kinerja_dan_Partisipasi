@@ -37,4 +37,15 @@ body,
   color: #2c3e50;
   background-color:#0F172A ;
 }
+
+select,
+.custom-input,
+.custom-select {
+  color: #fff;
+}
+
+option {
+  color: #ffffff !important;
+  background-color: #0F172A !important;
+}
 </style>

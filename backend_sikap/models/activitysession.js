@@ -8,12 +8,17 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      Activitysession.belongsTo(models.Activity, { foreignKey: "activity_id" });
+      Activitysession.belongsTo(models.Activity, {
+        foreignKey: "activity_id",
+        onDelete: "CASCADE",
+      });
       Activitysession.belongsTo(models.Teacher, {
         foreignKey: "pic_teacher_id",
       });
       Activitysession.hasMany(models.Activityateacherattendance, {
         foreignKey: "session_id",
+        onDelete: "CASCADE",
+        hooks: true,
       });
     }
   }
@@ -26,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
           key: "id",
         },
         onUpdate: "CASCADE",
-        onDelete: "RESTRICT",
+        onDelete: "CASCADE",
         allowNull: false,
       },
       pic_teacher_id: {
