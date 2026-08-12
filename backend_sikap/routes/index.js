@@ -11,6 +11,10 @@ const enrollmentRouter = require("./enrollmentRouter");
 const subjectRouter = require("./subjectRouter");
 const timeslotRouter = require("./timeslotRouter");
 const teacherRouter = require("./teacherRouter");
+const activityRouter = require("./activityRouter");
+const teacherassignmentRouter = require("./teacherassignmentRouter");
+const activitysessionRouter = require("./activitysessionRouter");
+const activityateacherattendanceRouter = require("./activityateacherattendanceRouter");
 
 router.use("/auth", authRouter);
 router.use("/users", userRouter);
@@ -22,5 +26,9 @@ router.use("/classteacherattendances", classteacherattendanceRouter);
 router.use("/enrollments", enrollmentRouter);
 router.use("/subjects", subjectRouter);
 router.use("/timeslots", timeslotRouter);
+router.use("/activities", activityRouter);
+router.use("/teacherassignments", teacherassignmentRouter);
+router.use("/activitysessions", activitysessionRouter);
+router.use("/activityateacherattendances", activityateacherattendanceRouter);
 
 module.exports = router;

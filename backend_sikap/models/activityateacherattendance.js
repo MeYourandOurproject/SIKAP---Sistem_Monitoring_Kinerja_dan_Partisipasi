@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
           key: "id",
         },
         onUpdate: "CASCADE",
-        onDelete: "RESTRICT",
+        onDelete: "CASCADE",
         allowNull: false,
       },
       teacher_id: {

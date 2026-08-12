@@ -116,31 +116,22 @@ DESKTOP
 
 .desktop-wrapper {
   margin-left: 300px;
-
   width: calc(100% - 300px);
-
   min-height: 100vh;
-
   display: flex;
-
   flex-direction: column;
 }
 
 .desktop-navbar {
   position: sticky;
-
   top: 0;
-
   z-index: 900;
-
   flex-shrink: 0;
 }
 
 .desktop-content {
   flex: 1;
-
   padding: 24px;
-
   overflow-x: hidden;
 }
 
@@ -150,7 +141,6 @@ MOBILE
 
 .mobile-content {
   padding: 16px;
-
   padding-bottom: 90px;
 }
 </style>

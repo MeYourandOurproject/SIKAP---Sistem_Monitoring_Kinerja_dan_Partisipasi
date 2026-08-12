@@ -1,4 +1,4 @@
-const { Subject } = require('../models');
+const { Subject } = require("../models");
 
 class SubjectController {
   static async getAll(req, res, next) {
@@ -13,7 +13,7 @@ class SubjectController {
   static async getById(req, res, next) {
     try {
       const item = await Subject.findByPk(req.params.id);
-      if (!item) return res.status(404).json({ message: 'Subject not found' });
+      if (!item) return res.status(404).json({ message: "Subject not found" });
       res.json(item);
     } catch (error) {
       next(error);
@@ -32,7 +32,7 @@ class SubjectController {
   static async update(req, res, next) {
     try {
       const item = await Subject.findByPk(req.params.id);
-      if (!item) return res.status(404).json({ message: 'Subject not found' });
+      if (!item) return res.status(404).json({ message: "Subject not found" });
       await item.update(req.body);
       res.json(item);
     } catch (error) {
@@ -43,7 +43,7 @@ class SubjectController {
   static async remove(req, res, next) {
     try {
       const item = await Subject.findByPk(req.params.id);
-      if (!item) return res.status(404).json({ message: 'Subject not found' });
+      if (!item) return res.status(404).json({ message: "Subject not found" });
       await item.destroy();
       res.status(204).send();
     } catch (error) {
