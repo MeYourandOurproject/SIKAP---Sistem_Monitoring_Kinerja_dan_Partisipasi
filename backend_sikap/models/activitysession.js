@@ -44,11 +44,15 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: "RESTRICT",
         allowNull: false,
       },
-      date: { type: DataTypes.DATE },
+      academic_year: { type: DataTypes.STRING(9), allowNull: true },
+      semester: { type: DataTypes.ENUM("odd", "even"), allowNull: true },
+      date: { type: DataTypes.DATEONLY },
       session: {
         type: DataTypes.ENUM("morning", "afternoon", "all_day"),
         allowNull: true,
       },
+      start_time: { type: DataTypes.TIME, allowNull: true },
+      end_time: { type: DataTypes.TIME, allowNull: true },
       notes: { type: DataTypes.TEXT },
     },
     {

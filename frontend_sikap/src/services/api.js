@@ -40,6 +40,28 @@ export async function login(payload) {
   });
 }
 
+export async function getAcademicPeriod() {
+  const token = localStorage.getItem("token");
+  return fetchJson(`${API_URL}/api/academic-period`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+}
+
+export async function updateAcademicPeriod(payload) {
+  const token = localStorage.getItem("token");
+  return fetchJson(`${API_URL}/api/academic-period`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
 // ======================
 // GET TEACHERS
 // ======================
@@ -88,6 +110,40 @@ export async function createActivity(payload) {
   const token = localStorage.getItem("token");
   try {
     const data = await fetchJson(`${API_URL}/api/activities`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+}
+
+export async function createTentativeActivity(payload) {
+  const token = localStorage.getItem("token");
+  try {
+    const data = await fetchJson(`${API_URL}/api/activities/tentative`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+}
+
+export async function createRoutineActivity(payload) {
+  const token = localStorage.getItem("token");
+  try {
+    const data = await fetchJson(`${API_URL}/api/activities/routine`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -153,10 +209,68 @@ export async function getActivitySessions() {
   }
 }
 
+export async function getActivityAttendanceHistory(filters) {
+  const token = localStorage.getItem("token");
+  const params = new URLSearchParams(
+    Object.entries(filters).filter(([, value]) => value !== "" && value != null),
+  );
+  return fetchJson(
+    `${API_URL}/api/activitysessions/attendance-history?${params.toString()}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    },
+  );
+}
+
+export async function getTeacherActivitySessions() {
+  const token = localStorage.getItem("token");
+  return fetchJson(`${API_URL}/api/activitysessions/teacher`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+}
+
 export async function createActivitySession(payload) {
   const token = localStorage.getItem("token");
   try {
     const data = await fetchJson(`${API_URL}/api/activitysessions`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+}
+
+export async function getActiveActivitySessions() {
+  const token = localStorage.getItem("token");
+  try {
+    const data = await fetchJson(`${API_URL}/api/activitysessions/active`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+}
+
+export async function openActivitySession(payload) {
+  const token = localStorage.getItem("token");
+  try {
+    const data = await fetchJson(`${API_URL}/api/activitysessions/open`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -220,6 +334,23 @@ export async function getClasses() {
   });
 }
 
+export async function getClassScheduleHistory(filters = {}) {
+  const token = localStorage.getItem("token");
+  const query = new URLSearchParams(
+    Object.fromEntries(
+      Object.entries(filters).filter(([, value]) => value !== "" && value != null),
+    ),
+  );
+  const queryString = query.toString();
+  const suffix = queryString ? `?${queryString}` : "";
+  return fetchJson(`${API_URL}/api/classschedules/history${suffix}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+}
+
 // ======================
 // GET CLASS SCHEDULES
 // ======================
@@ -231,6 +362,61 @@ export async function getClassSchedules() {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
+  });
+}
+
+export async function getTeacherSchedules() {
+  const token = localStorage.getItem("token");
+  return fetchJson(`${API_URL}/api/classschedules/teacher`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+}
+
+export async function getTeacherScheduleAttendance(scheduleId) {
+  const token = localStorage.getItem("token");
+  return fetchJson(`${API_URL}/api/studentattendances/schedules/${scheduleId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+}
+
+export async function saveTeacherScheduleAttendance(scheduleId, attendance) {
+  const token = localStorage.getItem("token");
+  return fetchJson(`${API_URL}/api/studentattendances/schedules/${scheduleId}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ attendance }),
+  });
+}
+
+export async function getTeacherScheduleAgenda(scheduleId, date) {
+  const token = localStorage.getItem("token");
+  const query = date ? `?date=${encodeURIComponent(date)}` : "";
+  return fetchJson(`${API_URL}/api/classagendas/schedules/${scheduleId}${query}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+}
+
+export async function saveTeacherScheduleAgenda(scheduleId, agenda) {
+  const token = localStorage.getItem("token");
+  return fetchJson(`${API_URL}/api/classagendas/schedules/${scheduleId}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(agenda),
   });
 }
 
@@ -328,4 +514,165 @@ export async function getMonitoringKelas() {
   const response = await fetch(`${API_URL}?action=monitoring_kelas`);
 
   return await response.json();
+}
+
+async function adminRequest(path, options = {}) {
+  const token = localStorage.getItem("token");
+  return fetchJson(`${API_URL}/api${path}`, {
+    ...options,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+}
+
+export function getManagedTeachers() {
+  return adminRequest("/teachers");
+}
+
+export function createManagedTeacher(payload) {
+  return adminRequest("/teachers", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function updateManagedTeacher(id, payload) {
+  return adminRequest(`/teachers/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function updateManagedTeachersStatus(ids, status) {
+  return adminRequest("/teachers/bulk-status", {
+    method: "PATCH",
+    body: JSON.stringify({ ids, status }),
+  });
+}
+
+export function deleteManagedTeacher(id) {
+  return adminRequest(`/teachers/${id}`, { method: "DELETE" });
+}
+
+export async function getScheduleManagementData() {
+  const [schedules, classes, teachers, subjects, classrooms, timeslots] =
+    await Promise.all([
+      adminRequest("/classschedules"),
+      adminRequest("/classes"),
+      adminRequest("/teachers"),
+      adminRequest("/subjects"),
+      adminRequest("/classrooms"),
+      adminRequest("/timeslots"),
+    ]);
+
+  return { schedules, classes, teachers, subjects, classrooms, timeslots };
+}
+
+export function createManagedSchedule(payload) {
+  return adminRequest("/classschedules", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function updateManagedSchedule(id, payload) {
+  return adminRequest(`/classschedules/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deleteManagedSchedule(id) {
+  return adminRequest(`/classschedules/${id}`, { method: "DELETE" });
+}
+
+export function getManagedUsers() {
+  return adminRequest("/users");
+}
+
+export function createManagedUser(payload) {
+  return adminRequest("/users", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function updateManagedUser(id, payload) {
+  return adminRequest(`/users/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deleteManagedUser(id) {
+  return adminRequest(`/users/${id}`, { method: "DELETE" });
+}
+
+export function getManagedClasses() {
+  return adminRequest("/classes");
+}
+
+export function updateManagedClass(id, payload) {
+  return adminRequest(`/classes/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function getManagedStudents(filters = {}) {
+  const query = new URLSearchParams(filters);
+  const queryString = query.toString();
+  const suffix = queryString ? `?${queryString}` : "";
+  return adminRequest(`/students${suffix}`);
+}
+
+export function createManagedStudent(payload) {
+  return adminRequest("/students", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function updateManagedStudent(id, payload) {
+  return adminRequest(`/students/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function downloadStudentImportTemplate(level) {
+  const token = localStorage.getItem("token");
+  const query = new URLSearchParams({ level });
+  const response = await fetch(`${API_URL}/api/students/import-template?${query}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (response.status === 401) {
+    clearSessionAndRedirect();
+    throw new Error("Unauthorized");
+  }
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.message || "Gagal mengunduh template siswa");
+  }
+  return response.blob();
+}
+
+export function importStudentsFromFile(file, level) {
+  const token = localStorage.getItem("token");
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("level", level);
+
+  return fetchJson(`${API_URL}/api/students/import`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
 }

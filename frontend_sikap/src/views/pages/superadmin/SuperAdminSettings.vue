@@ -1,10 +1,12 @@
 <template>
-  <div class="row d-md-none mb-3"><SuperAdminMobileNavbar /></div>
   <div class="superadmin-settings mt-3">
     <!-- Header -->
     <div class="row mb-4">
       <div class="col-12">
-        <h2 class="mb-0">Pengaturan Sistem</h2>
+        <div>
+          <h2 class="mb-1">Pengaturan Sistem</h2>
+          <p class="text-muted mb-0">Atur informasi institusi dan preferensi sistem.</p>
+        </div>
       </div>
     </div>
 
@@ -55,6 +57,64 @@
                   placeholder="Masukkan email sekolah"
                 />
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card shadow-sm">
+          <div class="card-header bg-light">
+            <h5 class="mb-0">
+              <i class="bi bi-calendar-range me-2"></i>Periode Akademik Aktif
+            </h5>
+          </div>
+          <div class="card-body">
+            <p class="text-muted">
+              Periode ini digunakan bersama untuk memfilter penugasan kegiatan
+              dan data absensi guru.
+            </p>
+            <div class="row align-items-end">
+              <div class="col-md-6 mb-3">
+                <label class="form-label" for="active-academic-year">Tahun ajaran</label>
+                <input
+                  id="active-academic-year"
+                  v-model.trim="academicPeriod.academic_year"
+                  type="text"
+                  class="form-control"
+                  placeholder="2026/2027"
+                  pattern="\d{4}/\d{4}"
+                  :disabled="loadingAcademicPeriod || savingAcademicPeriod"
+                />
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label" for="active-semester">Semester</label>
+                <select
+                  id="active-semester"
+                  v-model="academicPeriod.semester"
+                  class="form-select"
+                  :disabled="loadingAcademicPeriod || savingAcademicPeriod"
+                >
+                  <option value="odd">Ganjil</option>
+                  <option value="even">Genap</option>
+                </select>
+              </div>
+              <div class="col-md-2 mb-3">
+                <button
+                  type="button"
+                  class="btn btn-success w-100"
+                  :disabled="loadingAcademicPeriod || savingAcademicPeriod"
+                  @click="saveAcademicPeriod"
+                >
+                  <span v-if="savingAcademicPeriod" class="spinner-border spinner-border-sm me-1"></span>
+                  {{ savingAcademicPeriod ? "Menyimpan..." : "Simpan" }}
+                </button>
+              </div>
+            </div>
+            <div v-if="academicPeriodError" class="alert alert-danger mb-0" role="alert">
+              {{ academicPeriodError }}
             </div>
           </div>
         </div>
@@ -152,7 +212,7 @@
     <!-- Action Buttons -->
     <div class="row">
       <div class="col-12">
-        <div class="d-flex gap-2">
+        <div class="d-flex flex-wrap gap-2">
           <button class="btn btn-primary" @click="saveSettings">
             <i class="bi bi-check-circle me-2"></i>Simpan Pengaturan
           </button>
@@ -169,15 +229,19 @@
 </template>
 
 <script>
-import SuperAdminMobileNavbar from "@/components/superadmin/SuperAdminMobileNavbar.vue";
+import { getAcademicPeriod, updateAcademicPeriod } from "@/services/api";
 
 export default {
   name: "SuperAdminSettings",
-  components: {
-    SuperAdminMobileNavbar,
-  },
   data() {
     return {
+      academicPeriod: {
+        academic_year: "",
+        semester: "odd",
+      },
+      loadingAcademicPeriod: false,
+      savingAcademicPeriod: false,
+      academicPeriodError: "",
       settings: {
         schoolName: "SMK Negeri 4 Bandung",
         schoolAddress: "Jl. Soekarno Hatta No. 556, Bandung",
@@ -192,8 +256,42 @@ export default {
   },
   mounted() {
     this.loadSettings();
+    this.loadAcademicPeriod();
   },
   methods: {
+    async loadAcademicPeriod() {
+      this.loadingAcademicPeriod = true;
+      this.academicPeriodError = "";
+      try {
+        const period = await getAcademicPeriod();
+        this.academicPeriod = {
+          academic_year: period.academic_year,
+          semester: period.semester,
+        };
+      } catch (error) {
+        console.error("Gagal memuat periode akademik:", error);
+        this.academicPeriodError = error.message || "Gagal memuat periode akademik.";
+      } finally {
+        this.loadingAcademicPeriod = false;
+      }
+    },
+    async saveAcademicPeriod() {
+      this.savingAcademicPeriod = true;
+      this.academicPeriodError = "";
+      try {
+        const period = await updateAcademicPeriod(this.academicPeriod);
+        this.academicPeriod = {
+          academic_year: period.academic_year,
+          semester: period.semester,
+        };
+        alert("Periode akademik aktif berhasil disimpan.");
+      } catch (error) {
+        console.error("Gagal menyimpan periode akademik:", error);
+        this.academicPeriodError = error.message || "Gagal menyimpan periode akademik.";
+      } finally {
+        this.savingAcademicPeriod = false;
+      }
+    },
     loadSettings() {
       try {
         const savedSettings = localStorage.getItem("systemSettings");

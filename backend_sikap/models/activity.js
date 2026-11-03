@@ -26,13 +26,18 @@ module.exports = (sequelize, DataTypes) => {
     name: { type: DataTypes.STRING },
     type: { type: DataTypes.ENUM("routine", "tentative") },
     date: { type: DataTypes.DATEONLY, allowNull: true },
+    start_time: { type: DataTypes.TIME, allowNull: true },
+    end_time: { type: DataTypes.TIME, allowNull: true },
     responsiblePerson: { type: DataTypes.STRING, allowNull: true },
-    description: { type: DataTypes.STRING },
-    status: {
-      type: DataTypes.ENUM("planned", "ongoing", "completed", "cancelled"),
-      allowNull: false,
-      defaultValue: "planned",
+    pic_teacher_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'Teachers',
+        key: 'id',
+      },
     },
+    description: { type: DataTypes.STRING },
     target_type: {
       type: DataTypes.ENUM('all_teachers', 'assigned_teachers'),
       allowNull: false,

@@ -80,6 +80,9 @@ export default {
     updateMenuTitle(path) {
       const map = {
         "/kepala-sekolah/dashboard": "Dashboard",
+        "/kepala-sekolah/kbm/realtime": "Realtime Keterisian Kelas",
+        "/kepala-sekolah/kbm/riwayat": "Riwayat Keterisian Kelas",
+        "/kepala-sekolah/kbm": "Realtime Keterisian Kelas",
         "/kepala-sekolah/journal": "Jurnal",
         "/kepala-sekolah/attendance": "Absensi",
         "/kepala-sekolah/assessment": "Penilaian",

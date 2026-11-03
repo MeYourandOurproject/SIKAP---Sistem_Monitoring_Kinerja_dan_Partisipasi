@@ -21,6 +21,7 @@ module.exports = {
       {
         activity_id: piketActivity.id,
         teacher_id: teachers[0].id,
+        academic_year: "2026/2027",
         semester: "odd",
         day_of_week: "Monday",
         session: "morning",
@@ -30,6 +31,7 @@ module.exports = {
       {
         activity_id: piketActivity.id,
         teacher_id: teachers[1].id,
+        academic_year: "2026/2027",
         semester: "even",
         day_of_week: "Tuesday",
         session: "morning",
@@ -39,6 +41,7 @@ module.exports = {
       {
         activity_id: piketActivity.id,
         teacher_id: teachers[2].id,
+        academic_year: "2026/2027",
         semester: "odd",
         day_of_week: "Wednesday",
         session: "morning",
@@ -48,6 +51,7 @@ module.exports = {
       {
         activity_id: piketActivity.id,
         teacher_id: teachers[3].id,
+        academic_year: "2026/2027",
         semester: "even",
         day_of_week: "Thursday",
         session: "morning",
@@ -57,6 +61,7 @@ module.exports = {
       {
         activity_id: piketActivity.id,
         teacher_id: teachers[4].id,
+        academic_year: "2026/2027",
         semester: "odd",
         day_of_week: "Friday",
         session: "morning",

@@ -51,6 +51,8 @@ export default {
 
 <style scoped>
 .superadmin-mobile-navbar {
+  min-height: 58px;
   background-color: #0f172a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 </style>

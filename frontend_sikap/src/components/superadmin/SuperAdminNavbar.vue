@@ -13,29 +13,22 @@
         </button>
 
         <div class="navbar-breadcrumb d-flex flex-column text-white text-start">
-          <span class="text-opacity text-success">Admin</span>
-          <strong class="navbar-title text-secondary"
-            >Admin / {{ menuTitle }}</strong
+          <span class="text-opacity text-primary">SIKAP</span>
+          <strong class="navbar-title"
+            >Super Admin <span class="breadcrumb-divider">/</span> {{ menuTitle }}</strong
           >
         </div>
 
         <div class="ms-auto d-flex align-items-center gap-2">
-          <button class="btn btn-icon" type="button" aria-label="Notifications">
-            <i class="bi bi-bell-fill text-primary"></i>
-            <span class="notification-badge badge bg-danger">0</span>
-          </button>
-
           <div class="dropdown user-dropdown">
             <button
-              class="btn btn-sm rounded-4 dropdown-toggle d-flex align-items-center gap-2 text-light"
+              class="btn btn-sm rounded-4 dropdown-toggle d-flex align-items-center gap-2 text-dark"
               type="button"
               id="userMenu"
               data-bs-toggle="dropdown"
               aria-expanded="false"
             >
-              <span class="user-avatar">{{
-                userName.charAt(0).toUpperCase()
-              }}</span>
+              <span class="user-avatar">{{ userInitial }}</span>
               <div class="col d-flex flex-column text-start">
                 <small class="d-block" style="font-size: 0.65rem"
                   >Super Admin</small
@@ -47,13 +40,6 @@
               class="dropdown-menu dropdown-menu-end shadow-sm"
               aria-labelledby="userMenu"
             >
-              <li>
-                <button class="dropdown-item" @click="goToProfile">
-                  <i class="bi bi-person me-2"></i>
-                  Profil
-                </button>
-              </li>
-              <li><hr class="dropdown-divider" /></li>
               <li>
                 <button class="dropdown-item text-danger" @click="handleLogout">
                   <i class="bi bi-box-arrow-right me-2"></i>
@@ -86,6 +72,11 @@ export default {
       userName: "Super Admin",
     };
   },
+  computed: {
+    userInitial() {
+      return this.userName.trim().charAt(0).toUpperCase() || "A";
+    },
+  },
   mounted() {
     this.loadUserName();
   },
@@ -96,13 +87,10 @@ export default {
     loadUserName() {
       try {
         const user = JSON.parse(localStorage.getItem("user") || "{}");
-        this.userName = user.fullname || "Super Admin";
+        this.userName = user.name || user.fullname || "Super Admin";
       } catch (error) {
         console.error("Error loading user name:", error);
       }
-    },
-    goToProfile() {
-      this.$router.push("/super-admin/profil");
     },
     handleLogout() {
       if (confirm("Apakah Anda yakin ingin logout?")) {
@@ -117,56 +105,55 @@ export default {
 
 <style scoped>
 .superadmin-navbar {
-  background-color: #0f172a;
-  border-radius: 10px;
+  min-height: 76px;
+  background-color: #fff;
+  border-bottom: 1px solid #e8edf3;
 }
 
 .navbar-breadcrumb .text-opacity {
-  opacity: 0.85;
-  font-size: 1.25rem;
+  font-size: 0.72rem;
   font-weight: bold;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .navbar-title {
-  font-size: 1rem;
+  color: #172033;
+  font-size: 0.94rem;
   letter-spacing: 0.01em;
-  font-weight: lighter;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 600;
 }
 
-.btn-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-.notification-badge {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  font-size: 0.6rem;
-  padding: 2px 4px;
+.breadcrumb-divider {
+  color: #98a2b3;
+  margin: 0 0.3rem;
 }
 
 .user-avatar {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background-color: #22c55e;
+  background-color: #e8f5ee;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  color: white;
+  color: #16834a;
 }
 
 .user-name {
+  color: #172033;
   font-size: 0.9rem;
+}
+
+.user-dropdown small {
+  color: #667085;
+}
+
+.user-dropdown > button {
+  padding: 0.35rem 0.65rem;
+  border: 1px solid #edf0f5;
+  background: #fff;
 }
 
 .dropdown-menu {

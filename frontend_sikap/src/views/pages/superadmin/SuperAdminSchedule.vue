@@ -1,422 +1,485 @@
 <template>
-  <div class="row d-md-none mb-3"><SuperAdminMobileNavbar /></div>
-  <div class="superadmin-schedule mt-3">
-    <!-- Header -->
-    <div class="row mb-4">
-      <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center">
-          <h2 class="mb-0">Manajemen Jadwal Pelajaran</h2>
+  <section class="superadmin-schedule mt-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+      <div>
+        <h2 class="mb-1">Manajemen Jadwal Pelajaran</h2>
+        <p class="text-muted mb-0">Pantau progres dan input jadwal guru di setiap kelas.</p>
+      </div>
+      <button v-if="!showForm" class="btn btn-success" @click="openAddForm">
+        <i class="bi bi-calendar-plus me-2"></i>Tambah Jadwal
+      </button>
+    </div>
+
+    <div v-if="errorMessage" class="alert alert-danger" role="alert">
+      {{ errorMessage }}
+    </div>
+    <div v-if="successMessage" class="alert alert-success" role="status">
+      {{ successMessage }}
+    </div>
+
+    <div v-if="loading" class="text-center text-muted py-4">
+      <span class="spinner-border spinner-border-sm me-2"></span>Memuat data jadwal...
+    </div>
+
+    <div v-if="!showForm && !loading" class="card shadow-sm mb-4">
+      <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div>
+          <h5 class="mb-1">Progres Input Jadwal</h5>
+          <small class="text-muted">Status dihitung dari jumlah jadwal yang sudah tersimpan.</small>
+        </div>
+        <div class="btn-group" role="group" aria-label="Pilih ringkasan jadwal">
           <button
-            class="btn btn-success"
-            @click="openAddModal"
-            v-if="!showForm"
+            type="button"
+            class="btn"
+            :class="progressView === 'class' ? 'btn-primary' : 'btn-outline-primary'"
+            @click="progressView = 'class'"
           >
-            <i class="bi bi-plus-circle me-2"></i>
-            Tambah Jadwal
+            Berdasarkan Kelas
+          </button>
+          <button
+            type="button"
+            class="btn"
+            :class="progressView === 'teacher' ? 'btn-primary' : 'btn-outline-primary'"
+            @click="progressView = 'teacher'"
+          >
+            Berdasarkan Guru Aktif
           </button>
         </div>
       </div>
-    </div>
-
-    <!-- Form Add/Edit -->
-    <div class="row mb-4" v-if="showForm">
-      <div class="col-12">
-        <div class="card shadow-sm">
-          <div class="card-header bg-light">
-            <h5 class="mb-0">
-              {{ editingSchedule ? "Edit Jadwal Pelajaran" : "Tambah Jadwal Pelajaran Baru" }}
-            </h5>
+      <div class="card-body">
+        <div class="row g-3 mb-3">
+          <div class="col-sm-4">
+            <div class="border rounded p-3 h-100">
+              <div class="text-muted small">Total jadwal tersimpan</div>
+              <strong class="fs-4">{{ schedules.length }}</strong>
+            </div>
           </div>
-          <div class="card-body">
-            <form @submit.prevent="saveSchedule">
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Nama Kelas *</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="formData.className"
-                    placeholder="Contoh: XI A"
-                    required
-                  />
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Mata Pelajaran *</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="formData.subject"
-                    required
-                  />
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Guru Pengajar *</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="formData.teacher"
-                    required
-                  />
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Hari *</label>
-                  <select class="form-select" v-model="formData.day" required>
-                    <option value="">-- Pilih Hari --</option>
-                    <option value="Senin">Senin</option>
-                    <option value="Selasa">Selasa</option>
-                    <option value="Rabu">Rabu</option>
-                    <option value="Kamis">Kamis</option>
-                    <option value="Jumat">Jumat</option>
-                    <option value="Sabtu">Sabtu</option>
-                  </select>
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Waktu Mulai *</label>
-                  <input
-                    type="time"
-                    class="form-control"
-                    v-model="formData.startTime"
-                    required
-                  />
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Waktu Selesai *</label>
-                  <input
-                    type="time"
-                    class="form-control"
-                    v-model="formData.endTime"
-                    required
-                  />
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Ruang Kelas</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="formData.room"
-                    placeholder="Contoh: Ruang 101"
-                  />
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Status</label>
-                  <select class="form-select" v-model="formData.status">
-                    <option value="active">Aktif</option>
-                    <option value="inactive">Tidak Aktif</option>
-                  </select>
-                </div>
-              </div>
-              <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">
-                  {{ editingSchedule ? "Update" : "Simpan" }}
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  @click="cancelForm"
-                >
-                  Batal
-                </button>
-              </div>
-            </form>
+          <div class="col-sm-4">
+            <div class="border rounded p-3 h-100">
+              <div class="text-muted small">Kelas sudah ada jadwal</div>
+              <strong class="fs-4">{{ classesWithSchedules }}/{{ classes.length }}</strong>
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Search & Filter -->
-    <div class="row mb-3" v-if="!showForm">
-      <div class="col-md-4">
-        <div class="input-group">
-          <span class="input-group-text"
-            ><i class="bi bi-search"></i
-          ></span>
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Cari jadwal..."
-            v-model="searchQuery"
-          />
-        </div>
-      </div>
-      <div class="col-md-4">
-        <select class="form-select" v-model="filterDay">
-          <option value="">Semua Hari</option>
-          <option value="Senin">Senin</option>
-          <option value="Selasa">Selasa</option>
-          <option value="Rabu">Rabu</option>
-          <option value="Kamis">Kamis</option>
-          <option value="Jumat">Jumat</option>
-          <option value="Sabtu">Sabtu</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Table -->
-    <div class="row" v-if="!showForm">
-      <div class="col-12">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <div class="table-responsive">
-              <table class="table table-hover mb-0">
-                <thead>
-                  <tr>
-                    <th>No</th>
-                    <th>Kelas</th>
-                    <th>Mata Pelajaran</th>
-                    <th>Guru Pengajar</th>
-                    <th>Hari</th>
-                    <th>Waktu</th>
-                    <th>Ruang</th>
-                    <th>Status</th>
-                    <th>Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-if="filteredSchedules.length === 0">
-                    <td colspan="9" class="text-center text-muted py-4">
-                      Tidak ada data jadwal
-                    </td>
-                  </tr>
-                  <tr v-for="(schedule, index) in filteredSchedules" :key="schedule.id">
-                    <td>{{ index + 1 }}</td>
-                    <td><strong>{{ schedule.className }}</strong></td>
-                    <td>{{ schedule.subject }}</td>
-                    <td>{{ schedule.teacher }}</td>
-                    <td>
-                      <span class="badge bg-info">{{ schedule.day }}</span>
-                    </td>
-                    <td>{{ schedule.startTime }} - {{ schedule.endTime }}</td>
-                    <td>{{ schedule.room || "-" }}</td>
-                    <td>
-                      <span
-                        :class="{
-                          'badge bg-success': schedule.status === 'active',
-                          'badge bg-danger': schedule.status === 'inactive',
-                        }"
-                      >
-                        {{ schedule.status === 'active' ? 'Aktif' : 'Tidak Aktif' }}
-                      </span>
-                    </td>
-                    <td>
-                      <div class="btn-group btn-group-sm" role="group">
-                        <button
-                          class="btn btn-outline-info"
-                          @click="editSchedule(schedule)"
-                          title="Edit"
-                        >
-                          <i class="bi bi-pencil"></i>
-                        </button>
-                        <button
-                          class="btn btn-outline-danger"
-                          @click="deleteSchedule(schedule.id)"
-                          title="Hapus"
-                        >
-                          <i class="bi bi-trash"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+          <div class="col-sm-4">
+            <div class="border rounded p-3 h-100">
+              <div class="text-muted small">Guru aktif sudah ada jadwal</div>
+              <strong class="fs-4">{{ teachersWithSchedules }}/{{ activeTeachers.length }}</strong>
             </div>
           </div>
         </div>
+
+        <div class="table-responsive progress-table">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th>{{ progressView === "class" ? "Kelas" : "Guru Aktif" }}</th>
+                <th>Jumlah Jadwal</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="progressItems.length === 0">
+                <td colspan="4" class="text-center text-muted py-4">
+                  {{ progressView === "class" ? "Belum ada data kelas" : "Belum ada guru aktif" }}
+                </td>
+              </tr>
+              <tr v-for="item in progressItems" :key="item.id">
+                <td class="text-start">{{ item.name }}</td>
+                <td>{{ item.scheduleCount }}</td>
+                <td>
+                  <span class="badge" :class="item.scheduleCount ? 'bg-success' : 'bg-secondary'">
+                    {{ item.scheduleCount ? "Sudah ada jadwal" : "Belum ada jadwal" }}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn btn-sm btn-outline-primary" @click="openAddForm(progressView, item.id)">
+                    <i class="bi bi-plus-circle me-1"></i>Tambah jadwal
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <!-- Loading Spinner -->
-    <div class="text-center py-5" v-if="loading">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
+    <div v-if="showForm" class="card shadow-sm mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">{{ editingSchedule ? "Edit Jadwal" : "Tambah Jadwal" }}</h5>
+      </div>
+      <div class="card-body">
+        <form @submit.prevent="saveSchedule">
+          <div v-if="!editingSchedule" class="mb-3">
+            <label class="form-label d-block">Cara input jadwal</label>
+            <div class="btn-group" role="group" aria-label="Cara input jadwal">
+              <button
+                type="button"
+                class="btn"
+                :class="inputMode === 'class' ? 'btn-primary' : 'btn-outline-primary'"
+                @click="setInputMode('class')"
+              >
+                Dari Kelas
+              </button>
+              <button
+                type="button"
+                class="btn"
+                :class="inputMode === 'teacher' ? 'btn-primary' : 'btn-outline-primary'"
+                @click="setInputMode('teacher')"
+              >
+                Dari Guru Aktif
+              </button>
+            </div>
+          </div>
+          <div class="row">
+            <div v-if="inputMode === 'class' || editingSchedule" class="col-md-6 mb-3">
+              <label class="form-label">Kelas *</label>
+              <select v-model="form.class_id" class="form-select" required :disabled="saving">
+                <option value="">Pilih kelas</option>
+                <option v-for="item in classes" :key="item.id" :value="item.id">{{ item.class_name }}</option>
+              </select>
+            </div>
+            <div v-if="inputMode === 'teacher' && !editingSchedule" class="col-md-6 mb-3">
+              <label class="form-label">Guru Aktif *</label>
+              <select v-model="form.teacher_id" class="form-select" required :disabled="saving">
+                <option value="">Pilih guru aktif</option>
+                <option v-for="item in activeTeachers" :key="item.id" :value="item.id">{{ item.name }}</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Mata Pelajaran *</label>
+              <select v-model="form.subject_id" class="form-select" required>
+                <option value="">Pilih mata pelajaran</option>
+                <option v-for="item in subjects" :key="item.id" :value="item.id">{{ item.subject_name }}</option>
+              </select>
+            </div>
+            <div v-if="inputMode === 'class' || editingSchedule" class="col-md-6 mb-3">
+              <label class="form-label">Guru Pengajar *</label>
+              <select v-model="form.teacher_id" class="form-select" required>
+                <option value="">Pilih guru</option>
+                <option v-for="item in activeTeachers" :key="item.id" :value="item.id">{{ item.name }}</option>
+              </select>
+            </div>
+            <div v-if="inputMode === 'teacher' && !editingSchedule" class="col-md-6 mb-3">
+              <label class="form-label">Kelas *</label>
+              <select v-model="form.class_id" class="form-select" required>
+                <option value="">Pilih kelas</option>
+                <option v-for="item in classes" :key="item.id" :value="item.id">{{ item.class_name }}</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Ruang Kelas *</label>
+              <select v-model="form.classroom_id" class="form-select" required>
+                <option value="">Pilih ruang</option>
+                <option v-for="item in classrooms" :key="item.id" :value="item.id">{{ item.classroom_name }}</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Hari *</label>
+              <select v-model="form.day" class="form-select" required>
+                <option value="">Pilih hari</option>
+                <option v-for="day in days" :key="day" :value="day">{{ day }}</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Jam Mulai *</label>
+              <select v-model="form.start_timeslot_id" class="form-select" required>
+                <option value="">Pilih jam mulai</option>
+                <option v-for="item in timeslots" :key="item.id" :value="item.id">
+                  {{ item.jp }} ({{ item.start }}–{{ item.end }})
+                </option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Jam Selesai *</label>
+              <select v-model="form.end_timeslot_id" class="form-select" required>
+                <option value="">Pilih jam selesai</option>
+                <option v-for="item in timeslots" :key="item.id" :value="item.id">
+                  {{ item.jp }} ({{ item.start }}–{{ item.end }})
+                </option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-primary me-2" type="submit" :disabled="saving">
+            {{ saving ? "Menyimpan..." : editingSchedule ? "Simpan Perubahan" : "Simpan & Input Berikutnya" }}
+          </button>
+          <button class="btn btn-secondary" type="button" @click="cancelForm">Batal</button>
+        </form>
       </div>
     </div>
-  </div>
+
+    <template v-else-if="!loading">
+      <div class="row mb-3 g-2">
+        <div class="col-md-4">
+          <input v-model="searchQuery" class="form-control" type="search" placeholder="Cari kelas, guru, atau pelajaran..." />
+        </div>
+        <div class="col-md-3">
+          <select v-model="filterTeacherId" class="form-select" aria-label="Filter berdasarkan guru">
+            <option value="">Semua guru</option>
+            <option v-for="teacher in teachers" :key="teacher.id" :value="teacher.id">
+              {{ teacher.name }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <select v-model="filterClassId" class="form-select" aria-label="Filter berdasarkan kelas">
+            <option value="">Semua kelas</option>
+            <option v-for="item in classes" :key="item.id" :value="item.id">
+              {{ item.class_name }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <select v-model="filterDay" class="form-select" aria-label="Filter berdasarkan hari">
+            <option value="">Semua hari</option>
+            <option v-for="day in days" :key="day" :value="day">{{ day }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="card shadow-sm">
+        <div class="card-body table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr><th>Kelas</th><th>Mata Pelajaran</th><th>Guru</th><th>Hari</th><th>Waktu</th><th>Ruang</th><th>Aksi</th></tr>
+            </thead>
+            <tbody>
+              <tr v-if="!loading && filteredSchedules.length === 0">
+                <td colspan="7" class="text-center text-muted py-4">Tidak ada jadwal pelajaran</td>
+              </tr>
+              <tr v-for="schedule in filteredSchedules" :key="schedule.id">
+                <td>{{ schedule.Class?.class_name || "-" }}</td>
+                <td class="text-start">{{ schedule.Subject?.subject_name || "-" }}</td>
+                <td>{{ schedule.Teacher?.name || "-" }}</td>
+                <td><span class="badge bg-info">{{ schedule.day }}</span></td>
+                <td>{{ schedule.startTimeslot?.start || "-" }} - {{ schedule.endTimeslot?.end || "-" }}</td>
+                <td>{{ schedule.Classroom?.classroom_name || "-" }}</td>
+                <td class="text-nowrap">
+                  <button class="btn btn-sm btn-outline-primary me-1" @click="editSchedule(schedule)" aria-label="Edit jadwal">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger" @click="deleteSchedule(schedule)" aria-label="Hapus jadwal">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr v-if="loading">
+                <td colspan="7" class="text-center py-4">
+                  <span class="spinner-border spinner-border-sm me-2"></span>Memuat jadwal...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </template>
+  </section>
 </template>
 
 <script>
-import SuperAdminMobileNavbar from "@/components/superadmin/SuperAdminMobileNavbar.vue";
-// import { api } from "@/utils/api";
+import {
+  createManagedSchedule,
+  deleteManagedSchedule,
+  getScheduleManagementData,
+  updateManagedSchedule,
+} from "@/services/api.js";
+
+const days = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+const emptyForm = () => ({
+  class_id: "",
+  subject_id: "",
+  teacher_id: "",
+  classroom_id: "",
+  day: "",
+  start_timeslot_id: "",
+  end_timeslot_id: "",
+});
 
 export default {
   name: "SuperAdminSchedule",
-  components: {
-    SuperAdminMobileNavbar,
-  },
   data() {
     return {
       schedules: [],
+      classes: [],
+      teachers: [],
+      subjects: [],
+      classrooms: [],
+      timeslots: [],
+      days,
+      inputMode: "class",
+      progressView: "class",
       searchQuery: "",
       filterDay: "",
+      filterTeacherId: "",
+      filterClassId: "",
       showForm: false,
       loading: false,
+      saving: false,
       editingSchedule: null,
-      formData: {
-        className: "",
-        subject: "",
-        teacher: "",
-        day: "",
-        startTime: "",
-        endTime: "",
-        room: "",
-        status: "active",
-      },
+      errorMessage: "",
+      successMessage: "",
+      form: emptyForm(),
     };
   },
   computed: {
+    activeTeachers() {
+      return this.teachers.filter((teacher) => teacher.status === "active");
+    },
+    classesWithSchedules() {
+      return this.classes.filter((item) =>
+        this.schedules.some((schedule) => Number(schedule.class_id) === Number(item.id)),
+      ).length;
+    },
+    teachersWithSchedules() {
+      return this.activeTeachers.filter((item) =>
+        this.schedules.some((schedule) => Number(schedule.teacher_id) === Number(item.id)),
+      ).length;
+    },
+    progressItems() {
+      const entities = this.progressView === "class"
+        ? this.classes.map((item) => ({ id: item.id, name: item.class_name, field: "class_id" }))
+        : this.activeTeachers.map((item) => ({ id: item.id, name: item.name, field: "teacher_id" }));
+
+      return entities.map((item) => ({
+        ...item,
+        scheduleCount: this.schedules.filter(
+          (schedule) => Number(schedule[item.field]) === Number(item.id),
+        ).length,
+      }));
+    },
     filteredSchedules() {
+      const query = this.searchQuery.trim().toLowerCase();
       return this.schedules.filter((schedule) => {
-        const matchesSearch =
-          schedule.className.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-          schedule.subject.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-          schedule.teacher.toLowerCase().includes(this.searchQuery.toLowerCase());
-        
-        const matchesDay = !this.filterDay || schedule.day === this.filterDay;
-        
-        return matchesSearch && matchesDay;
+        const searchFields = [
+          schedule.Class?.class_name,
+          schedule.Subject?.subject_name,
+          schedule.Teacher?.name,
+        ];
+        return (
+          (!this.filterDay || schedule.day === this.filterDay) &&
+          (!this.filterTeacherId || Number(schedule.teacher_id) === Number(this.filterTeacherId)) &&
+          (!this.filterClassId || Number(schedule.class_id) === Number(this.filterClassId)) &&
+          searchFields.some((value) => String(value || "").toLowerCase().includes(query))
+        );
+      }).sort((a, b) => {
+        const dayOrderA = days.indexOf(a.day);
+        const dayOrderB = days.indexOf(b.day);
+        const dayDifference =
+          (dayOrderA === -1 ? days.length : dayOrderA) -
+          (dayOrderB === -1 ? days.length : dayOrderB);
+        return dayDifference ||
+          String(a.startTimeslot?.start || "").localeCompare(String(b.startTimeslot?.start || ""));
       });
     },
   },
   mounted() {
-    this.fetchSchedules();
+    this.fetchData();
   },
   methods: {
-    async fetchSchedules() {
+    async fetchData() {
       this.loading = true;
+      this.errorMessage = "";
       try {
-        const token = localStorage.getItem("token");
-        const response = await api.get("/schedules", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        this.schedules = response.data || [];
+        const data = await getScheduleManagementData();
+        for (const key of ["schedules", "classes", "teachers", "subjects", "classrooms", "timeslots"]) {
+          if (!Array.isArray(data[key])) throw new Error(`Format data ${key} tidak valid`);
+        }
+        Object.assign(this, data);
       } catch (error) {
-        console.error("Error fetching schedules:", error);
-        alert("Gagal memuat data jadwal");
+        this.errorMessage = `Gagal memuat data jadwal: ${error.message}`;
       } finally {
         this.loading = false;
       }
     },
-    openAddModal() {
-      this.showForm = true;
+    setInputMode(mode) {
+      this.inputMode = mode;
+      this.form.class_id = "";
+      this.form.teacher_id = "";
+      this.successMessage = "";
+    },
+    openAddForm(mode = this.inputMode, entityId = null) {
+      this.inputMode = mode;
       this.editingSchedule = null;
-      this.resetForm();
+      this.form = emptyForm();
+      if (entityId !== null) {
+        this.form[mode === "class" ? "class_id" : "teacher_id"] = Number(entityId);
+      }
+      this.errorMessage = "";
+      this.successMessage = "";
+      this.showForm = true;
     },
     editSchedule(schedule) {
       this.editingSchedule = schedule;
-      this.formData = {
-        className: schedule.className || "",
-        subject: schedule.subject || "",
-        teacher: schedule.teacher || "",
-        day: schedule.day || "",
-        startTime: schedule.startTime || "",
-        endTime: schedule.endTime || "",
-        room: schedule.room || "",
-        status: schedule.status || "active",
+      this.form = {
+        class_id: schedule.class_id,
+        subject_id: schedule.subject_id,
+        teacher_id: schedule.teacher_id,
+        classroom_id: schedule.classroom_id,
+        day: schedule.day,
+        start_timeslot_id: schedule.start_timeslot_id,
+        end_timeslot_id: schedule.end_timeslot_id,
       };
+      this.errorMessage = "";
+      this.successMessage = "";
       this.showForm = true;
     },
     async saveSchedule() {
+      const start = this.timeslots.find((item) => item.id === Number(this.form.start_timeslot_id));
+      const end = this.timeslots.find((item) => item.id === Number(this.form.end_timeslot_id));
+      if (!start || !end || start.start >= end.end) {
+        this.errorMessage = "Waktu selesai harus setelah waktu mulai.";
+        return;
+      }
+
+      const payload = {
+        ...this.form,
+        class_id: Number(this.form.class_id),
+        subject_id: Number(this.form.subject_id),
+        teacher_id: Number(this.form.teacher_id),
+        classroom_id: Number(this.form.classroom_id),
+        start_timeslot_id: Number(this.form.start_timeslot_id),
+        end_timeslot_id: Number(this.form.end_timeslot_id),
+      };
+      this.saving = true;
+      this.errorMessage = "";
+      this.successMessage = "";
       try {
-        const token = localStorage.getItem("token");
-        
         if (this.editingSchedule) {
-          // Update existing schedule
-          await api.put(`/schedules/${this.editingSchedule.id}`, this.formData, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          alert("Jadwal berhasil diperbarui");
+          await updateManagedSchedule(this.editingSchedule.id, payload);
+          this.showForm = false;
+          this.editingSchedule = null;
+          await this.fetchData();
         } else {
-          // Create new schedule
-          await api.post("/schedules", this.formData, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          alert("Jadwal berhasil ditambahkan");
+          await createManagedSchedule(payload);
+          const nextForm = emptyForm();
+          const primaryField = this.inputMode === "class" ? "class_id" : "teacher_id";
+          nextForm[primaryField] = Number(this.form[primaryField]);
+          this.form = nextForm;
+          this.successMessage = "Jadwal berhasil disimpan. Silakan lanjutkan input jadwal berikutnya.";
+          await this.fetchData();
         }
-        
-        this.fetchSchedules();
-        this.cancelForm();
       } catch (error) {
-        console.error("Error saving schedule:", error);
-        alert("Gagal menyimpan jadwal: " + (error.response?.data?.message || error.message));
+        this.errorMessage = `Gagal menyimpan jadwal: ${error.message}`;
+      } finally {
+        this.saving = false;
       }
     },
-    async deleteSchedule(id) {
-      if (confirm("Apakah Anda yakin ingin menghapus jadwal ini?")) {
-        try {
-          const token = localStorage.getItem("token");
-          await api.delete(`/schedules/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          alert("Jadwal berhasil dihapus");
-          this.fetchSchedules();
-        } catch (error) {
-          console.error("Error deleting schedule:", error);
-          alert("Gagal menghapus jadwal");
-        }
+    async deleteSchedule(schedule) {
+      if (!window.confirm("Hapus jadwal pelajaran ini?")) return;
+      this.errorMessage = "";
+      try {
+        await deleteManagedSchedule(schedule.id);
+        await this.fetchData();
+      } catch (error) {
+        this.errorMessage = `Gagal menghapus jadwal: ${error.message}`;
       }
     },
     cancelForm() {
       this.showForm = false;
       this.editingSchedule = null;
-      this.resetForm();
-    },
-    resetForm() {
-      this.formData = {
-        className: "",
-        subject: "",
-        teacher: "",
-        day: "",
-        startTime: "",
-        endTime: "",
-        room: "",
-        status: "active",
-      };
+      this.form = emptyForm();
+      this.errorMessage = "";
+      this.successMessage = "";
     },
   },
 };
 </script>
-
-<style scoped>
-.superadmin-schedule {
-  color: #333;
-}
-
-.table-responsive {
-  margin-bottom: 0;
-}
-
-.table {
-  margin-bottom: 0;
-}
-
-.table thead th {
-  background-color: #f3f4f6;
-  border-bottom: 2px solid #e5e7eb;
-  font-weight: 600;
-  color: #374151;
-}
-
-.table tbody tr:hover {
-  background-color: #f9fafb;
-}
-
-.btn-group-sm .btn {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.85rem;
-}
-
-.form-label {
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 0.5rem;
-}
-
-.input-group-text {
-  background-color: #f3f4f6;
-  border: 1px solid #d1d5db;
-}
-
-.badge {
-  padding: 0.35rem 0.65rem;
-  font-size: 0.85rem;
-}
-</style>

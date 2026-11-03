@@ -1,27 +1,18 @@
 <template>
   <div class="pj-dashboard">
-    <!-- HERO -->
     <div class="hero-card">
       <div class="hero-overlay"></div>
-
       <div
         class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-4 position-relative"
       >
-        <div>
-          <span class="hero-badge">
-            PANEL PENANGGUNG JAWAB
-          </span>
-
-          <h2 class="hero-title mt-3">
-            Halo, {{ userName }} 👋
-          </h2>
-
-          <p class="hero-subtitle mb-0">
-            Kelola kegiatan sekolah, monitoring absensi guru, dan validasi
-            aktivitas sekolah dalam satu dashboard modern.
+        <div class="text-start">
+          <span class="hero-badge">PANEL PENANGGUNG JAWAB</span>
+          <h2 class="hero-title mt-3">Halo, {{ userName }} 👋</h2>
+          <p class="hero-subtitle mb-0 text-start">
+            Pantau agenda sekolah hari ini dan kelola sesi absensi guru dari
+            satu tempat.
           </p>
         </div>
-
         <div class="hero-actions">
           <router-link
             class="hero-btn primary-btn"
@@ -36,21 +27,34 @@
             to="/penanggung-jawab/absensi"
           >
             <i class="bi bi-check2-square"></i>
-            Catat Absensi
+            Kelola Absensi
           </router-link>
         </div>
       </div>
     </div>
 
-    <!-- STATS -->
-    <div class="row g-4 mt-1">
+    <div v-if="loadError" class="dashboard-error" role="alert">
+      <div>
+        <i class="bi bi-exclamation-circle-fill me-2"></i>
+        {{ loadError }}
+      </div>
+      <button class="btn btn-sm btn-outline-light mt-3" @click="loadDashboard">
+        <i class="bi bi-arrow-clockwise me-1"></i>
+        Coba lagi
+      </button>
+    </div>
 
+    <div v-if="isLoading" class="dashboard-loading">
+      <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+      Memuat ringkasan dashboard...
+    </div>
+
+    <div v-else-if="!loadError" class="row g-4 mt-1 text-start">
       <div class="col-6 col-md-3">
         <div class="stat-card blue-card">
           <div class="stat-icon">
             <i class="bi bi-calendar2-week"></i>
           </div>
-
           <div>
             <h3>{{ activities.length }}</h3>
             <p>Total Kegiatan</p>
@@ -61,255 +65,285 @@
       <div class="col-6 col-md-3">
         <div class="stat-card green-card">
           <div class="stat-icon">
-            <i class="bi bi-person-check"></i>
+            <i class="bi bi-calendar-check"></i>
           </div>
-
           <div>
-            <h3>{{ attendanceRecords.length }}</h3>
-            <p>Absensi Masuk</p>
+            <h3>{{ todayActivities.length }}</h3>
+            <p>Agenda Hari Ini</p>
           </div>
         </div>
       </div>
-
       <div class="col-6 col-md-3">
         <div class="stat-card orange-card">
           <div class="stat-icon">
-            <i class="bi bi-clock-history"></i>
+            <i class="bi bi-arrow-repeat"></i>
           </div>
-
           <div>
-            <h3>12</h3>
-            <p>Kegiatan Minggu Ini</p>
+            <h3>{{ routineActivitiesCount }}</h3>
+            <p>Kegiatan Rutin</p>
           </div>
         </div>
       </div>
-
       <div class="col-6 col-md-3">
         <div class="stat-card purple-card">
           <div class="stat-icon">
-            <i class="bi bi-bar-chart-line"></i>
+            <i class="bi bi-person-check"></i>
           </div>
-
           <div>
-            <h3>94%</h3>
-            <p>Tingkat Partisipasi</p>
+            <h3>{{ activeSessions.length }}</h3>
+            <p>Sesi Absensi Aktif</p>
           </div>
         </div>
       </div>
-
     </div>
 
-    <!-- CONTENT -->
-    <div class="row g-4 mt-2">
-
-      <!-- KEGIATAN -->
+    <div v-if="!isLoading && !loadError" class="row g-4 mt-2 text-start">
       <div class="col-12 col-xl-7">
-
         <div class="glass-card">
-
-          <div
-            class="d-flex justify-content-between align-items-center mb-4"
-          >
+          <div class="d-flex justify-content-between align-items-center mb-4 gap-3">
             <div>
-              <h5 class="section-title mb-1">
-                Kegiatan Terbaru
-              </h5>
-
-              <small class="section-subtitle">
-                Monitoring kegiatan aktif sekolah
-              </small>
+              <h5 class="section-title mb-1">Agenda Hari Ini</h5>
+              <small class="section-subtitle">{{ todayLabel }}</small>
             </div>
-
-            <span class="section-badge">
-              {{ activities.length }} Data
-            </span>
+            <router-link
+              class="section-link"
+              to="/penanggung-jawab/kegiatan"
+            >
+              Semua kegiatan <i class="bi bi-arrow-right ms-1"></i>
+            </router-link>
           </div>
 
-          <div
-            v-if="activities.length"
-            class="activity-list"
-          >
-
+          <div v-if="todayActivities.length" class="activity-list">
             <div
-              v-for="activity in activities.slice(0, 5)"
+              v-for="activity in todayActivities.slice(0, 5)"
               :key="activity.id"
               class="activity-item"
             >
-
               <div class="activity-left">
-
                 <div class="activity-icon">
-                  <i class="bi bi-calendar-event-fill"></i>
+                  <i
+                    class="bi"
+                    :class="activity.type === 'routine' ? 'bi-arrow-repeat' : 'bi-calendar-event-fill'"
+                  ></i>
                 </div>
-
-                <div>
-                  <h6>{{ activity.name }}</h6>
-
+                <div class="activity-info">
+                  <h6>{{ activity.name || activity.title || "Kegiatan sekolah" }}</h6>
                   <small>
-                    {{ activity.type }} •
-                    {{ formatDate(activity.date) }}
+                    {{ activity.type === "routine" ? "Rutin" : "Tentatif" }}
+                    <span v-if="activity.type !== 'routine' && (activity.start_date || activity.date)">
+                      · {{ formatDate(activity.start_date || activity.date) }}
+                    </span>
                   </small>
                 </div>
-
               </div>
-
-              <span class="activity-status">
-                {{ activity.status }}
+              <span
+                class="activity-status"
+                :class="{ 'pending-status': !hasActiveSession(activity) }"
+              >
+                {{ hasActiveSession(activity) ? "Sesi dibuka" : "Belum dibuka" }}
               </span>
-
             </div>
-
           </div>
-
-          <div
-            v-else
-            class="empty-state"
-          >
-            Belum ada kegiatan terbaru.
+          <div v-else class="empty-state">
+            <i class="bi bi-calendar2-check display-6 d-block mb-2"></i>
+            Tidak ada agenda terjadwal hari ini.
           </div>
-
         </div>
-
       </div>
 
-      <!-- ABSENSI -->
       <div class="col-12 col-xl-5">
-
         <div class="glass-card h-100">
-
-          <div
-            class="d-flex justify-content-between align-items-center mb-4"
-          >
+          <div class="d-flex justify-content-between align-items-center mb-4 gap-3">
             <div>
-              <h5 class="section-title mb-1">
-                Absensi Terakhir
-              </h5>
-
-              <small class="section-subtitle">
-                Data validasi terbaru
-              </small>
+              <h5 class="section-title mb-1">Sesi Absensi Hari Ini</h5>
+              <small class="section-subtitle">Sesi yang siap dikelola</small>
             </div>
-
-            <span class="section-badge green-badge">
-              {{ attendanceRecords.length }}
-            </span>
+            <router-link
+              class="section-link"
+              to="/penanggung-jawab/absensi"
+              aria-label="Buka halaman absensi"
+            >
+              <i class="bi bi-arrow-right"></i>
+            </router-link>
           </div>
 
-          <div
-            v-if="attendanceRecords.length"
-            class="attendance-list"
-          >
-
+          <div v-if="activeSessions.length" class="attendance-list">
             <div
-              v-for="record in attendanceRecords.slice(0, 5)"
-              :key="record.id"
+              v-for="session in activeSessions.slice(0, 5)"
+              :key="session.id"
               class="attendance-item"
             >
-
               <div class="attendance-avatar">
-                {{ record.teacherId }}
+                <i class="bi bi-people-fill"></i>
               </div>
-
               <div class="attendance-content">
-
-                <h6>
-                  Guru ID {{ record.teacherId }}
-                </h6>
-
+                <h6>{{ session.activity_name || "Kegiatan sekolah" }}</h6>
                 <small>
-                  Kelas {{ record.classroomId }}
+                  {{ formatSession(session.session) }}
+                  <span v-if="session.target_type">
+                    · {{ formatTarget(session.target_type) }}
+                  </span>
                 </small>
-
               </div>
-
-              <span
-                class="attendance-status"
-                :class="record.attendanceStatus === 'Hadir'
-                  ? 'success-status'
-                  : 'warning-status'"
-              >
-                {{ record.attendanceStatus }}
-              </span>
-
+              <span class="attendance-status success-status">Aktif</span>
             </div>
-
           </div>
-
-          <div
-            v-else
-            class="empty-state"
-          >
-            Belum ada data absensi.
+          <div v-else class="empty-state">
+            <i class="bi bi-clipboard-check display-6 d-block mb-2"></i>
+            Belum ada sesi absensi yang dibuka hari ini.
           </div>
-
         </div>
-
       </div>
-
     </div>
   </div>
 </template>
 
 <script>
-// import { activityAPI, attendanceAPI } from "@/utils/api";
+import { getActivities, getActiveActivitySessions } from "@/services/api";
 
 export default {
   name: "PersonResponsibleDashboard",
-
   data() {
     return {
       userName: "Penanggung Jawab",
-
       activities: [],
-
-      attendanceRecords: [],
+      activeSessions: [],
+      isLoading: true,
+      loadError: "",
     };
   },
-
+  computed: {
+    todayActivities() {
+      const today = this.getTodayDateKey();
+      const weekday = new Date(`${today}T00:00:00`).getDay();
+      return this.activities.filter((activity) =>
+        this.activityOccursToday(activity, today, weekday),
+      );
+    },
+    routineActivitiesCount() {
+      return this.activities.filter((activity) => activity.type === "routine").length;
+    },
+    todayLabel() {
+      return new Date().toLocaleDateString("id-ID", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+    },
+  },
   mounted() {
     this.loadUserName();
-
-    this.fetchActivities();
-
-    this.fetchAttendanceRecords();
+    this.loadDashboard();
   },
-
   methods: {
     loadUserName() {
       try {
         const user = JSON.parse(localStorage.getItem("user") || "{}");
-
-        this.userName =
-          user.fullname || user.name || "Penanggung Jawab";
+        this.userName = user.fullname || user.name || "Penanggung Jawab";
       } catch (error) {
-        console.error(error);
+        console.error("Gagal memuat nama pengguna:", error);
       }
     },
-
-    async fetchActivities() {
-      const response = await activityAPI.getAll();
-
-      if (response.success) {
-        this.activities = response.data;
+    async loadDashboard() {
+      this.isLoading = true;
+      this.loadError = "";
+      try {
+        const [activityResponse, sessionResponse] = await Promise.all([
+          getActivities(),
+          getActiveActivitySessions(),
+        ]);
+        if (!activityResponse.success) {
+          throw new Error(activityResponse.message || "Gagal memuat kegiatan.");
+        }
+        if (!sessionResponse.success) {
+          throw new Error(sessionResponse.message || "Gagal memuat sesi absensi.");
+        }
+        if (!Array.isArray(activityResponse.data) || !Array.isArray(sessionResponse.data)) {
+          throw new Error("Format data dashboard tidak valid.");
+        }
+        this.activities = activityResponse.data;
+        this.activeSessions = sessionResponse.data;
+      } catch (error) {
+        console.error("Gagal memuat dashboard penanggung jawab:", error);
+        this.loadError = error.message || "Dashboard gagal dimuat. Silakan coba lagi.";
+      } finally {
+        this.isLoading = false;
       }
     },
-
-    async fetchAttendanceRecords() {
-      const response = await attendanceAPI.getAll();
-
-      if (response.success) {
-        this.attendanceRecords = response.data;
-      }
+    getTodayDateKey() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, "0");
+      const day = String(today.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
     },
-
+    activityOccursToday(activity, today, weekday) {
+      if (activity.type === "routine") {
+        const assignments =
+          activity.Teacherassignments ||
+          activity.teacherassignments ||
+          activity.TeacherAssignments ||
+          [];
+        if (!assignments.length) return true;
+        const weekdayNames = [
+          "sunday",
+          "monday",
+          "tuesday",
+          "wednesday",
+          "thursday",
+          "friday",
+          "saturday",
+        ];
+        const weekdayNamesId = [
+          "minggu",
+          "senin",
+          "selasa",
+          "rabu",
+          "kamis",
+          "jumat",
+          "sabtu",
+        ];
+        return assignments.some((assignment) => {
+          const day = String(assignment.day_of_week || "").toLowerCase();
+          return day === weekdayNames[weekday] || day === weekdayNamesId[weekday];
+        });
+      }
+      const startDate = this.toDateKey(activity.start_date || activity.date);
+      const endDate = this.toDateKey(activity.end_date || activity.start_date || activity.date);
+      return Boolean(startDate && endDate && today >= startDate && today <= endDate);
+    },
+    toDateKey(date) {
+      if (!date) return "";
+      if (typeof date === "string") return date.slice(0, 10);
+      const parsed = new Date(date);
+      if (Number.isNaN(parsed.getTime())) return "";
+      return `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, "0")}-${String(parsed.getDate()).padStart(2, "0")}`;
+    },
+    hasActiveSession(activity) {
+      return this.activeSessions.some(
+        (session) => Number(session.activity_id) === Number(activity.id),
+      );
+    },
     formatDate(date) {
       if (!date) return "-";
-
-      return new Date(date).toLocaleDateString("id-ID", {
+      const dateKey = this.toDateKey(date);
+      return new Date(`${dateKey}T00:00:00`).toLocaleDateString("id-ID", {
         day: "2-digit",
         month: "long",
         year: "numeric",
       });
+    },
+    formatSession(session) {
+      const labels = {
+        morning: "Pagi",
+        afternoon: "Siang",
+        all_day: "Seharian",
+      };
+      return labels[session] || session || "Sesi";
+    },
+    formatTarget(target) {
+      return target === "all_teachers" ? "Semua guru aktif" : "Guru terpilih";
     },
   },
 };
@@ -542,6 +576,33 @@ export default {
   color: #94a3b8;
 }
 
+.section-link {
+  color: #60a5fa;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.section-link:hover {
+  color: #93c5fd;
+}
+
+.dashboard-loading,
+.dashboard-error {
+  margin: 20px 0;
+  padding: 18px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #cbd5e1;
+}
+
+.dashboard-error {
+  border-color: rgba(248, 113, 113, 0.28);
+  color: #fecaca;
+}
+
 .section-badge {
   background: rgba(59,130,246,0.15);
 
@@ -625,6 +686,14 @@ export default {
   color: white;
 }
 
+.activity-info {
+  min-width: 0;
+}
+
+.activity-info h6 {
+  overflow-wrap: anywhere;
+}
+
 .activity-left small,
 .attendance-content small {
   color: #94a3b8;
@@ -641,6 +710,11 @@ export default {
 
   font-size: 11px;
   font-weight: 700;
+}
+
+.pending-status {
+  background: rgba(234, 179, 8, 0.14);
+  color: #facc15;
 }
 
 /* ATTENDANCE */

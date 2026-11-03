@@ -9,8 +9,18 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // user-class and teacher relations removed in favor of enrollment/junction tables
-      User.hasMany(models.Classteacherattendance, { foreignKey: 'validator_id', as: 'validations' });
-      User.hasMany(models.Class, {foreignKey:"classleader_id", as: 'classleader' });
+      User.hasMany(models.Classteacherattendance, {
+        foreignKey: "validator_id",
+        as: "validations",
+      });
+      User.hasMany(models.Class, {
+        foreignKey: "classleader_id",
+        as: "classleader",
+      });
+      User.belongsTo(models.Teacher, {
+        foreignKey: "teacher_id",
+        as: "teacher",
+      });
     }
   }
   User.init(
@@ -22,6 +32,22 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM,
         values: ["student", "teacher", "admin", "headmaster", "responsible"],
         allowNull: false,
+      },
+      teacher_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        unique: true,
+        references: {
+          model: "Teachers",
+          key: "id",
+        },
+        onUpdate: "CASCADE",
+        onDelete: "RESTRICT",
+      },
+      is_active: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true,
       },
       contact: { type: DataTypes.STRING, allowNull: true },
       // class_id and teacher_id removed; use Enrollments and ClassTeachers

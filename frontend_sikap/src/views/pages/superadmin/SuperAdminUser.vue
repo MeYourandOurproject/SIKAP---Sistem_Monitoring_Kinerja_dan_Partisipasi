@@ -1,465 +1,343 @@
 <template>
-  <div class="row d-md-none mb-3"><SuperAdminMobileNavbar /></div>
-  <div class="superadmin-user mt-3">
-    <!-- Header -->
-    <div class="row mb-4">
-      <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center">
-          <h2 class="mb-0">Manajemen Pengguna</h2>
-          <button
-            class="btn btn-success"
-            @click="openAddModal"
-            v-if="!showForm"
-          >
-            <i class="bi bi-plus-circle me-2"></i>
-            Tambah Pengguna
-          </button>
-        </div>
+  <section class="superadmin-user mt-3 text-start">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+      <div>
+        <h2 class="mb-1">Manajemen Pengguna</h2>
+        <p class="text-muted mb-0">Atur akun, peran, dan akses ke dalam sistem.</p>
       </div>
+      <button v-if="!showForm" class="btn btn-success" @click="openAddForm">
+        <i class="bi bi-person-plus me-2"></i>Tambah Pengguna
+      </button>
     </div>
 
-    <!-- Form Add/Edit -->
-    <div class="row mb-4" v-if="showForm">
-      <div class="col-12">
-        <div class="card shadow-sm">
-          <div class="card-header bg-light">
-            <h5 class="mb-0">
-              {{ editingUser ? "Edit Data Pengguna" : "Tambah Pengguna Baru" }}
-            </h5>
-          </div>
-          <div class="card-body">
-            <form @submit.prevent="saveUser">
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Nama Lengkap *</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="formData.fullname"
-                    required
-                  />
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Email *</label>
-                  <input
-                    type="email"
-                    class="form-control"
-                    v-model="formData.email"
-                    required
-                    :readonly="editingUser"
-                  />
-                </div>
-                <div class="col-md-6 mb-3" v-if="!editingUser">
-                  <label class="form-label">Password *</label>
-                  <input
-                    type="password"
-                    class="form-control"
-                    v-model="formData.password"
-                    required
-                    placeholder="Minimal 8 karakter"
-                  />
-                </div>
-                <div class="col-md-6 mb-3" v-if="!editingUser">
-                  <label class="form-label">Konfirmasi Password *</label>
-                  <input
-                    type="password"
-                    class="form-control"
-                    v-model="formData.passwordConfirm"
-                    required
-                  />
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Role *</label>
-                  <select class="form-select" v-model="formData.roleId" required>
-                    <option value="">-- Pilih Role --</option>
-                    <option
-                      v-for="role in roles"
-                      :key="role.id"
-                      :value="role.id"
-                    >
-                      {{ formatRoleName(role.name) }}
-                    </option>
-                  </select>
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Status</label>
-                  <select class="form-select" v-model="formData.status">
-                    <option value="active">Aktif</option>
-                    <option value="inactive">Tidak Aktif</option>
-                  </select>
-                </div>
-              </div>
-              <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">
-                  {{ editingUser ? "Update" : "Simpan" }}
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  @click="cancelForm"
-                >
-                  Batal
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
+    <div v-if="errorMessage" class="alert alert-danger" role="alert">
+      {{ errorMessage }}
     </div>
 
-    <!-- Search & Filter -->
-    <div class="row mb-3" v-if="!showForm">
-      <div class="col-md-4">
-        <div class="input-group">
-          <span class="input-group-text"
-            ><i class="bi bi-search"></i
-          ></span>
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Cari pengguna..."
-            v-model="searchQuery"
-          />
-        </div>
+    <div v-if="showForm" class="card shadow-sm mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">{{ editingUser ? "Edit Pengguna" : "Tambah Pengguna" }}</h5>
       </div>
-      <div class="col-md-4">
-        <select class="form-select" v-model="filterRole">
-          <option value="">Semua Role</option>
-          <option
-            v-for="role in roles"
-            :key="role.id"
-            :value="role.id"
-          >
-            {{ formatRoleName(role.name) }}
-          </option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Table -->
-    <div class="row" v-if="!showForm">
-      <div class="col-12">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <div class="table-responsive">
-              <table class="table table-hover mb-0">
-                <thead>
-                  <tr>
-                    <th>No</th>
-                    <th>Nama Lengkap</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th>Dibuat</th>
-                    <th>Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-if="filteredUsers.length === 0">
-                    <td colspan="7" class="text-center text-muted py-4">
-                      Tidak ada data pengguna
-                    </td>
-                  </tr>
-                  <tr v-for="(user, index) in filteredUsers" :key="user.id">
-                    <td>{{ index + 1 }}</td>
-                    <td><strong>{{ user.fullname }}</strong></td>
-                    <td>{{ user.email }}</td>
-                    <td>
-                      <span class="badge" :class="getRoleBadgeClass(user.roleId)">
-                        {{ formatRoleName(getRoleName(user.roleId)) }}
-                      </span>
-                    </td>
-                    <td>
-                      <span
-                        :class="{
-                          'badge bg-success': user.status === 'active',
-                          'badge bg-danger': user.status === 'inactive',
-                        }"
-                      >
-                        {{ user.status === 'active' ? 'Aktif' : 'Tidak Aktif' }}
-                      </span>
-                    </td>
-                    <td>{{ formatDate(user.createdAt) }}</td>
-                    <td>
-                      <div class="btn-group btn-group-sm" role="group">
-                        <button
-                          class="btn btn-outline-info"
-                          @click="editUser(user)"
-                          title="Edit"
-                        >
-                          <i class="bi bi-pencil"></i>
-                        </button>
-                        <button
-                          class="btn btn-outline-danger"
-                          @click="deleteUser(user.id)"
-                          title="Hapus"
-                        >
-                          <i class="bi bi-trash"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+      <div class="card-body">
+        <form @submit.prevent="saveUser">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Nama Lengkap *</label>
+              <input v-model.trim="form.name" class="form-control" required />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Username *</label>
+              <input v-model.trim="form.username" class="form-control" required />
+            </div>
+            <div v-if="!editingUser" class="col-md-6 mb-3">
+              <label class="form-label">Password * (minimal 8 karakter)</label>
+              <input v-model="form.password" class="form-control" type="password" minlength="8" required />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Role *</label>
+              <select v-model="form.role" class="form-select" required>
+                <option value="">Pilih role</option>
+                <option v-for="role in roles" :key="role.value" :value="role.value">{{ role.label }}</option>
+              </select>
+            </div>
+            <div v-if="form.role === 'teacher'" class="col-md-6 mb-3">
+              <label class="form-label">Hubungkan ke Data Guru *</label>
+              <select
+                v-model="form.teacher_id"
+                class="form-select"
+                required
+                :disabled="loading || availableTeachers.length === 0"
+              >
+                <option value="" disabled>
+                  {{ loading ? "Memuat data guru..." : "Pilih profil guru" }}
+                </option>
+                <option v-for="teacher in availableTeachers" :key="teacher.id" :value="teacher.id">
+                  {{ teacher.name }}{{ teacher.nip ? ` (${teacher.nip})` : "" }}
+                </option>
+              </select>
+              <small class="form-text text-muted">
+                Akun guru harus ditautkan ke profil pada Manajemen Data Guru.
+                <template v-if="!loading && availableTeachers.length === 0">
+                  Tidak ada profil guru aktif yang belum memiliki akun.
+                  <router-link to="/super-admin/teacher">Tambah atau periksa data guru</router-link>.
+                </template>
+              </small>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Kontak</label>
+              <input v-model.trim="form.contact" class="form-control" />
+            </div>
+            <div v-if="editingUser" class="col-md-6 mb-3">
+              <label class="form-label">Status Akun</label>
+              <select v-model="form.is_active" class="form-select" :disabled="isCurrentUser(editingUser)">
+                <option :value="true">Aktif</option>
+                <option :value="false">Tidak aktif</option>
+              </select>
             </div>
           </div>
-        </div>
+          <button class="btn btn-primary me-2" type="submit" :disabled="saving">
+            {{ saving ? "Menyimpan..." : editingUser ? "Simpan Perubahan" : "Simpan" }}
+          </button>
+          <button class="btn btn-secondary" type="button" @click="cancelForm">Batal</button>
+        </form>
       </div>
     </div>
 
-    <!-- Loading Spinner -->
-    <div class="text-center py-5" v-if="loading">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
+    <template v-else>
+      <div class="row mb-3 g-2">
+        <div class="col-md-5">
+          <input v-model="searchQuery" class="form-control" type="search" placeholder="Cari nama atau username..." />
+        </div>
+        <div class="col-md-3">
+          <select v-model="filterRole" class="form-select">
+            <option value="">Semua role</option>
+            <option v-for="role in roles" :key="role.value" :value="role.value">{{ role.label }}</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <select v-model="filterStatus" class="form-select">
+            <option value="">Semua status</option>
+            <option value="active">Aktif</option>
+            <option value="inactive">Tidak aktif</option>
+          </select>
+        </div>
       </div>
-    </div>
-  </div>
+      <div class="card shadow-sm">
+        <div class="card-body table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr><th>Nama</th><th>Username</th><th>Role</th><th>Guru</th><th>Status</th><th>Dibuat</th><th>Aksi</th></tr>
+            </thead>
+            <tbody>
+              <tr v-if="!loading && filteredUsers.length === 0">
+                <td colspan="7" class="text-center text-muted py-4">Tidak ada data pengguna</td>
+              </tr>
+              <tr v-for="user in filteredUsers" :key="user.id">
+                <td>{{ user.name }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ roleLabel(user.role) }}</td>
+                <td>{{ teacherName(user.teacher_id) }}</td>
+                <td>
+                  <span class="badge" :class="user.is_active ? 'bg-success' : 'bg-secondary'">
+                    {{ user.is_active ? "Aktif" : "Tidak aktif" }}
+                  </span>
+                </td>
+                <td>{{ formatDate(user.createdAt) }}</td>
+                <td class="text-nowrap">
+                  <button class="btn btn-sm btn-outline-primary me-1" @click="editUser(user)" aria-label="Edit pengguna">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button
+                    class="btn btn-sm"
+                    :class="user.is_active ? 'btn-outline-danger' : 'btn-outline-success'"
+                    :disabled="isCurrentUser(user)"
+                    @click="toggleUserStatus(user)"
+                  >
+                    {{ user.is_active ? "Nonaktifkan" : "Aktifkan" }}
+                  </button>
+                </td>
+              </tr>
+              <tr v-if="loading">
+                <td colspan="7" class="text-center py-4">
+                  <span class="spinner-border spinner-border-sm me-2"></span>Memuat pengguna...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </template>
+  </section>
 </template>
 
 <script>
-import SuperAdminMobileNavbar from "@/components/superadmin/SuperAdminMobileNavbar.vue";
-// import { api } from "@/utils/api";
+import {
+  createManagedUser,
+  getManagedTeachers,
+  getManagedUsers,
+  updateManagedUser,
+} from "@/services/api.js";
+
+const roles = [
+  { value: "student", label: "Siswa / Ketua Murid" },
+  { value: "teacher", label: "Guru" },
+  { value: "responsible", label: "Penanggung Jawab" },
+  { value: "headmaster", label: "Kepala Sekolah" },
+  { value: "admin", label: "Administrator" },
+];
+const emptyForm = () => ({
+  name: "",
+  username: "",
+  password: "",
+  role: "",
+  teacher_id: "",
+  contact: "",
+  is_active: true,
+});
 
 export default {
   name: "SuperAdminUser",
-  components: {
-    SuperAdminMobileNavbar,
-  },
   data() {
     return {
       users: [],
-      roles: [],
+      teachers: [],
+      roles,
       searchQuery: "",
       filterRole: "",
+      filterStatus: "",
       showForm: false,
       loading: false,
+      saving: false,
       editingUser: null,
-      formData: {
-        fullname: "",
-        email: "",
-        password: "",
-        passwordConfirm: "",
-        roleId: "",
-        status: "active",
-      },
+      errorMessage: "",
+      currentUserId: null,
+      form: emptyForm(),
     };
   },
   computed: {
     filteredUsers() {
+      const query = this.searchQuery.trim().toLowerCase();
       return this.users.filter((user) => {
-        const matchesSearch =
-          user.fullname.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-          user.email.toLowerCase().includes(this.searchQuery.toLowerCase());
-        
-        const matchesRole = !this.filterRole || user.roleId === parseInt(this.filterRole);
-        
-        return matchesSearch && matchesRole;
+        const matchesSearch = [user.name, user.username]
+          .filter(Boolean)
+          .some((value) => String(value).toLowerCase().includes(query));
+        const matchesRole = !this.filterRole || user.role === this.filterRole;
+        const matchesStatus =
+          !this.filterStatus ||
+          (user.is_active ? "active" : "inactive") === this.filterStatus;
+        return matchesSearch && matchesRole && matchesStatus;
+      });
+    },
+    availableTeachers() {
+      return this.teachers.filter((teacher) => {
+        const assignedUser = this.users.find(
+          (user) => Number(user.teacher_id) === Number(teacher.id),
+        );
+        return (
+          (!assignedUser || assignedUser.id === this.editingUser?.id) &&
+          (teacher.status === "active" ||
+            Number(teacher.id) === Number(this.form.teacher_id))
+        );
       });
     },
   },
   mounted() {
-    this.fetchRoles();
-    this.fetchUsers();
+    try {
+      const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+      this.currentUserId = Number(currentUser.id) || null;
+    } catch (error) {
+      this.errorMessage = `Data sesi tidak dapat dibaca: ${error.message}`;
+    }
+    this.fetchData();
   },
   methods: {
-    async fetchRoles() {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await api.get("/users/roles/list", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        this.roles = response.data || [];
-      } catch (error) {
-        console.error("Error fetching roles:", error);
-      }
-    },
-    async fetchUsers() {
+    async fetchData() {
       this.loading = true;
+      this.errorMessage = "";
       try {
-        const token = localStorage.getItem("token");
-        const response = await api.get("/users", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        this.users = response.data || [];
+        const [users, teachers] = await Promise.all([
+          getManagedUsers(),
+          getManagedTeachers(),
+        ]);
+        if (!Array.isArray(users) || !Array.isArray(teachers)) {
+          throw new Error("Format data pengguna atau guru tidak valid");
+        }
+        this.users = users;
+        this.teachers = teachers;
       } catch (error) {
-        console.error("Error fetching users:", error);
-        alert("Gagal memuat data pengguna");
+        this.errorMessage = `Gagal memuat data pengguna: ${error.message}`;
       } finally {
         this.loading = false;
       }
     },
-    openAddModal() {
-      this.showForm = true;
+    openAddForm() {
       this.editingUser = null;
-      this.resetForm();
+      this.form = emptyForm();
+      this.errorMessage = "";
+      this.showForm = true;
     },
     editUser(user) {
       this.editingUser = user;
-      this.formData = {
-        fullname: user.fullname || "",
-        email: user.email || "",
+      this.form = {
+        name: user.name || "",
+        username: user.username || "",
         password: "",
-        passwordConfirm: "",
-        roleId: user.roleId || "",
-        status: user.status || "active",
+        role: user.role || "",
+        teacher_id: user.teacher_id || "",
+        contact: user.contact || "",
+        is_active: Boolean(user.is_active),
       };
+      this.errorMessage = "";
       this.showForm = true;
     },
     async saveUser() {
-      // Validation
-      if (!this.editingUser) {
-        if (this.formData.password !== this.formData.passwordConfirm) {
-          alert("Password dan konfirmasi password tidak sesuai");
+      if (this.form.role === "teacher" && !this.form.teacher_id) {
+        this.errorMessage = "Pilih data guru untuk akun dengan role Guru.";
+        return;
+      }
+      const payload = {
+        name: this.form.name,
+        username: this.form.username,
+        role: this.form.role,
+        teacher_id: this.form.role === "teacher" ? Number(this.form.teacher_id) : null,
+        contact: this.form.contact || null,
+      };
+      if (this.editingUser) {
+        payload.is_active = this.form.is_active;
+      } else {
+        if (this.form.password.length < 8) {
+          this.errorMessage = "Password harus memiliki minimal 8 karakter.";
           return;
         }
-        if (this.formData.password.length < 8) {
-          alert("Password minimal 8 karakter");
-          return;
-        }
+        payload.password = this.form.password;
       }
 
+      this.saving = true;
+      this.errorMessage = "";
       try {
-        const token = localStorage.getItem("token");
-        const data = {
-          fullname: this.formData.fullname,
-          email: this.formData.email,
-          roleId: parseInt(this.formData.roleId),
-          status: this.formData.status,
-        };
-
-        if (!this.editingUser) {
-          data.password = this.formData.password;
-        }
-        
         if (this.editingUser) {
-          // Update existing user
-          await api.put(`/users/${this.editingUser.id}`, data, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          alert("Data pengguna berhasil diperbarui");
+          await updateManagedUser(this.editingUser.id, payload);
         } else {
-          // Create new user
-          await api.post("/users", data, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          alert("Pengguna berhasil ditambahkan");
+          await createManagedUser(payload);
         }
-        
-        this.fetchUsers();
-        this.cancelForm();
+        this.showForm = false;
+        this.editingUser = null;
+        await this.fetchData();
       } catch (error) {
-        console.error("Error saving user:", error);
-        alert("Gagal menyimpan data pengguna: " + (error.response?.data?.message || error.message));
+        this.errorMessage = `Gagal menyimpan pengguna: ${error.message}`;
+      } finally {
+        this.saving = false;
       }
     },
-    async deleteUser(id) {
-      if (confirm("Apakah Anda yakin ingin menghapus pengguna ini?")) {
-        try {
-          const token = localStorage.getItem("token");
-          await api.delete(`/users/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          alert("Pengguna berhasil dihapus");
-          this.fetchUsers();
-        } catch (error) {
-          console.error("Error deleting user:", error);
-          alert("Gagal menghapus pengguna");
-        }
+    async toggleUserStatus(user) {
+      const status = user.is_active ? "menonaktifkan" : "mengaktifkan";
+      if (!window.confirm(`Yakin ingin ${status} akun ${user.username}?`)) return;
+      this.errorMessage = "";
+      try {
+        await updateManagedUser(user.id, { is_active: !user.is_active });
+        await this.fetchData();
+      } catch (error) {
+        this.errorMessage = `Gagal mengubah status pengguna: ${error.message}`;
       }
+    },
+    isCurrentUser(user) {
+      return this.currentUserId === Number(user.id);
+    },
+    roleLabel(role) {
+      return this.roles.find((item) => item.value === role)?.label || role;
+    },
+    teacherName(teacherId) {
+      return this.teachers.find((teacher) => Number(teacher.id) === Number(teacherId))?.name || "-";
+    },
+    formatDate(value) {
+      return value ? new Date(value).toLocaleDateString("id-ID") : "-";
     },
     cancelForm() {
       this.showForm = false;
       this.editingUser = null;
-      this.resetForm();
-    },
-    resetForm() {
-      this.formData = {
-        fullname: "",
-        email: "",
-        password: "",
-        passwordConfirm: "",
-        roleId: "",
-        status: "active",
-      };
-    },
-    getRoleName(roleId) {
-      const role = this.roles.find((r) => r.id === roleId);
-      return role ? role.name : "Unknown";
-    },
-    getRoleBadgeClass(roleId) {
-      const roleName = this.getRoleName(roleId);
-      const classMap = {
-        super_admin: "bg-danger",
-        kepala_sekolah: "bg-primary",
-        wakasek: "bg-info",
-        guru: "bg-success",
-        ketua_murid: "bg-warning",
-        penanggung_jawab: "bg-secondary",
-      };
-      return classMap[roleName] || "bg-secondary";
-    },
-    formatRoleName(roleName) {
-      const nameMap = {
-        super_admin: "Super Admin",
-        kepala_sekolah: "Kepala Sekolah",
-        wakasek: "Wakasek",
-        guru: "Guru",
-        ketua_murid: "Ketua Murid",
-        penanggung_jawab: "Penanggung Jawab",
-      };
-      return nameMap[roleName] || roleName;
-    },
-    formatDate(dateString) {
-      if (!dateString) return "-";
-      const date = new Date(dateString);
-      return date.toLocaleDateString("id-ID");
+      this.form = emptyForm();
+      this.errorMessage = "";
     },
   },
 };
 </script>
-
-<style scoped>
-.superadmin-user {
-  color: #333;
-}
-
-.table-responsive {
-  margin-bottom: 0;
-}
-
-.table {
-  margin-bottom: 0;
-}
-
-.table thead th {
-  background-color: #f3f4f6;
-  border-bottom: 2px solid #e5e7eb;
-  font-weight: 600;
-  color: #374151;
-}
-
-.table tbody tr:hover {
-  background-color: #f9fafb;
-}
-
-.btn-group-sm .btn {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.85rem;
-}
-
-.form-label {
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 0.5rem;
-}
-
-.input-group-text {
-  background-color: #f3f4f6;
-  border: 1px solid #d1d5db;
-}
-
-.badge {
-  padding: 0.35rem 0.65rem;
-  font-size: 0.85rem;
-}
-</style>

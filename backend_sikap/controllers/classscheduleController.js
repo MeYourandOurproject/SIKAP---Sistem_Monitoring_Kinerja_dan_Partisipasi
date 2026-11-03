@@ -1,11 +1,128 @@
-const { Classschedule, Timeslot, Class, sequelize } = require("../models");
+const {
+  Classschedule,
+  Timeslot,
+  Class,
+  Teacher,
+  Classroom,
+  Subject,
+  User,
+  Student,
+  Studentattendance,
+  Classagenda,
+  sequelize,
+} = require("../models");
 const Sequelize = require("sequelize");
+const { Op } = Sequelize;
+
+const dayNamesByUtcDay = [
+  "Minggu",
+  "Senin",
+  "Selasa",
+  "Rabu",
+  "Kamis",
+  "Jumat",
+  "Sabtu",
+];
+
+function getJakartaDateTime(date = new Date()) {
+  const parts = new Intl.DateTimeFormat("id-ID", {
+    timeZone: "Asia/Jakarta",
+    weekday: "long",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+  const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+
+  return {
+    dayName: values.weekday,
+    date: `${values.year}-${values.month}-${values.day}`,
+    time: `${values.hour}:${values.minute}:${values.second}`,
+  };
+}
 
 class ClassscheduleController {
   static async getAll(req, res, next) {
     try {
-      const items = await Classschedule.findAll();
+      const items = await Classschedule.findAll({
+        include: [
+          { model: Class, attributes: ["id", "class_name"] },
+          { model: Teacher, attributes: ["id", "name"] },
+          { model: Subject, attributes: ["id", "subject_name"] },
+          { model: Classroom, attributes: ["id", "classroom_name"] },
+          {
+            model: Timeslot,
+            as: "startTimeslot",
+            attributes: ["id", "start", "end"],
+          },
+          {
+            model: Timeslot,
+            as: "endTimeslot",
+            attributes: ["id", "start", "end"],
+          },
+        ],
+        order: [["day", "ASC"]],
+      });
       res.json(items);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getForCurrentTeacher(req, res, next) {
+    try {
+      const user = await User.findByPk(req.user.id, {
+        attributes: ["teacher_id"],
+      });
+
+      if (!user?.teacher_id) {
+        return res.status(403).json({
+          message: "Akun guru belum terhubung dengan data guru",
+        });
+      }
+
+      const schedules = await Classschedule.findAll({
+        where: { teacher_id: user.teacher_id },
+        include: [
+          { model: Class, attributes: ["id", "class_name"] },
+          { model: Subject, attributes: ["id", "subject_name"] },
+          { model: Classroom, attributes: ["id", "classroom_name"] },
+          {
+            model: Timeslot,
+            as: "startTimeslot",
+            attributes: ["start"],
+          },
+          {
+            model: Timeslot,
+            as: "endTimeslot",
+            attributes: ["end"],
+          },
+        ],
+      });
+
+      const dayOrder = [
+        "Senin",
+        "Selasa",
+        "Rabu",
+        "Kamis",
+        "Jumat",
+        "Sabtu",
+        "Minggu",
+      ];
+      schedules.sort((left, right) => {
+        const dayDifference =
+          dayOrder.indexOf(left.day) - dayOrder.indexOf(right.day);
+        if (dayDifference !== 0) return dayDifference;
+        return (left.startTimeslot?.start || "").localeCompare(
+          right.startTimeslot?.start || "",
+        );
+      });
+
+      res.json(schedules);
     } catch (error) {
       next(error);
     }
@@ -130,30 +247,7 @@ class ClassscheduleController {
 
   static async getCurrent(req, res, next) {
     try {
-      const now = new Date();
-      const days = [
-        "Minggu",
-        "Senin",
-        "Selasa",
-        "Rabu",
-        "Kamis",
-        "Jumat",
-        "Sabtu",
-      ];
-      // const dayName = req.query.day || days[now.getDay()];
-      const dayName = "Senin";
-      const hh = String(now.getHours()).padStart(2, "0");
-      const mm = String(now.getMinutes()).padStart(2, "0");
-      const ss = String(now.getSeconds()).padStart(2, "0");
-        // let time = req.query.time || `${hh}:${mm}:${ss}`;
-      let time = "09:30:00";
-
-      if (/^\d{2}:\d{2}$/.test(time)) {
-        time = `${time}:00`;
-      }
-
-      const schoolStart = "07:00:00";
-      const schoolEnd = "15:10:00";
+      const { dayName, date: todayDate, time } = getJakartaDateTime();
 
       if (dayName === "Sabtu" || dayName === "Minggu") {
         return res.json({
@@ -163,95 +257,135 @@ class ClassscheduleController {
         });
       }
 
-      if (time < schoolStart || time > schoolEnd) {
-        return res.json({
-          total: 0,
-          data: [],
-          note: `Belum masuk waktu sekolah atau sudah selesai. Jam efektif KBM adalah ${schoolStart} - ${schoolEnd}`,
-        });
+      const schedules = await Classschedule.findAll({
+        where: { day: dayName },
+        include: [
+          { model: Class, attributes: ["id", "class_name"] },
+          { model: Teacher, attributes: ["id", "name"] },
+          { model: Subject, attributes: ["id", "subject_name"] },
+          { model: Classroom, attributes: ["id", "classroom_name"] },
+          { model: Timeslot, as: "startTimeslot", attributes: ["start"] },
+          { model: Timeslot, as: "endTimeslot", attributes: ["end"] },
+        ],
+        order: [[{ model: Timeslot, as: "startTimeslot" }, "start", "ASC"]],
+      });
+      const visibleSchedules = schedules.filter((schedule) =>
+        schedule.startTimeslot?.start &&
+        schedule.endTimeslot?.end &&
+        schedule.startTimeslot.start <= time &&
+        time < schedule.endTimeslot.end,
+      );
+      if (visibleSchedules.length === 0) {
+        return res.json({ total: 0, data: [] });
       }
 
-      const todayDate = now.toISOString().slice(0, 10);
 
-      const sql = `
-        SELECT
-          c.id AS class_id,
-          c.class_name,
-          t.name AS teacher_name,
-          s.subject_name,
-          cr.classroom_name,
-          ts.start,
-          te.end,
-          ta.id AS attendance_id,
-          ta.attendance_status,
-          ta.activity_status,
-          ta.validated_at,
-          ta.lateness
-        FROM Classschedules cs
-        JOIN Classes c ON cs.class_id = c.id
-        JOIN Teachers t ON cs.teacher_id = t.id
-        JOIN Subjects s ON cs.subject_id = s.id
-        JOIN Classrooms cr ON cs.classroom_id = cr.id
-        JOIN Timeslots ts ON cs.start_timeslot_id = ts.id
-        JOIN Timeslots te ON cs.end_timeslot_id = te.id
-        LEFT JOIN Classteacherattendances ta ON ta.id = (
-          SELECT id FROM Classteacherattendances
-          WHERE classschedule_id = cs.id AND DATE(date) = DATE(?)
-          ORDER BY date DESC LIMIT 1
-        )
-        WHERE cs.day = ? AND ? BETWEEN ts.start AND te.end
-        ORDER BY c.id ASC
-      `;
+      const scheduleIds = visibleSchedules.map((schedule) => schedule.id);
+      const classIds = [...new Set(visibleSchedules.map((schedule) => schedule.class_id))];
+      const [activeStudents, attendanceRecords, agendas] = await Promise.all([
+        Student.findAll({
+          where: { class_id: classIds, status: "active" },
+          attributes: ["id", "class_id"],
+        }),
+        Studentattendance.findAll({
+          where: { classschedule_id: scheduleIds, attendance_date: todayDate },
+          include: [{
+            model: Student,
+            as: "student",
+            attributes: ["id", "name", "nis"],
+          }],
+        }),
+        Classagenda.findAll({
+          where: { classschedule_id: scheduleIds, agenda_date: todayDate },
+          attributes: ["classschedule_id", "activity_status", "content", "updatedAt"],
+        }),
+      ]);
 
-      const rows = await sequelize.query(sql, {
-        replacements: [todayDate, dayName, time],
-        type: Sequelize.QueryTypes.SELECT,
+      const activeStudentCounts = new Map();
+      activeStudents.forEach((student) => {
+        const classId = Number(student.class_id);
+        activeStudentCounts.set(classId, (activeStudentCounts.get(classId) || 0) + 1);
       });
+      const attendanceBySchedule = new Map();
+      attendanceRecords.forEach((record) => {
+        const scheduleId = Number(record.classschedule_id);
+        const records = attendanceBySchedule.get(scheduleId) || [];
+        records.push(record);
+        attendanceBySchedule.set(scheduleId, records);
+      });
+      const agendaBySchedule = new Map(
+        agendas.map((agenda) => [Number(agenda.classschedule_id), agenda]),
+      );
 
-      const mapped = rows.map((r) => {
-        const hasAttendance = !!r.attendance_id;
-
-        // determine status and color for FE based on attendance/activity
-        let status = "Belum divalidasi";
-        let color = "red";
-        let terlambat = "tidak";
-
-        if (!hasAttendance) {
-          status = "Belum divalidasi";
-          color = "red";
-        } else {
-          const activity = (r.activity_status || "").toString().toLowerCase();
-          const attendance = (r.attendance_status || "").toString().toLowerCase();
-
-          // map activity to human label
-          if (activity === "teaching") status = "Mengajar";
-          else if (activity === "empty") status = "Kelas Kosong";
-          else if (activity === "assignment") status = "Tugas";
-          else status = r.activity_status || "-";
-
-          // apply color rules described by FE requirements
-          if (activity === "empty" && attendance === "absent") {
-            color = "red"; // empty + absent -> merah
-          } else if ((attendance === "permission" || attendance === "absent") && activity === "assignment") {
-            color = "yellow"; // izin/tidak hadir tetapi memberi tugas -> kuning
-          } else if (attendance === "present" && activity === "teaching") {
-            color = "green"; // hadir dan mengajar -> hijau
-          } else {
-            // fallback
-            color = "yellow";
-          }
-
-          // terlambat: try to infer from lateness/validated_at if present
-          terlambat = r.lateness && Number(r.lateness) > 0 ? "ya" : "tidak";
-        }
+      const mapped = visibleSchedules.map((schedule) => {
+        const scheduleId = Number(schedule.id);
+        const classId = Number(schedule.class_id);
+        const activeStudentCount = activeStudentCounts.get(classId) || 0;
+        const records = attendanceBySchedule.get(scheduleId) || [];
+        const agenda = agendaBySchedule.get(scheduleId);
+        const presentCount = records.filter(
+          (record) => record.attendance_status === "present",
+        ).length;
+        const nonPresentStudents = records
+          .filter((record) => record.attendance_status !== "present")
+          .map((record) => ({
+            student_id: record.student_id,
+            name: record.student?.name || "Siswa",
+            nis: record.student?.nis || null,
+            attendance_status: record.attendance_status,
+          }));
+        const validated =
+          activeStudentCount > 0 &&
+          records.length === activeStudentCount &&
+          Boolean(agenda);
+        const scheduleEnded =
+          schedule.endTimeslot?.end && schedule.endTimeslot.end <= time;
+        const activityStatus = validated
+          ? agenda.activity_status
+          : scheduleEnded
+            ? "empty"
+            : null;
+        const status = validated
+          ? activityStatus === "teaching"
+            ? "Mengajar"
+            : activityStatus === "assignment"
+              ? "Tugas"
+              : "Kelas Kosong"
+          : scheduleEnded
+            ? "Kelas Kosong"
+            : "Belum divalidasi";
 
         return {
-          ...r,
-          validated: hasAttendance,
+          schedule_id: scheduleId,
+          class_id: classId,
+          class_name: schedule.Class?.class_name || "-",
+          teacher_name: schedule.Teacher?.name || "-",
+          subject_name: schedule.Subject?.subject_name || "-",
+          classroom_name: schedule.Classroom?.classroom_name || "-",
+          start: schedule.startTimeslot?.start || null,
+          end: schedule.endTimeslot?.end || null,
+          agenda_date: todayDate,
+          agenda_status: agenda?.activity_status || null,
+          agenda_content: agenda?.content || "",
+          agenda_updated_at: agenda?.updatedAt || null,
+          activity_status: activityStatus,
           status,
-          color,
-          terlambat,
-          lateness: Number(r.lateness) || 0,
+          validated,
+          validation_status: validated ? "Tervalidasi" : "Belum divalidasi",
+          student_count: activeStudentCount,
+          attendance_count: records.length,
+          present_count: presentCount,
+          non_present_count: nonPresentStudents.length,
+          non_present_students: nonPresentStudents,
+          color: !validated
+            ? scheduleEnded
+              ? "red"
+              : "blue"
+            : activityStatus === "teaching"
+              ? "green"
+              : activityStatus === "assignment"
+                ? "yellow"
+                : "red",
         };
       });
 
@@ -263,6 +397,280 @@ class ClassscheduleController {
       next(error);
     }
   }
+
+  static async getHistory(req, res, next) {
+    try {
+      const { date: todayDate, time } = getJakartaDateTime();
+      const startDate = req.query.start_date;
+      const endDate = req.query.end_date;
+      const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+      const isValidDate = (value) => {
+        if (!datePattern.test(value)) return false;
+        const parsed = new Date(`${value}T00:00:00.000Z`);
+        return !Number.isNaN(parsed.getTime()) &&
+          parsed.toISOString().slice(0, 10) === value;
+      };
+
+      if (!startDate || !endDate) {
+        return res.status(400).json({
+          message: "Tanggal awal dan akhir periode wajib diisi",
+        });
+      }
+
+      if (!isValidDate(startDate) || !isValidDate(endDate) || startDate > endDate) {
+        return res.status(400).json({
+          message: "Rentang tanggal riwayat tidak valid",
+        });
+      }
+
+      const start = new Date(`${startDate}T00:00:00.000Z`);
+      const end = new Date(`${endDate}T00:00:00.000Z`);
+      const rangeDays = Math.floor((end - start) / 86400000) + 1;
+      if (rangeDays > 90) {
+        return res.status(400).json({
+          message: "Rentang riwayat maksimal 90 hari",
+        });
+      }
+      if (endDate > todayDate) {
+        return res.status(400).json({
+          message: "Tanggal akhir riwayat tidak boleh melewati hari ini",
+        });
+      }
+
+      const allSchedules = await Classschedule.findAll({
+        attributes: ["id", "class_id", "teacher_id", "day"],
+        include: [
+          { model: Class, attributes: ["id", "class_name"] },
+          { model: Teacher, attributes: ["id", "name"] },
+        ],
+      });
+      const classes = new Map();
+      const teachers = new Map();
+      allSchedules.forEach((schedule) => {
+        if (schedule.Class) {
+          classes.set(Number(schedule.Class.id), {
+            id: Number(schedule.Class.id),
+            name: schedule.Class.class_name,
+          });
+        }
+        if (schedule.Teacher) {
+          teachers.set(Number(schedule.Teacher.id), {
+            id: Number(schedule.Teacher.id),
+            name: schedule.Teacher.name,
+          });
+        }
+      });
+
+      const filters = {};
+      if (req.query.class_id) {
+        if (!/^[1-9]\d*$/.test(req.query.class_id)) {
+          return res.status(400).json({ message: "Filter kelas tidak valid" });
+        }
+        filters.class_id = Number(req.query.class_id);
+      }
+      if (req.query.teacher_id) {
+        if (!/^[1-9]\d*$/.test(req.query.teacher_id)) {
+          return res.status(400).json({ message: "Filter guru tidak valid" });
+        }
+        filters.teacher_id = Number(req.query.teacher_id);
+      }
+
+      const filterOptions = {
+        classes: [...classes.values()].sort((a, b) => a.name.localeCompare(b.name)),
+        teachers: [...teachers.values()].sort((a, b) => a.name.localeCompare(b.name)),
+      };
+      if (!filters.class_id && !filters.teacher_id) {
+        return res.json({
+          total: 0,
+          data: [],
+          filters: filterOptions,
+          start_date: startDate,
+          end_date: endDate,
+        });
+      }
+
+      const days = new Set();
+      for (let cursor = new Date(start); cursor <= end; cursor.setUTCDate(cursor.getUTCDate() + 1)) {
+        days.add(dayNamesByUtcDay[cursor.getUTCDay()]);
+      }
+      const scheduleWhere = { day: { [Op.in]: [...days] } };
+      if (filters.class_id) scheduleWhere.class_id = filters.class_id;
+      if (filters.teacher_id) scheduleWhere.teacher_id = filters.teacher_id;
+
+      const schedules = await Classschedule.findAll({
+        where: scheduleWhere,
+        include: [
+          { model: Class, attributes: ["id", "class_name"] },
+          { model: Teacher, attributes: ["id", "name"] },
+          { model: Subject, attributes: ["id", "subject_name"] },
+          { model: Classroom, attributes: ["id", "classroom_name"] },
+          { model: Timeslot, as: "startTimeslot", attributes: ["start"] },
+          { model: Timeslot, as: "endTimeslot", attributes: ["end"] },
+        ],
+        order: [[{ model: Timeslot, as: "startTimeslot" }, "start", "ASC"]],
+      });
+
+      const occurrences = [];
+      schedules.forEach((schedule) => {
+        for (let cursor = new Date(start); cursor <= end; cursor.setUTCDate(cursor.getUTCDate() + 1)) {
+          const date = cursor.toISOString().slice(0, 10);
+          if (dayNamesByUtcDay[cursor.getUTCDay()] !== schedule.day) continue;
+          if (
+            date === todayDate &&
+            (!schedule.startTimeslot?.start || schedule.startTimeslot.start > time)
+          ) continue;
+          occurrences.push({ schedule, date });
+        }
+      });
+
+      if (!occurrences.length) {
+        return res.json({
+          total: 0,
+          data: [],
+          filters: filterOptions,
+          start_date: startDate,
+          end_date: endDate,
+        });
+      }
+
+      const scheduleIds = [...new Set(occurrences.map(({ schedule }) => schedule.id))];
+      const classIds = [...new Set(occurrences.map(({ schedule }) => schedule.class_id))];
+      const [activeStudents, attendanceRecords, agendas] = await Promise.all([
+        Student.findAll({
+          where: { class_id: classIds, status: "active" },
+          attributes: ["id", "class_id"],
+        }),
+        Studentattendance.findAll({
+          where: {
+            classschedule_id: scheduleIds,
+            attendance_date: { [Op.between]: [startDate, endDate] },
+          },
+          include: [{
+            model: Student,
+            as: "student",
+            attributes: ["id", "name", "nis"],
+          }],
+        }),
+        Classagenda.findAll({
+          where: {
+            classschedule_id: scheduleIds,
+            agenda_date: { [Op.between]: [startDate, endDate] },
+          },
+          attributes: ["classschedule_id", "agenda_date", "activity_status", "content", "updatedAt"],
+        }),
+      ]);
+
+      const activeStudentCounts = new Map();
+      activeStudents.forEach((student) => {
+        const classId = Number(student.class_id);
+        activeStudentCounts.set(classId, (activeStudentCounts.get(classId) || 0) + 1);
+      });
+      const attendanceByOccurrence = new Map();
+      attendanceRecords.forEach((record) => {
+        const key = `${record.classschedule_id}:${record.attendance_date}`;
+        const records = attendanceByOccurrence.get(key) || [];
+        records.push(record);
+        attendanceByOccurrence.set(key, records);
+      });
+      const agendaByOccurrence = new Map(
+        agendas.map((agenda) => [
+          `${agenda.classschedule_id}:${agenda.agenda_date}`,
+          agenda,
+        ]),
+      );
+
+      const data = occurrences.map(({ schedule, date }) => {
+        const occurrenceKey = `${schedule.id}:${date}`;
+        const records = attendanceByOccurrence.get(occurrenceKey) || [];
+        const agenda = agendaByOccurrence.get(occurrenceKey);
+        const studentCount = activeStudentCounts.get(Number(schedule.class_id)) || 0;
+        const presentStudents = records.filter(
+          (record) => record.attendance_status === "present",
+        ).length;
+        const nonPresentStudents = records
+          .filter((record) => record.attendance_status !== "present")
+          .map((record) => ({
+            student_id: record.student_id,
+            name: record.student?.name || "Siswa",
+            nis: record.student?.nis || null,
+            attendance_status: record.attendance_status,
+          }));
+        const validated =
+          studentCount > 0 &&
+          records.length === studentCount &&
+          Boolean(agenda);
+        const scheduleEnded =
+          date < todayDate ||
+          (date === todayDate && schedule.endTimeslot?.end <= time);
+        const hasValidationData = records.length > 0 || Boolean(agenda);
+        const activityStatus = agenda?.activity_status || (records.length ? "attendance" : "empty");
+        const status = agenda?.activity_status === "teaching"
+          ? "Mengajar"
+          : agenda?.activity_status === "assignment"
+            ? "Tugas"
+            : agenda?.activity_status === "empty" || (!hasValidationData && scheduleEnded)
+              ? "Kelas Kosong"
+              : hasValidationData
+                ? "Presensi diisi"
+                : "Belum divalidasi";
+
+        if (date === todayDate && !scheduleEnded && !hasValidationData) {
+          return null;
+        }
+
+        return {
+          schedule_id: Number(schedule.id),
+          class_id: Number(schedule.class_id),
+          teacher_id: Number(schedule.teacher_id),
+          class_name: schedule.Class?.class_name || "-",
+          teacher_name: schedule.Teacher?.name || "-",
+          subject_name: schedule.Subject?.subject_name || "-",
+          classroom_name: schedule.Classroom?.classroom_name || "-",
+          start: schedule.startTimeslot?.start || null,
+          end: schedule.endTimeslot?.end || null,
+          agenda_date: date,
+          agenda_status: agenda?.activity_status || null,
+          agenda_content: agenda?.content || "",
+          agenda_updated_at: agenda?.updatedAt || null,
+          activity_status: activityStatus,
+          status,
+          validated,
+          validation_status: validated
+            ? "Tervalidasi"
+            : hasValidationData
+              ? "Validasi sebagian"
+              : "Tidak tervalidasi",
+          student_count: studentCount,
+          attendance_count: records.length,
+          present_count: presentStudents,
+          non_present_count: nonPresentStudents.length,
+          non_present_students: nonPresentStudents,
+          color: status === "Presensi diisi"
+            ? "blue"
+            : status === "Mengajar"
+              ? "green"
+              : status === "Tugas"
+                ? "yellow"
+                : "red",
+        };
+      }).filter(Boolean);
+      data.sort((left, right) =>
+        right.agenda_date.localeCompare(left.agenda_date) ||
+        (left.start || "").localeCompare(right.start || ""),
+      );
+
+      res.json({
+        total: data.length,
+        data,
+        filters: filterOptions,
+        start_date: startDate,
+        end_date: endDate,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
 
   static async getById(req, res, next) {
     try {

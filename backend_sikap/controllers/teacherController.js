@@ -85,6 +85,49 @@ class TeacherController {
     }
   }
 
+  static async updateStatusBulk(req, res, next) {
+    try {
+      const { ids, status } = req.body;
+      if (
+        !Array.isArray(ids) ||
+        ids.length === 0 ||
+        !ids.every((id) => Number.isInteger(Number(id)) && Number(id) > 0)
+      ) {
+        return res.status(400).json({
+          message: "ids must be a non-empty array of valid teacher IDs",
+        });
+      }
+      if (!["active", "inactive"].includes(status)) {
+        return res.status(400).json({
+          message: "status must be active or inactive",
+        });
+      }
+
+      const uniqueIds = [...new Set(ids.map(Number))];
+      const teachers = await Teacher.findAll({
+        attributes: ["id"],
+        where: { id: uniqueIds },
+      });
+      if (teachers.length !== uniqueIds.length) {
+        return res.status(404).json({
+          message: "One or more selected teachers were not found",
+        });
+      }
+
+      const [updatedCount] = await Teacher.update(
+        { status },
+        { where: { id: uniqueIds } },
+      );
+      res.json({
+        message: "Teacher statuses updated successfully",
+        updatedCount,
+        status,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async delete(req, res, next) {
     try {
       const { id } = req.params;

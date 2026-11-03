@@ -15,6 +15,10 @@ const activityRouter = require("./activityRouter");
 const teacherassignmentRouter = require("./teacherassignmentRouter");
 const activitysessionRouter = require("./activitysessionRouter");
 const activityateacherattendanceRouter = require("./activityateacherattendanceRouter");
+const academicperiodRouter = require("./academicperiodRouter");
+const studentRouter = require("./studentRouter");
+const studentattendanceRouter = require("./studentattendanceRouter");
+const classagendaRouter = require("./classagendaRouter");
 
 router.use("/auth", authRouter);
 router.use("/users", userRouter);
@@ -30,5 +34,9 @@ router.use("/activities", activityRouter);
 router.use("/teacherassignments", teacherassignmentRouter);
 router.use("/activitysessions", activitysessionRouter);
 router.use("/activityateacherattendances", activityateacherattendanceRouter);
+router.use("/academic-period", academicperiodRouter);
+router.use("/students", studentRouter);
+router.use("/studentattendances", studentattendanceRouter);
+router.use("/classagendas", classagendaRouter);
 
 module.exports = router;

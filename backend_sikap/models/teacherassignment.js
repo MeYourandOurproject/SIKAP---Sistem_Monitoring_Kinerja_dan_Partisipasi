@@ -37,6 +37,7 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: "RESTRICT",
         allowNull: false,
       },
+      academic_year: { type: DataTypes.STRING(9), allowNull: false },
       semester: { type: DataTypes.ENUM("odd", "even") },
       day_of_week: {
         type: DataTypes.ENUM(

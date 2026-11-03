@@ -13,6 +13,11 @@ module.exports = (sequelize, DataTypes) => {
       Teacher.hasMany(models.Teacherassignment, { foreignKey: 'teacher_id' });
       Teacher.hasMany(models.Activitysession, { foreignKey: 'pic_teacher_id' });
       Teacher.hasMany(models.Activityateacherattendance, { foreignKey: 'teacher_id' });
+      Teacher.hasMany(models.Classagenda, {
+        foreignKey: "teacher_id",
+        as: "classAgendas",
+      });
+      Teacher.hasOne(models.User, { foreignKey: 'teacher_id', as: 'user' });
     }
   }
   Teacher.init(

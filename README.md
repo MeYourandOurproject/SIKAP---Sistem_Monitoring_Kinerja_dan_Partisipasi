@@ -140,6 +140,33 @@ GET    /api/attendance
 POST   /api/performance
 ```
 
+Student roster management is available to administrators:
+
+```
+GET    /api/students?class_id=1
+GET    /api/students/:id
+POST   /api/students
+GET    /api/students/import-template?level=X
+POST   /api/students/import
+PUT    /api/students/:id
+DELETE /api/students/:id
+```
+
+Student records contain `name`, optional `nis`/`nisn` and `gender`, a required
+`class_id`, and an `active`/`inactive` status. Deleting a student marks the
+record inactive so it can be retained for attendance history.
+Administrators can download a `.xlsx` workbook for each grade (`X`, `XI`, or
+`XII`) from `/api/students/import-template?level=X`. Use the downloaded SIKAP
+template for upload: each sheet name is generated from the existing `Classes`
+table, and the first row must contain `nis`, `nisn`, `nama`, and `gender`.
+Each sheet is mapped to its existing class record; importing students never
+creates or renames classes. School attendance workbooks must first be copied
+into the matching SIKAP template. Upload the workbook to
+`/api/students/import` as multipart fields `file` and `level`. Duplicate
+identifiers, sheet names that do not exactly match a class in the selected
+grade, or invalid student rows reject the entire upload. Uploads are limited
+to 5 MB and 2,000 students per grade upload.
+
 ---
 
 ## User Roles

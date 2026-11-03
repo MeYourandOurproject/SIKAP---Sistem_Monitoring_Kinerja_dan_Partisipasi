@@ -24,6 +24,14 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "classschedule_id",
         as: "attendances",
       });
+      Classschedule.hasMany(models.Studentattendance, {
+        foreignKey: "classschedule_id",
+        as: "studentAttendances",
+      });
+      Classschedule.hasMany(models.Classagenda, {
+        foreignKey: "classschedule_id",
+        as: "agendas",
+      });
     }
   }
   Classschedule.init(
