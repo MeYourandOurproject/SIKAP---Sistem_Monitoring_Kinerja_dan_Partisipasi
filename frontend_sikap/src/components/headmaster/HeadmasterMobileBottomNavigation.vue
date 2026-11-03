@@ -11,7 +11,7 @@
     </router-link>
 
     <router-link
-      to="/kepala-sekolah/kbm"
+      to="/kepala-sekolah/kbm/realtime"
       class="bottom-nav-item"
       active-class="active"
     >

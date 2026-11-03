@@ -12,6 +12,13 @@ class AuthController {
         return res.status(404).json({ success: false, message: "User not found" });
       }
 
+      if (!user.is_active) {
+        return res.status(403).json({
+          success: false,
+          message: "Akun ini sedang tidak aktif",
+        });
+      }
+
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
         return res.status(401).json({ success: false, message: "Invalid credentials" });
@@ -26,10 +33,11 @@ class AuthController {
         success: true,
         token,
         user: {
-          // id: user.id,
-          // username: user.username,
-          // name: user.name,
+          id: user.id,
+          username: user.username,
+          name: user.name,
           role: user.role,
+          teacher_id: user.teacher_id,
         },
       });
     } catch (error) {

@@ -42,27 +42,102 @@
           </li>
 
           <li class="nav-item">
-            <router-link
-              to="/penanggung-jawab/kegiatan"
-              class="nav-link"
-              :class="{ active: isActive('/penanggung-jawab/kegiatan') }"
-              @click="closeSidebar"
+            <button
+              type="button"
+              class="nav-link nav-menu-toggle"
+              :class="{ active: $route.path.startsWith('/penanggung-jawab/kbm') }"
+              :aria-expanded="expandedMenus.kbm"
+              aria-controls="responsible-kbm-submenu"
+              @click="toggleSubmenu('kbm', '/penanggung-jawab/kbm/realtime')"
             >
-              <i class="bi bi-calendar-event-fill text-white"></i>
-              <span class="text-white">Kegiatan</span>
-            </router-link>
+              <i class="bi bi-journal-text text-white"></i>
+              <span class="text-white">KBM</span>
+              <i
+                class="bi submenu-chevron"
+                :class="expandedMenus.kbm ? 'bi-chevron-up' : 'bi-chevron-down'"
+                aria-hidden="true"
+              ></i>
+            </button>
+            <div
+              v-if="expandedMenus.kbm"
+              id="responsible-kbm-submenu"
+              class="kbm-submenu text-start"
+            >
+              <router-link
+                to="/penanggung-jawab/kbm/realtime"
+                class="kbm-sub-link"
+                :class="{ active: isActive('/penanggung-jawab/kbm/realtime') }"
+                @click="closeSidebar"
+              >
+                <i class="bi bi-activity" aria-hidden="true"></i>
+                Realtime Keterisian Kelas
+              </router-link>
+              <router-link
+                to="/penanggung-jawab/kbm/riwayat"
+                class="kbm-sub-link"
+                :class="{ active: isActive('/penanggung-jawab/kbm/riwayat') }"
+                @click="closeSidebar"
+              >
+                <i class="bi bi-clock-history" aria-hidden="true"></i>
+                Riwayat Keterisian Kelas
+              </router-link>
+            </div>
           </li>
 
           <li class="nav-item">
-            <router-link
-              to="/penanggung-jawab/absensi"
-              class="nav-link"
-              :class="{ active: isActive('/penanggung-jawab/absensi') }"
-              @click="closeSidebar"
+            <button
+              type="button"
+              class="nav-link nav-menu-toggle"
+              :class="{
+                active:
+                  $route.path.startsWith('/penanggung-jawab/kegiatan') ||
+                  $route.path.startsWith('/penanggung-jawab/absensi'),
+              }"
+              :aria-expanded="expandedMenus.teacherManagement"
+              aria-controls="responsible-activities-submenu"
+              @click="toggleSubmenu('teacherManagement', '/penanggung-jawab/kegiatan')"
             >
-              <i class="bi bi-check2-square text-white"></i>
-              <span class="text-white">Absensi</span>
-            </router-link>
+              <i class="bi bi-calendar-event-fill text-white"></i>
+              <span class="text-white">Kegiatan</span>
+              <i
+                class="bi submenu-chevron"
+                :class="expandedMenus.teacherManagement ? 'bi-chevron-up' : 'bi-chevron-down'"
+                aria-hidden="true"
+              ></i>
+            </button>
+            <div
+              v-if="expandedMenus.teacherManagement"
+              id="responsible-activities-submenu"
+              class="kbm-submenu text-start"
+            >
+              <router-link
+                to="/penanggung-jawab/kegiatan"
+                class="kbm-sub-link"
+                :class="{ active: isActive('/penanggung-jawab/kegiatan') }"
+                @click="closeSidebar"
+              >
+                <i class="bi bi-calendar-check" aria-hidden="true"></i>
+                Kelola Tugas dan Kegiatan
+              </router-link>
+              <router-link
+                to="/penanggung-jawab/absensi"
+                class="kbm-sub-link"
+                :class="{ active: isActive('/penanggung-jawab/absensi') }"
+                @click="closeSidebar"
+              >
+                <i class="bi bi-person-check" aria-hidden="true"></i>
+                Kelola Kehadiran Guru
+              </router-link>
+              <router-link
+                to="/penanggung-jawab/kegiatan/riwayat-kehadiran"
+                class="kbm-sub-link"
+                :class="{ active: isActive('/penanggung-jawab/kegiatan/riwayat-kehadiran') }"
+                @click="closeSidebar"
+              >
+                <i class="bi bi-clock-history" aria-hidden="true"></i>
+                Riwayat Kehadiran Guru
+              </router-link>
+            </div>
           </li>
 
           <li class="nav-item">
@@ -113,6 +188,10 @@ export default {
   data() {
     return {
       userName: "Penanggung Jawab",
+      expandedMenus: {
+        kbm: false,
+        teacherManagement: false,
+      },
     };
   },
   mounted() {
@@ -129,6 +208,14 @@ export default {
     },
     closeSidebar() {
       this.$emit("close-sidebar");
+    },
+    toggleSubmenu(menu, firstRoute) {
+      const shouldOpen = !this.expandedMenus[menu];
+      this.expandedMenus[menu] = shouldOpen;
+
+      if (shouldOpen && this.$route.path !== firstRoute) {
+        this.$router.push(firstRoute);
+      }
     },
     goToProfile() {
       this.$emit("close-sidebar");
@@ -189,6 +276,31 @@ export default {
 .nav-link.active i,
 .nav-link:hover i {
   color: #a7f3d0;
+}
+
+.kbm-submenu {
+  display: grid;
+  gap: 3px;
+  margin: 4px 0 8px 26px;
+  padding-left: 12px;
+  border-left: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.kbm-sub-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: #94a3b8;
+  font-size: 0.78rem;
+  text-decoration: none;
+}
+
+.kbm-sub-link:hover,
+.kbm-sub-link.active {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
 }
 
 @media (max-width: 991px) {
@@ -270,6 +382,18 @@ export default {
 
 .nav-link i {
   font-size: 1.1rem;
+}
+
+.nav-menu-toggle {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+
+.nav-menu-toggle .submenu-chevron {
+  margin-left: auto;
+  font-size: 0.8rem;
 }
 
 .sidebar-footer {

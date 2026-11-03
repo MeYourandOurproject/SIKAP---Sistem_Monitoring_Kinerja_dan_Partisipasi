@@ -25,8 +25,16 @@ import StudentReport from "@/views/pages/student/StudentReport.vue";
 // PENANGGUNG JAWAB
 import ResponsibleLayout from "@/views/layouts/responsible/ResponsibleLayout.vue";
 import ResponsibleDashboard from "@/views/pages/responsible/ResponsibleDashboard.vue";
+import ResponsibleKbm from "@/views/pages/responsible/ResponsibleKbm.vue";
 import ResponsibleActivity from "@/views/pages/responsible/ResponsibleActivities.vue";
 import ResponsibleAttendance from "@/views/pages/responsible/ResponsibleAttendance.vue";
+import ResponsibleAttendanceHistory from "@/views/pages/responsible/ResponsibleAttendanceHistory.vue";
+
+// TEACHER
+import TeacherLayout from "@/views/layouts/teacher/TeacherLayout.vue";
+import TeacherDashboard from "@/views/pages/teacher/TeacherDashboard.vue";
+import TeacherSchedule from "@/views/pages/teacher/TeacherSchedule.vue";
+import TeacherActivities from "@/views/pages/teacher/TeacherActivities.vue";
 
 // SUPER ADMIN
 import SuperAdminLayout from "@/views/layouts/superadmin/SuperAdminLayout.vue"; 
@@ -35,6 +43,8 @@ import SuperAdminSchedule from "@/views/pages/superadmin/SuperAdminSchedule.vue"
 import SuperAdminSettings from "@/views/pages/superadmin/SuperAdminSettings.vue";
 import SuperAdminteacher from "@/views/pages/superadmin/SuperAdminTeacher.vue";
 import SuperAdminUser from "@/views/pages/superadmin/SuperAdminUser.vue";
+import SuperAdminClasses from "@/views/pages/superadmin/SuperAdminClasses.vue";
+import SuperAdminHomeroom from "@/views/pages/superadmin/SuperAdminHomeroom.vue";
 
 const routes = [
   {
@@ -81,6 +91,21 @@ const routes = [
         name: "SuperAdminUser",
         component: SuperAdminUser,
       },
+      {
+        path: "classes",
+        redirect: { name: "SuperAdminStudents" },
+      },
+      {
+        path: "classes/students",
+        name: "SuperAdminStudents",
+        component: SuperAdminClasses,
+      },
+      {
+        path: "classes/homeroom",
+        name: "SuperAdminHomeroom",
+        component: SuperAdminHomeroom,
+      },
+      { path: "students", redirect: { name: "SuperAdminStudents" } },
     ],
     meta: {
       requiresAuth: true,
@@ -99,7 +124,19 @@ const routes = [
       {
         path: "kbm",
         name: "HeadmasterKbm",
+        redirect: { name: "HeadmasterKbmRealtime" },
+      },
+      {
+        path: "kbm/realtime",
+        name: "HeadmasterKbmRealtime",
         component: HeadmasterKbm,
+        props: { mode: "realtime" },
+      },
+      {
+        path: "kbm/riwayat",
+        name: "HeadmasterKbmHistory",
+        component: HeadmasterKbm,
+        props: { mode: "history" },
       },
       {
         path: "partisipasi-guru",
@@ -162,6 +199,23 @@ const routes = [
         component: ResponsibleDashboard,
       },
       {
+        path: "kbm",
+        name: "ResponsibleKbm",
+        redirect: { name: "ResponsibleKbmRealtime" },
+      },
+      {
+        path: "kbm/realtime",
+        name: "ResponsibleKbmRealtime",
+        component: ResponsibleKbm,
+        props: { mode: "realtime" },
+      },
+      {
+        path: "kbm/riwayat",
+        name: "ResponsibleKbmHistory",
+        component: ResponsibleKbm,
+        props: { mode: "history" },
+      },
+      {
         path : "kegiatan",
         name : "ResponsibleActivity",
         component : ResponsibleActivity,
@@ -171,12 +225,42 @@ const routes = [
         name : "ResponsibleAttendance",
         component : ResponsibleAttendance,
       },
+      {
+        path: "kegiatan/riwayat-kehadiran",
+        name: "ResponsibleAttendanceHistory",
+        component: ResponsibleAttendanceHistory,
+      },
     ],
     meta: {
       requiresAuth: true,
       role: "responsible",
     },
-  }
+  },
+  {
+    path: "/guru",
+    component: TeacherLayout,
+    children: [
+      {
+        path: "dashboard",
+        name: "TeacherDashboard",
+        component: TeacherDashboard,
+      },
+      {
+        path: "jadwal",
+        name: "TeacherSchedule",
+        component: TeacherSchedule,
+      },
+      {
+        path: "kegiatan",
+        name: "TeacherActivities",
+        component: TeacherActivities,
+      },
+    ],
+    meta: {
+      requiresAuth: true,
+      role: "teacher",
+    },
+  },
 
   //   {
   //     path: "/kegiatan",
@@ -209,46 +293,36 @@ function isSessionExpired() {
   return !expiresAt || Date.now() > expiresAt;
 }
 
-router.beforeEach((to, from, next) => {
-  // ambil user dan token dari localStorage
-  const user = JSON.parse(localStorage.getItem("user"));
+router.beforeEach((to) => {
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem("user") || "null");
+  } catch (error) {
+    clearSession();
+  }
   const token = localStorage.getItem("token");
 
-  // cek apakah route butuh login
-  if (to.meta.requiresAuth) {
-    // =========================
-    // BELUM LOGIN / SESSION EXPIRED
-    // =========================
+  if (!to.meta.requiresAuth) return true;
 
-    if (!user || !token || isSessionExpired()) {
-      clearSession();
-      alert("Sesi Anda telah habis. Silakan login kembali.");
-
-      return next("/login");
-    }
-
-    // =========================
-    // ROLE TIDAK SESUAI
-    // =========================
-
-    if (to.meta.role && to.meta.role !== user.role) {
-      alert("Akses ditolak");
-
-      // redirect sesuai role user
-
-      if (user.role === "student") {
-        return next("/ketua-murid/dashboard");
-      } else if (user.role === "headmaster") {
-        return next("/kepala-sekolah/dashboard");
-      } else if (user.role === "responsible") {
-        return next("/penanggung-jawab/dashboard");
-      } else if (user.role === "admin") {
-        return next("/super-admin/dashboard");
-      }
-    }
+  if (!user || !token || isSessionExpired()) {
+    clearSession();
+    alert("Sesi Anda telah habis. Silakan login kembali.");
+    return "/login";
   }
 
-  next();
+  if (to.meta.role && to.meta.role !== user.role) {
+    alert("Akses ditolak");
+    const roleHome = {
+      student: "/ketua-murid/dashboard",
+      headmaster: "/kepala-sekolah/dashboard",
+      responsible: "/penanggung-jawab/dashboard",
+      admin: "/super-admin/dashboard",
+      teacher: "/guru/dashboard",
+    };
+    return roleHome[user.role] || true;
+  }
+
+  return true;
 });
 
 export default router;

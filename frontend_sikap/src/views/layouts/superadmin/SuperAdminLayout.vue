@@ -53,6 +53,14 @@ export default {
     updateMenuTitle(path) {
       const titleMap = {
         "/super-admin/dashboard": "Dashboard",
+        "/super-admin/teacher": "Manajemen Guru",
+        "/super-admin/schedule": "Jadwal Pelajaran",
+        "/super-admin/user": "Manajemen Pengguna",
+        "/super-admin/classes/students": "Kelola Data Siswa",
+        "/super-admin/classes/homeroom": "Kelola Wali Kelas",
+        "/super-admin/classes": "Kelola Data Siswa",
+        "/super-admin/students": "Kelola Data Siswa",
+        "/super-admin/settings": "Pengaturan",
         "/super-admin/guru": "Manajemen Guru",
         "/super-admin/jadwal": "Jadwal Pelajaran",
         "/super-admin/pengguna": "Manajemen Pengguna",
@@ -76,116 +84,267 @@ export default {
 <style scoped>
 .superadmin-layout {
   display: flex;
-  height: 100vh;
-  overflow: hidden;
-  background: #0f172a;
+  min-height: 100vh;
+  background: #f3f6fb;
 }
 
-/* ===== SIDEBAR FIX ===== */
-:deep(.sidebar) {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0;
-  height: 100vh !important;
-  width: 250px;
-  z-index: 1000;
-  overflow-y: auto;
-}
-
-/* ===== AREA KANAN ===== */
 .main-area-admin {
   width: calc(100% - 250px);
   margin-left: 250px;
-  height: 100vh;
-  overflow-y: auto;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #0b1220;
+  min-width: 0;
+  background: #f3f6fb;
 }
 
-/* ===== NAVBAR ===== */
-:deep(.superadmin-navbar) {
-  position: sticky;
-  top: 0;
-  z-index: 900;
-  height: 70px;
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-/* ===== CONTENT ===== */
 .main-content {
-  padding: 1.5rem 1.5rem 2rem;
+  width: 100%;
+  max-width: 1600px;
+  padding: 1.5rem clamp(1rem, 2.5vw, 2.5rem) 2.5rem;
+  margin: 0 auto;
   flex: 1;
 }
 
-:deep(.card) {
-  background-color: #111827;
-  border-color: rgba(148, 163, 184, 0.15);
-  color: #e5e7eb;
+:deep(.superadmin-dashboard),
+:deep(.superadmin-teacher),
+:deep(.superadmin-schedule),
+:deep(.superadmin-user),
+:deep(.superadmin-classes),
+:deep(.superadmin-homeroom),
+:deep(.superadmin-settings) {
+  color: #172033;
 }
 
-:deep(.card-header),
-:deep(.card-header.bg-light) {
-  background-color: #0f172a !important;
-  border-color: rgba(148, 163, 184, 0.15) !important;
-  color: #e5e7eb !important;
+:deep(.sidebar) {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 100vh;
+  z-index: 1040;
 }
 
-:deep(.card-body) {
-  color: #e5e7eb;
+:deep(.superadmin-dashboard h2),
+:deep(.superadmin-teacher h2),
+:deep(.superadmin-schedule h2),
+:deep(.superadmin-user h2),
+:deep(.superadmin-classes h2),
+:deep(.superadmin-homeroom h2),
+:deep(.superadmin-settings h2) {
+  color: #172033;
+  font-size: clamp(1.45rem, 2vw, 1.85rem);
+  font-weight: 750;
+  letter-spacing: -0.035em;
 }
 
-:deep(.table) {
-  color: #e5e7eb;
+:deep(.superadmin-dashboard .card),
+:deep(.superadmin-teacher .card),
+:deep(.superadmin-schedule .card),
+:deep(.superadmin-user .card),
+:deep(.superadmin-classes .card),
+:deep(.superadmin-homeroom .card),
+:deep(.superadmin-settings .card) {
+  color: #172033;
+  background: #fff;
+  border: 1px solid #e6ebf2;
+  border-radius: 18px;
+  box-shadow: 0 8px 26px rgba(22, 34, 51, 0.045) !important;
 }
 
-:deep(.table thead th) {
-  background-color: #111827;
-  color: #e5e7eb;
-  border-color: rgba(148, 163, 184, 0.15);
+:deep(.superadmin-dashboard .card-header),
+:deep(.superadmin-teacher .card-header),
+:deep(.superadmin-schedule .card-header),
+:deep(.superadmin-user .card-header),
+:deep(.superadmin-classes .card-header),
+:deep(.superadmin-homeroom .card-header),
+:deep(.superadmin-settings .card-header) {
+  padding: 1rem 1.25rem;
+  color: #172033;
+  background: #fff !important;
+  border-bottom: 1px solid #edf0f5;
+  border-radius: 18px 18px 0 0;
 }
 
-:deep(.table tbody tr:hover) {
-  background-color: rgba(148, 163, 184, 0.08);
+:deep(.superadmin-dashboard .welcome-card) {
+  color: #fff;
+  background: linear-gradient(120deg, #12395b 0%, #176b58 100%);
+  border: 0;
+  overflow: hidden;
 }
 
-:deep(.btn-outline-primary),
-:deep(.btn-outline-info),
-:deep(.btn-outline-warning),
-:deep(.btn-outline-secondary) {
-  border-color: rgba(148, 163, 184, 0.4);
-  color: #f8fafc;
+:deep(.superadmin-dashboard .welcome-card .card-body) {
+  min-height: 190px;
+  display: flex;
+  align-items: center;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  background: radial-gradient(circle at 90% 15%, rgba(255,255,255,.13), transparent 34%);
 }
 
-:deep(.btn-outline-primary:hover),
-:deep(.btn-outline-info:hover),
-:deep(.btn-outline-warning:hover),
-:deep(.btn-outline-secondary:hover) {
-  background-color: rgba(255, 255, 255, 0.08);
-  border-color: rgba(148, 163, 184, 0.6);
+:deep(.superadmin-dashboard .welcome-card .text-muted) {
+  color: rgba(255,255,255,.72) !important;
 }
 
-/* ===== RESPONSIVE ===== */
+:deep(.superadmin-dashboard .stat-card) {
+  min-height: 168px;
+}
+
+:deep(.superadmin-dashboard .stat-card .card-body) {
+  padding: 1.35rem;
+}
+
+:deep(.superadmin-dashboard .status-main) {
+  color: #172033;
+  font-size: 1.85rem;
+  font-weight: 750;
+  line-height: 1.1;
+}
+
+:deep(.superadmin-dashboard .stat-label) {
+  color: #667085;
+  font-weight: 650;
+}
+
+:deep(.superadmin-dashboard .status-sub) {
+  color: #667085;
+}
+
+:deep(.superadmin-dashboard .card-body),
+:deep(.superadmin-teacher .card-body),
+:deep(.superadmin-schedule .card-body),
+:deep(.superadmin-user .card-body),
+:deep(.superadmin-classes .card-body),
+:deep(.superadmin-homeroom .card-body),
+:deep(.superadmin-settings .card-body) {
+  color: #344054;
+}
+
+:deep(.superadmin-dashboard .table),
+:deep(.superadmin-teacher .table),
+:deep(.superadmin-schedule .table),
+:deep(.superadmin-user .table),
+:deep(.superadmin-classes .table),
+:deep(.superadmin-homeroom .table),
+:deep(.superadmin-settings .table) {
+  --bs-table-color: #344054;
+  --bs-table-bg: transparent;
+  --bs-table-hover-bg: #f7f9fc;
+  margin-bottom: 0;
+}
+
+:deep(.superadmin-dashboard .table thead th),
+:deep(.superadmin-teacher .table thead th),
+:deep(.superadmin-schedule .table thead th),
+:deep(.superadmin-user .table thead th),
+:deep(.superadmin-classes .table thead th),
+:deep(.superadmin-homeroom .table thead th),
+:deep(.superadmin-settings .table thead th) {
+  color: #667085;
+  background: #f8fafc;
+  border-bottom: 1px solid #e8edf3;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+:deep(.superadmin-dashboard .form-control),
+:deep(.superadmin-dashboard .form-select),
+:deep(.superadmin-teacher .form-control),
+:deep(.superadmin-teacher .form-select),
+:deep(.superadmin-schedule .form-control),
+:deep(.superadmin-schedule .form-select),
+:deep(.superadmin-user .form-control),
+:deep(.superadmin-user .form-select),
+:deep(.superadmin-settings .form-control),
+:deep(.superadmin-settings .form-select) {
+  min-height: 44px;
+  color: #172033;
+  background-color: #fff;
+  border-color: #d8dee8;
+  border-radius: 10px;
+}
+
+:deep(.superadmin-dashboard .form-control:focus),
+:deep(.superadmin-dashboard .form-select:focus),
+:deep(.superadmin-teacher .form-control:focus),
+:deep(.superadmin-teacher .form-select:focus),
+:deep(.superadmin-schedule .form-control:focus),
+:deep(.superadmin-schedule .form-select:focus),
+:deep(.superadmin-user .form-control:focus),
+:deep(.superadmin-user .form-select:focus),
+:deep(.superadmin-settings .form-control:focus),
+:deep(.superadmin-settings .form-select:focus) {
+  border-color: #78a8ff;
+  box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.12);
+}
+
+:deep(.superadmin-dashboard .form-label),
+:deep(.superadmin-teacher .form-label),
+:deep(.superadmin-schedule .form-label),
+:deep(.superadmin-user .form-label),
+:deep(.superadmin-settings .form-label) {
+  color: #344054;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+:deep(.superadmin-dashboard .btn),
+:deep(.superadmin-teacher .btn),
+:deep(.superadmin-schedule .btn),
+:deep(.superadmin-user .btn),
+:deep(.superadmin-settings .btn) {
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+:deep(.superadmin-dashboard .btn-success),
+:deep(.superadmin-teacher .btn-success),
+:deep(.superadmin-schedule .btn-success),
+:deep(.superadmin-user .btn-success),
+:deep(.superadmin-settings .btn-success) {
+  background: #16834a;
+  border-color: #16834a;
+}
+
+:deep(.superadmin-dashboard .alert),
+:deep(.superadmin-teacher .alert),
+:deep(.superadmin-schedule .alert),
+:deep(.superadmin-user .alert),
+:deep(.superadmin-settings .alert) {
+  border: 0;
+  border-radius: 12px;
+}
+
+:deep(.superadmin-dashboard .text-muted),
+:deep(.superadmin-teacher .text-muted),
+:deep(.superadmin-schedule .text-muted),
+:deep(.superadmin-user .text-muted),
+:deep(.superadmin-settings .text-muted) {
+  color: #667085 !important;
+}
+
+:deep(.superadmin-dashboard .welcome-card .text-muted) {
+  color: rgba(255,255,255,.72) !important;
+}
+
 @media (max-width: 991px) {
   .main-area-admin {
     margin-left: 0;
     width: 100%;
   }
 
-  :deep(.sidebar) {
-    transform: translateX(-100%);
-    transition: 0.3s ease;
-  }
-
-  :deep(.sidebar-wrapper.open) :deep(.sidebar) {
-    transform: translateX(0);
-  }
-
   .main-content {
-    padding-top: 1rem;
+    padding: 1rem 1rem 2rem;
     margin-bottom: 60px;
+  }
+}
+
+@media (max-width: 575px) {
+  .main-content {
+    padding-right: 0.75rem;
+    padding-left: 0.75rem;
   }
 }
 </style>

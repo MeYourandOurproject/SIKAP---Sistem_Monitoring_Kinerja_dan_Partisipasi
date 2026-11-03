@@ -42,15 +42,46 @@
           </li>
 
           <li class="nav-item">
-            <router-link
-              to="/kepala-sekolah/kbm"
-              class="nav-link"
-              :class="{ active: isActive('/kepala-sekolah/kbm') }"
-              @click="closeSidebar"
+            <button
+              type="button"
+              class="nav-link nav-menu-toggle"
+              :class="{ active: $route.path.startsWith('/kepala-sekolah/kbm') }"
+              :aria-expanded="kbmMenuOpen"
+              aria-controls="headmaster-kbm-submenu"
+              @click="toggleKbmMenu"
             >
               <i class="bi bi-journal-text text-white"></i>
               <span class="text-white">KBM</span>
-            </router-link>
+              <i
+                class="bi submenu-chevron"
+                :class="kbmMenuOpen ? 'bi-chevron-up' : 'bi-chevron-down'"
+                aria-hidden="true"
+              ></i>
+            </button>
+            <div
+              v-if="kbmMenuOpen"
+              id="headmaster-kbm-submenu"
+              class="kbm-submenu"
+            >
+              <router-link
+                to="/kepala-sekolah/kbm/realtime"
+                class="kbm-sub-link"
+                :class="{ active: isActive('/kepala-sekolah/kbm/realtime') }"
+                @click="closeSidebar"
+              >
+                <i class="bi bi-activity" aria-hidden="true"></i>
+                Realtime Keterisian Kelas
+              </router-link>
+              <router-link
+                to="/kepala-sekolah/kbm/riwayat"
+                class="kbm-sub-link"
+                :class="{ active: isActive('/kepala-sekolah/kbm/riwayat') }"
+                @click="closeSidebar"
+              >
+                <i class="bi bi-clock-history" aria-hidden="true"></i>
+                Riwayat Keterisian Kelas
+              </router-link>
+            </div>
           </li>
 
           <li class="nav-item">
@@ -150,6 +181,7 @@ export default {
   data() {
     return {
       userName: "Kepala Sekolah",
+      kbmMenuOpen: false,
     };
   },
   mounted() {
@@ -166,6 +198,14 @@ export default {
     },
     closeSidebar() {
       this.$emit("close-sidebar");
+    },
+    toggleKbmMenu() {
+      const shouldOpen = !this.kbmMenuOpen;
+      this.kbmMenuOpen = shouldOpen;
+
+      if (shouldOpen && !this.$route.path.startsWith("/kepala-sekolah/kbm")) {
+        this.$router.push("/kepala-sekolah/kbm/realtime");
+      }
     },
     goToProfile() {
       this.$emit("close-sidebar");
@@ -290,6 +330,43 @@ export default {
 
 .nav-link i {
   font-size: 1.1rem;
+}
+
+.nav-menu-toggle {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+
+.nav-menu-toggle .submenu-chevron {
+  margin-left: auto;
+  font-size: 0.8rem;
+}
+
+.kbm-submenu {
+  display: grid;
+  gap: 3px;
+  margin: 4px 0 8px 26px;
+  padding-left: 12px;
+  border-left: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.kbm-sub-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: #94a3b8;
+  font-size: 0.78rem;
+  text-decoration: none;
+}
+
+.kbm-sub-link:hover,
+.kbm-sub-link.active {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
 }
 
 .sidebar-footer {

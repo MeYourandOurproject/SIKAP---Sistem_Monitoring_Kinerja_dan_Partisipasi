@@ -45,7 +45,7 @@
             <router-link
               to="/super-admin/teacher"
               class="nav-link"
-              :class="{ active: isActive('/super-admin/guru') }"
+              :class="{ active: isActive('/super-admin/teacher') }"
               @click="closeSidebar"
             >
               <i class="bi bi-person-fill text-white"></i>
@@ -57,7 +57,7 @@
             <router-link
               to="/super-admin/schedule"
               class="nav-link"
-              :class="{ active: isActive('/super-admin/jadwal') }"
+              :class="{ active: isActive('/super-admin/schedule') }"
               @click="closeSidebar"
             >
               <i class="bi bi-calendar-check-fill text-white"></i>
@@ -69,7 +69,7 @@
             <router-link
               to="/super-admin/user"
               class="nav-link"
-              :class="{ active: isActive('/super-admin/pengguna') }"
+              :class="{ active: isActive('/super-admin/user') }"
               @click="closeSidebar"
             >
               <i class="bi bi-people-fill text-white"></i>
@@ -78,10 +78,52 @@
           </li>
 
           <li class="nav-item">
+            <button
+              class="nav-link w-100 border-0 text-start"
+              :class="{ active: isClassesRoute }"
+              type="button"
+              :aria-expanded="classesMenuOpen"
+              @click="classesMenuOpen = !classesMenuOpen"
+            >
+              <i class="bi bi-building-fill text-white"></i>
+              <span class="text-white flex-grow-1">Manajemen Kelas</span>
+              <i
+                class="bi"
+                :class="classesMenuOpen ? 'bi-chevron-up' : 'bi-chevron-down'"
+                aria-hidden="true"
+              ></i>
+            </button>
+            <ul v-if="classesMenuOpen" class="nav flex-column class-submenu">
+              <li class="nav-item">
+                <router-link
+                  to="/super-admin/classes/students"
+                  class="nav-link"
+                  :class="{ active: $route.path === '/super-admin/classes/students' }"
+                  @click="closeSidebar"
+                >
+                  <i class="bi bi-person-lines-fill"></i>
+                  <span>Kelola Data Siswa</span>
+                </router-link>
+              </li>
+              <li class="nav-item">
+                <router-link
+                  to="/super-admin/classes/homeroom"
+                  class="nav-link"
+                  :class="{ active: $route.path === '/super-admin/classes/homeroom' }"
+                  @click="closeSidebar"
+                >
+                  <i class="bi bi-person-badge"></i>
+                  <span>Kelola Wali Kelas</span>
+                </router-link>
+              </li>
+            </ul>
+          </li>
+
+          <li class="nav-item">
             <router-link
               to="/super-admin/settings"
               class="nav-link"
-              :class="{ active: isActive('/super-admin/pengaturan') }"
+              :class="{ active: isActive('/super-admin/settings') }"
               @click="closeSidebar"
             >
               <i class="bi bi-gear-fill text-white"></i>
@@ -103,12 +145,27 @@ export default {
       default: false,
     },
   },
+  data() {
+    return {
+      classesMenuOpen: this.$route.path.startsWith("/super-admin/classes"),
+    };
+  },
+  watch: {
+    "$route.path"(path) {
+      this.classesMenuOpen = path.startsWith("/super-admin/classes");
+    },
+  },
+  computed: {
+    isClassesRoute() {
+      return this.$route.path.startsWith("/super-admin/classes");
+    },
+  },
   methods: {
     closeSidebar() {
       this.$emit("close-sidebar");
     },
     isActive(path) {
-      return this.$route.path === path;
+      return this.$route.path === path || this.$route.path.startsWith(`${path}/`);
     },
   },
 };
@@ -125,7 +182,7 @@ export default {
   top: 0;
   width: 250px;
   height: 100vh;
-  background-color: #0f172a;
+  background: linear-gradient(180deg, #10243c 0%, #0b1729 100%);
   overflow-y: auto;
   transition: transform 0.3s ease;
   z-index: 1040;
@@ -142,7 +199,8 @@ export default {
 }
 
 .sidebar-top {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 90px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .logo-white {
@@ -159,27 +217,48 @@ export default {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  border-radius: 8px;
+  border-radius: 12px;
   transition: all 0.3s ease;
   text-decoration: none;
   color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 8px;
+  margin-bottom: 5px;
+  font-size: 0.92rem;
 }
 
 .nav-link:hover {
-  background-color: rgba(34, 197, 94, 0.1);
-  color: #22c55e;
-  transform: translateX(5px);
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #fff;
 }
 
 .nav-link.active {
-  background-color: #22c55e;
-  color: #0f172a;
+  background-color: rgba(34, 197, 94, 0.16);
+  color: #86efac;
   font-weight: 600;
+}
+
+.nav-link.active i,
+.nav-link.active span {
+  color: #86efac !important;
 }
 
 .nav-link i {
   font-size: 1.2rem;
+}
+
+.class-submenu {
+  margin: 0 0 8px 14px;
+  padding-left: 10px;
+  border-left: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.class-submenu .nav-link {
+  gap: 10px;
+  padding: 10px 12px;
+  font-size: 0.86rem;
+}
+
+.class-submenu .nav-link i {
+  font-size: 1rem;
 }
 
 @media (max-width: 991px) {

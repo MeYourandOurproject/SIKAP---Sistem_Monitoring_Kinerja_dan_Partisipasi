@@ -1,19 +1,63 @@
 <template>
   <div class="personresponsible-layout">
-    <!-- Sidebar (fixed kiri full) -->
-    <ResponsibleSidebar />
+    <!-- Desktop layout -->
+    <template v-if="!isMobile">
+      <ResponsibleSidebar class="sidebar" />
 
-    <!-- Area kanan -->
-    <div class="main-area">
-      <!-- Navbar -->
-      <ResponsibleNavbar :menu-title="currentMenuTitle" />
-      <ResponsibleMobileNavbar />
+      <div class="desktop-wrapper">
+        <ResponsibleNavbar
+          class="desktop-navbar"
+          :menu-title="currentMenuTitle"
+        />
+        <main class="desktop-content">
+          <router-view />
+        </main>
+      </div>
+    </template>
 
-      <!-- Content -->
-      <main class="main-content">
+    <!-- Mobile layout -->
+    <template v-else>
+      <ResponsibleMobileNavbar :show-top-navbar="showMobileNavbar" />
+      <main class="mobile-content">
+        <nav
+          v-if="showTeacherManagementTabs"
+          class="teacher-management-tabs"
+          aria-label="Navigasi tugas dan kegiatan guru"
+        >
+          <router-link
+            v-if="previousTeacherManagementPage"
+            :to="previousTeacherManagementPage.path"
+            class="submenu-step-link"
+            :aria-label="`Sebelumnya: ${previousTeacherManagementPage.label}`"
+          >
+            <i class="bi bi-chevron-left" aria-hidden="true"></i>
+            <span>Sebelumnya</span>
+          </router-link>
+          <span v-else class="submenu-step-link disabled" aria-hidden="true"></span>
+
+          <div class="submenu-current-page" aria-live="polite">
+            <small>Menu {{ currentTeacherManagementIndex + 1 }} dari {{ teacherManagementPages.length }}</small>
+            <span>
+              <i :class="['bi', currentTeacherManagementPage.icon]" aria-hidden="true"></i>
+              {{ currentTeacherManagementPage.label }}
+            </span>
+          </div>
+
+          <router-link
+            v-if="nextTeacherManagementPage"
+            :to="nextTeacherManagementPage.path"
+            class="submenu-step-link"
+            :aria-label="`Berikutnya: ${nextTeacherManagementPage.label}`"
+          >
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            <span>Berikutnya</span>
+          </router-link>
+          <span v-else class="submenu-step-link disabled" aria-hidden="true"></span>
+        </nav>
         <router-view />
       </main>
-    </div>
+      <ResponsibleMobileBottomNavigation />
+    </template>
   </div>
 </template>
 
@@ -21,6 +65,7 @@
 import ResponsibleNavbar from "@/components/responsible/ResponsibleNavbar.vue";
 import ResponsibleSidebar from "@/components/responsible/ResponsibleSidebar.vue";
 import ResponsibleMobileNavbar from "@/components/responsible/ResponsibleMobileNavbar.vue";
+import ResponsibleMobileBottomNavigation from "@/components/responsible/ResponsibleMobileBottomNavigation.vue";
 
 export default {
   name: "ResponsibleLayout",
@@ -28,107 +73,229 @@ export default {
     ResponsibleNavbar,
     ResponsibleSidebar,
     ResponsibleMobileNavbar,
+    ResponsibleMobileBottomNavigation,
   },
   data() {
     return {
-      sidebarOpen: false,
       currentMenuTitle: "Dashboard",
+      windowWidth: window.innerWidth,
     };
   },
+  computed: {
+    isMobile() {
+      return this.windowWidth < 992;
+    },
+    showMobileNavbar() {
+      return this.$route.path === "/penanggung-jawab/dashboard";
+    },
+    showTeacherManagementTabs() {
+      return (
+        this.$route.path.startsWith("/penanggung-jawab/kegiatan") ||
+        this.$route.path.startsWith("/penanggung-jawab/absensi")
+      );
+    },
+    teacherManagementPages() {
+      return [
+        {
+          path: "/penanggung-jawab/kegiatan",
+          label: "Kelola Tugas dan Kegiatan",
+          icon: "bi-calendar-check",
+        },
+        {
+          path: "/penanggung-jawab/absensi",
+          label: "Kelola Kehadiran Guru",
+          icon: "bi-person-check",
+        },
+        {
+          path: "/penanggung-jawab/kegiatan/riwayat-kehadiran",
+          label: "Riwayat Kehadiran Guru",
+          icon: "bi-clock-history",
+        },
+      ];
+    },
+    currentTeacherManagementIndex() {
+      const currentIndex = this.teacherManagementPages.findIndex(
+        (page) => page.path === this.$route.path,
+      );
+      return currentIndex >= 0 ? currentIndex : 0;
+    },
+    currentTeacherManagementPage() {
+      return this.teacherManagementPages[this.currentTeacherManagementIndex];
+    },
+    previousTeacherManagementPage() {
+      return this.teacherManagementPages[this.currentTeacherManagementIndex - 1] || null;
+    },
+    nextTeacherManagementPage() {
+      return this.teacherManagementPages[this.currentTeacherManagementIndex + 1] || null;
+    },
+  },
   watch: {
-    "$route.path"(newPath) {
-      this.updateMenuTitle(newPath);
-      this.sidebarOpen = false; // Close sidebar on route change
+    "$route.path"(path) {
+      this.updateMenuTitle(path);
     },
   },
   mounted() {
     this.updateMenuTitle(this.$route.path);
-    // Close sidebar on screen resize if opening
-    window.addEventListener("resize", this.handleResize);
+    window.addEventListener("resize", this.onResize);
   },
   beforeUnmount() {
-    window.removeEventListener("resize", this.handleResize);
+    window.removeEventListener("resize", this.onResize);
   },
   methods: {
+    onResize() {
+      this.windowWidth = window.innerWidth;
+    },
     updateMenuTitle(path) {
       const titleMap = {
         "/penanggung-jawab/dashboard": "Dashboard",
+        "/penanggung-jawab/kbm": "Realtime Keterisian Kelas",
+        "/penanggung-jawab/kbm/realtime": "Realtime Keterisian Kelas",
+        "/penanggung-jawab/kbm/riwayat": "Riwayat Keterisian Kelas",
         "/penanggung-jawab/kegiatan": "Kegiatan",
-        "/penanggung-jawab/absensi": "Absensi",
+        "/penanggung-jawab/absensi": "Kelola Kehadiran Guru",
+        "/penanggung-jawab/kegiatan/riwayat-kehadiran": "Riwayat Kehadiran Guru",
         "/penanggung-jawab/settings": "Pengaturan",
         "/penanggung-jawab/profile": "Profil",
       };
       this.currentMenuTitle = titleMap[path] || "Dashboard";
     },
-    handleResize() {
-      if (window.innerWidth >= 992) {
-        this.sidebarOpen = false;
-      }
-    },
   },
 };
 </script>
 
-<style>
+<style scoped>
 .personresponsible-layout {
-  display: flex;
-  height: 100vh; /* ganti min-height */
-  overflow: hidden; /* cegah scroll parent */
+  min-height: 100vh;
   background: #0f172a;
 }
 
-/* ===== SIDEBAR FIX ===== */
-:deep(.sidebar) {
-  position: fixed !important;
-  top: 0 !important;
+.sidebar {
+  position: fixed;
+  top: 0;
   left: 0;
-  height: 100vh !important;
-  width: 290px;
   z-index: 1000;
-  overflow-y: auto; /* kalau menu sidebar panjang */
+  width: 290px;
+  height: 100vh;
 }
 
-/* ===== AREA KANAN ===== */
-.main-area {
-  /* margin-left: 290px; */
-  width: calc(100% - 290px);
-  height: 100vh;
-  overflow-y: auto; /* hanya konten kanan yang scroll */
+.desktop-wrapper {
   display: flex;
+  width: calc(100% - 290px);
+  min-width: 0;
+  min-height: 100vh;
+  margin-left: 290px;
   flex-direction: column;
 }
 
-/* ===== NAVBAR ===== */
-:deep(.penanggungjawab-navbar) {
+.desktop-navbar {
   position: sticky;
   top: 0;
   z-index: 900;
-  height: 70px;
-  display: flex;
-  align-items: center;
   flex-shrink: 0;
 }
 
-/* ===== CONTENT ===== */
-.main-content {
-  padding: 0 1.5rem 2rem;
+.desktop-content {
   flex: 1;
+  min-width: 0;
+  padding: 24px;
+  overflow-x: hidden;
 }
 
-/* ===== RESPONSIVE ===== */
+.mobile-content {
+  min-height: 100vh;
+  padding: 16px 16px 90px;
+}
+
+.teacher-management-tabs {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) 72px;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 16px;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.8);
+}
+
+.submenu-step-link {
+  display: flex;
+  min-height: 48px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 10px;
+  color: #cbd5e1;
+  font-size: 0.68rem;
+  text-decoration: none;
+}
+
+.submenu-step-link i {
+  font-size: 1rem;
+}
+
+.submenu-step-link:hover {
+  border-color: rgba(52, 211, 153, 0.5);
+  background: rgba(16, 185, 129, 0.16);
+  color: #f8fafc;
+}
+
+.submenu-step-link.disabled {
+  visibility: hidden;
+}
+
+.submenu-current-page {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+  justify-items: center;
+  text-align: center;
+}
+
+.submenu-current-page small {
+  color: #94a3b8;
+  font-size: 0.68rem;
+}
+
+.submenu-current-page > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: #f8fafc;
+  font-size: 0.85rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.submenu-current-page i {
+  flex: 0 0 auto;
+  color: #6ee7b7;
+}
+
 @media (max-width: 991px) {
-  .main-area {
-    margin-left: 0;
+  .desktop-wrapper {
     width: 100%;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .teacher-management-tabs {
+    grid-template-columns: 56px minmax(0, 1fr) 56px;
+    gap: 7px;
+    padding: 8px;
   }
 
-  :deep(.sidebar) {
-    transform: translateX(-100%);
-    transition: 0.3s ease;
+  .submenu-step-link {
+    min-height: 44px;
+    font-size: 0.62rem;
   }
 
-  :deep(.sidebar.open) {
-    transform: translateX(0);
+  .submenu-current-page > span {
+    font-size: 0.78rem;
   }
 }
 </style>

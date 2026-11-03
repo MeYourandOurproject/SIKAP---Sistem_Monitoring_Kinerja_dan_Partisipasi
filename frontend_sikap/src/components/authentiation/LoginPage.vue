@@ -134,6 +134,8 @@ async function handleLogin() {
       router.push("/penanggung-jawab/dashboard");
     } else if (result.user.role === "admin") {
       router.push("/super-admin/dashboard");
+    } else if (result.user.role === "teacher") {
+      router.push("/guru/dashboard");
     } else {
       errorMessage.value = "Role tidak dikenali";
 
@@ -142,7 +144,8 @@ async function handleLogin() {
   } catch (error) {
     console.log(error);
 
-    errorMessage.value = "Login gagal";
+    errorMessage.value =
+      error.status === 403 ? error.message : "Login gagal";
   }
 }
 </script>

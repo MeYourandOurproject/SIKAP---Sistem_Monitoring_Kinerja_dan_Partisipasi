@@ -6,6 +6,12 @@ const authorize = require("../middlewares/authorizationHandler");
 
 router.get("/", TeacherController.getAll);
 router.get("/count", TeacherController.count);
+router.patch(
+  "/bulk-status",
+  authen,
+  authorize("admin"),
+  TeacherController.updateStatusBulk,
+);
 router.get("/:id", TeacherController.getById);
 router.post("/", authen, authorize("admin"), TeacherController.create);
 router.put("/:id", authen, authorize("admin"), TeacherController.update);

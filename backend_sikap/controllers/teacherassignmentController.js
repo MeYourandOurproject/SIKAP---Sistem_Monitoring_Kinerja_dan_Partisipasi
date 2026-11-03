@@ -1,4 +1,4 @@
-const { Teacherassignment } = require("../models");
+const { Teacherassignment, Academicperiod } = require("../models");
 
 class TeacherassignmentController {
   static async getAll(req, res, next) {
@@ -23,7 +23,14 @@ class TeacherassignmentController {
 
   static async create(req, res, next) {
     try {
-      const payload = req.body;
+      const period = await Academicperiod.findByPk(1);
+      if (!period) {
+        return res.status(400).json({ message: "Periode akademik belum diatur" });
+      }
+      const payload = {
+        ...req.body,
+        academic_year: period.academic_year,
+      };
       const item = await Teacherassignment.create(payload);
       res.status(201).json(item);
     } catch (error) {
@@ -36,7 +43,9 @@ class TeacherassignmentController {
       const { id } = req.params;
       const item = await Teacherassignment.findByPk(id);
       if (!item) return res.status(404).json({ message: "Teacherassignment not found" });
-      await item.update(req.body);
+      const payload = { ...req.body };
+      payload.academic_year = item.academic_year;
+      await item.update(payload);
       res.json(item);
     } catch (error) {
       next(error);

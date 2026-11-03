@@ -1,9 +1,11 @@
 <template>
-  <div class="row d-md-none mb-3"><SuperAdminMobileNavbar /></div>
   <div class="superadmin-dashboard mt-3">
+    <div v-if="statisticsError" class="alert alert-danger" role="alert">
+      {{ statisticsError }}
+    </div>
     <div class="row g-3 mb-4">
-      <div class="col-12 col-md-6 col-xl-4">
-        <div class="card stat-card shadow-sm">
+      <div class="col-12">
+        <div class="card welcome-card shadow-sm">
           <div class="card-body bg-img">
             <div class="row text-start px-2">
               <div class="col-8">
@@ -21,7 +23,9 @@
         </div>
       </div>
 
-      <div class="col-6 col-md-3">
+    </div>
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-4">
         <div class="card stat-card shadow-sm">
           <div class="card-body gap-0 px-3">
             <div
@@ -41,14 +45,14 @@
             <div class="stat-value text-start">
               <div class="status-main">{{ totalTeachers }}</div>
               <div class="status-sub text-success">
-                Guru Aktif
+                {{ activeTeachers }} Guru Aktif
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="col-6 col-md-3">
+      <div class="col-6 col-md-4">
         <div class="card stat-card shadow-sm">
           <div class="card-body gap-0 px-3">
             <div
@@ -73,7 +77,7 @@
         </div>
       </div>
 
-      <div class="col-6 col-md-3">
+      <div class="col-6 col-md-4">
         <div class="card stat-card shadow-sm">
           <div class="card-body gap-0 px-3">
             <div
@@ -110,7 +114,7 @@
             <div class="row g-2">
               <div class="col-6 col-md-3">
                 <router-link
-                  to="/super-admin/guru"
+                  to="/super-admin/teacher"
                   class="btn btn-outline-primary w-100"
                 >
                   <i class="bi bi-person-plus-fill me-2"></i>
@@ -119,7 +123,7 @@
               </div>
               <div class="col-6 col-md-3">
                 <router-link
-                  to="/super-admin/jadwal"
+                  to="/super-admin/schedule"
                   class="btn btn-outline-info w-100"
                 >
                   <i class="bi bi-calendar-plus-fill me-2"></i>
@@ -128,7 +132,7 @@
               </div>
               <div class="col-6 col-md-3">
                 <router-link
-                  to="/super-admin/pengguna"
+                  to="/super-admin/user"
                   class="btn btn-outline-warning w-100"
                 >
                   <i class="bi bi-person-check-fill me-2"></i>
@@ -137,7 +141,7 @@
               </div>
               <div class="col-6 col-md-3">
                 <router-link
-                  to="/super-admin/pengaturan"
+                  to="/super-admin/settings"
                   class="btn btn-outline-secondary w-100"
                 >
                   <i class="bi bi-gear-fill me-2"></i>
@@ -192,33 +196,35 @@
 </template>
 
 <script>
-import SuperAdminMobileNavbar from "@/components/superadmin/SuperAdminMobileNavbar.vue";
-// import { api } from "@/utils/api";
+import {
+  getManagedTeachers,
+  getManagedUsers,
+  getScheduleManagementData,
+} from "@/services/api.js";
 
 export default {
   name: "SuperAdminDashboard",
-  components: {
-    SuperAdminMobileNavbar,
-  },
   data() {
     return {
       adminName: "Super Admin",
       totalTeachers: 0,
+      activeTeachers: 0,
       totalSchedules: 0,
       totalUsers: 0,
       currentDate: "",
+      statisticsError: "",
     };
   },
   mounted() {
     this.loadUserName();
-    this.loadStatistics();
+    this.loadAdminStatistics();
     this.setCurrentDate();
   },
   methods: {
     loadUserName() {
       try {
         const user = JSON.parse(localStorage.getItem("user") || "{}");
-        this.adminName = user.fullname || "Super Admin";
+        this.adminName = user.name || user.fullname || "Super Admin";
       } catch (error) {
         console.error("Error loading user name:", error);
       }
@@ -246,6 +252,25 @@ export default {
         this.totalUsers = usersRes.data?.length || 0;
       } catch (error) {
         console.error("Error loading statistics:", error);
+      }
+    },
+    async loadAdminStatistics() {
+      try {
+        const [teachers, scheduleData, users] = await Promise.all([
+          getManagedTeachers(),
+          getScheduleManagementData(),
+          getManagedUsers(),
+        ]);
+        if (!Array.isArray(teachers) || !Array.isArray(users)) {
+          throw new Error("Format data statistik tidak valid");
+        }
+        this.totalTeachers = teachers.length;
+        this.activeTeachers = teachers.filter((teacher) => teacher.status === "active").length;
+        this.totalSchedules = scheduleData.schedules.length;
+        this.totalUsers = users.length;
+        this.statisticsError = "";
+      } catch (error) {
+        this.statisticsError = `Gagal memuat statistik: ${error.message}`;
       }
     },
     setCurrentDate() {
