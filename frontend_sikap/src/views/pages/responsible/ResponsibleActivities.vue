@@ -582,6 +582,11 @@ const indonesianWeekdays = {
 };
 
 function routineWeekdays(activity) {
+  const activityDay = String(activity.day_of_week || "").toLowerCase();
+  const activityWeekday =
+    englishWeekdays[activityDay] ?? indonesianWeekdays[activityDay];
+  if (activityWeekday !== undefined) return [activityWeekday];
+
   const allAssignments =
     activity.Teacherassignments ||
     activity.teacherassignments ||

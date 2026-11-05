@@ -284,6 +284,42 @@ export async function openActivitySession(payload) {
   }
 }
 
+export async function getTodayActivityCancellations() {
+  const token = localStorage.getItem("token");
+  return fetchJson(`${API_URL}/api/activitysessions/cancellations/today`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+}
+
+export async function cancelRoutineActivity(payload) {
+  const token = localStorage.getItem("token");
+  return fetchJson(`${API_URL}/api/activitysessions/cancellations`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function restoreRoutineActivity(cancellationId) {
+  const token = localStorage.getItem("token");
+  return fetchJson(
+    `${API_URL}/api/activitysessions/cancellations/${cancellationId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    },
+  );
+}
+
 // ======================
 // TEACHER ASSIGNMENT
 // ======================

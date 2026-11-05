@@ -53,9 +53,12 @@ module.exports = {
       },
     });
 
-    await queryInterface.addIndex("Students", ["class_id", "status"], {
-      name: "students_class_status",
-    });
+    const indexes = await queryInterface.showIndex("Students");
+    if (!indexes.some((index) => index.name === "students_class_status")) {
+      await queryInterface.addIndex("Students", ["class_id", "status"], {
+        name: "students_class_status",
+      });
+    }
   },
 
   async down(queryInterface) {

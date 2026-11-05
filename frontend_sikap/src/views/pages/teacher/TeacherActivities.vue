@@ -148,7 +148,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { getTeacherActivitySessions } from "@/services/api";
 
 const sessions = ref([]);
@@ -156,6 +156,9 @@ const loading = ref(true);
 const errorMessage = ref("");
 const attendanceFilter = ref("all");
 const todayDate = getTodayDateKey();
+const refreshIntervalMs = 15_000;
+let refreshInterval;
+let isRefreshing = false;
 
 const attendanceCount = computed(
   () => sessions.value.filter((session) => session.attendance).length,
@@ -339,20 +342,35 @@ function attendanceIcon(attendance) {
 }
 
 async function loadActivities() {
+  if (isRefreshing) return;
+  isRefreshing = true;
   try {
     const data = await getTeacherActivitySessions();
     sessions.value = data.sort((left, right) => {
       return normalizeDate(right.date).localeCompare(normalizeDate(left.date));
     });
+    errorMessage.value = "";
   } catch (error) {
     console.error("Gagal memuat agenda dan log presensi guru:", error);
-    errorMessage.value = error.message || "Agenda kegiatan gagal dimuat.";
+    if (loading.value) {
+      errorMessage.value = error.message || "Agenda kegiatan gagal dimuat.";
+    }
   } finally {
     loading.value = false;
+    isRefreshing = false;
   }
 }
 
-onMounted(loadActivities);
+onMounted(() => {
+  loadActivities();
+  refreshInterval = window.setInterval(loadActivities, refreshIntervalMs);
+  window.addEventListener("focus", loadActivities);
+});
+
+onUnmounted(() => {
+  window.clearInterval(refreshInterval);
+  window.removeEventListener("focus", loadActivities);
+});
 </script>
 
 <style scoped>

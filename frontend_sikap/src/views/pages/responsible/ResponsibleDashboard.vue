@@ -280,6 +280,31 @@ export default {
     },
     activityOccursToday(activity, today, weekday) {
       if (activity.type === "routine") {
+        const activityDay = String(activity.day_of_week || "").toLowerCase();
+        if (activityDay) {
+          const weekdayNames = [
+            "sunday",
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+          ];
+          const weekdayNamesId = [
+            "minggu",
+            "senin",
+            "selasa",
+            "rabu",
+            "kamis",
+            "jumat",
+            "sabtu",
+          ];
+          return (
+            activityDay === weekdayNames[weekday] ||
+            activityDay === weekdayNamesId[weekday]
+          );
+        }
         const assignments =
           activity.Teacherassignments ||
           activity.teacherassignments ||
