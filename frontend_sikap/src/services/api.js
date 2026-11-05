@@ -284,6 +284,34 @@ export async function openActivitySession(payload) {
   }
 }
 
+export async function getActivitySessionAttendances(sessionId) {
+  const token = localStorage.getItem("token");
+  return fetchJson(
+    `${API_URL}/api/activitysessions/${sessionId}/attendances`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    },
+  );
+}
+
+export async function saveActivitySessionAttendances(sessionId, attendances) {
+  const token = localStorage.getItem("token");
+  return fetchJson(
+    `${API_URL}/api/activitysessions/${sessionId}/attendances`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ attendances }),
+    },
+  );
+}
+
 export async function getTodayActivityCancellations() {
   const token = localStorage.getItem("token");
   return fetchJson(`${API_URL}/api/activitysessions/cancellations/today`, {

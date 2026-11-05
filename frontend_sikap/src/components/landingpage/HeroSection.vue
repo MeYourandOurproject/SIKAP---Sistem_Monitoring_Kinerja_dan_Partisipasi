@@ -22,7 +22,7 @@
           <div class="col-12 d-md-none d-flex d-flex align-items-center justify-content-center">
           <div class="hero-image-wrapper">
             <img
-              src="../../assets/hero_img.PNG"
+              src="../../assets/hero_img.png"
               alt="hero"
               class="hero-image"
             />
@@ -98,7 +98,7 @@
         <div class="col-12 col-md-6 order-1 order-md-2 d-flex align-items-center justify-content-center d-none d-md-flex">
           <div class="hero-image-wrapper">
             <img
-              src="../../assets/hero_img.PNG"
+              src="../../assets/hero_img.png"
               alt="hero"
               class="hero-image"
             />

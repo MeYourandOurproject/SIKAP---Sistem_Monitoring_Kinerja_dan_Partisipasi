@@ -632,6 +632,8 @@ import {
   openActivitySession,
   cancelRoutineActivity,
   restoreRoutineActivity,
+  getActivitySessionAttendances,
+  saveActivitySessionAttendances,
 } from "@/services/api";
 
 const props = defineProps({
@@ -640,8 +642,6 @@ const props = defineProps({
     default: null,
   },
 });
-
-const API_BASE_URL = "http://localhost:3001/api";
 
 const todaySessions = ref([]);
 const loadingSessions = ref(false);
@@ -883,12 +883,7 @@ const selectSession = async (id) => {
   loadingAttendance.value = true;
 
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/activitysessions/${id}/attendances`,
-    );
-    if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-
-    const data = await response.json();
+    const data = await getActivitySessionAttendances(id);
 
     sessionInfo.value = {
       activity_name: data.activity_name,
@@ -935,19 +930,10 @@ const saveAttendance = async () => {
       })),
     };
 
-    const response = await fetch(
-      `${API_BASE_URL}/activitysessions/${selectedSessionId.value}/attendances`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      },
+    await saveActivitySessionAttendances(
+      selectedSessionId.value,
+      payload.attendances,
     );
-
-    const result = await response.json();
-    if (!response.ok)
-      throw new Error(result.message || "Gagal menyimpan absensi");
-
     alert("Presensi berhasil disimpan!");
     await selectSession(selectedSessionId.value);
   } catch (error) {
