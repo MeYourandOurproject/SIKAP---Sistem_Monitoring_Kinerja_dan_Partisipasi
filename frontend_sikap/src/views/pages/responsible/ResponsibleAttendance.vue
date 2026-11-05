@@ -24,6 +24,9 @@
         <i class="bi bi-arrow-repeat spin-icon"></i>
         <span>Memuat kegiatan hari ini...</span>
       </div>
+      <div v-else-if="attendanceDataError" class="alert alert-danger" role="alert">
+        {{ attendanceDataError }}
+      </div>
 
       <div v-else-if="pendingActivities.length" class="pending-activity-alert mb-4" role="alert">
         <div class="pending-alert-content">
@@ -120,11 +123,85 @@
                   <i class="bi" :class="openingActivityId === activity.id ? 'bi-hourglass-split' : 'bi-play-fill'"></i>
                   <span>{{ openingActivityId === activity.id ? "Membuka..." : "Buka Session" }}</span>
                 </button>
+                <div v-if="activity.type === 'routine'" class="cancel-routine-action">
+                  <label
+                    :for="`activity-cancel-reason-${activity.id}`"
+                    class="form-label small fw-semibold"
+                  >
+                    Jika tidak diselenggarakan, tulis alasannya
+                  </label>
+                  <textarea
+                    :id="`activity-cancel-reason-${activity.id}`"
+                    v-model="cancellationReasons[activity.id]"
+                    class="form-control mb-2"
+                    rows="2"
+                    maxlength="1000"
+                    placeholder="Contoh: libur sekolah atau kegiatan lain"
+                  ></textarea>
+                  <button
+                    type="button"
+                    class="cancel-activity-btn"
+                    :disabled="
+                      cancellingActivityId === activity.id ||
+                      !cancellationReasons[activity.id]?.trim()
+                    "
+                    @click="cancelRoutine(activity)"
+                  >
+                    <i
+                      class="bi"
+                      :class="
+                        cancellingActivityId === activity.id
+                          ? 'bi-hourglass-split'
+                          : 'bi-calendar2-x'
+                      "
+                    ></i>
+                    {{
+                      cancellingActivityId === activity.id
+                        ? "Menyimpan..."
+                        : "Tandai kegiatan ditiadakan"
+                    }}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </section>
       </div>
+
+      <section v-if="todayCancellations.length" class="cancelled-activities">
+        <div class="cancelled-heading">
+          <div>
+            <h5 class="mb-1">Kegiatan rutin ditiadakan</h5>
+            <p class="mb-0">Kegiatan berikut tidak membuka sesi hari ini.</p>
+          </div>
+          <span>{{ todayCancellations.length }}</span>
+        </div>
+        <article
+          v-for="cancellation in todayCancellations"
+          :key="`cancelled-${cancellation.id}`"
+          class="cancelled-activity-card"
+        >
+          <div>
+            <strong>{{ cancellation.activity_name }}</strong>
+            <p class="mb-1">
+              {{ sessionLabel(cancellation.session) }} ·
+              {{ cancellation.reason }}
+            </p>
+          </div>
+          <button
+            type="button"
+            class="restore-cancellation-btn"
+            :disabled="restoringCancellationId === cancellation.id"
+            @click="restoreCancellation(cancellation)"
+          >
+            {{
+              restoringCancellationId === cancellation.id
+                ? "Memproses..."
+                : "Batalkan penandaan"
+            }}
+          </button>
+        </article>
+      </section>
 
       <div class="active-sessions-divider">
         <span>Session Aktif</span>
@@ -149,7 +226,14 @@
           :key="session.id"
           class="col-12 col-md-6 col-xl-4"
         >
-          <div class="session-card">
+          <div
+            class="session-card"
+            :class="
+              session.attendance_complete
+                ? 'session-card-complete'
+                : 'session-card-pending'
+            "
+          >
             <div class="session-card-header">
               <div class="session-icon">
                 <i class="bi bi-calendar-event-fill"></i>
@@ -159,10 +243,39 @@
 
             <div class="session-card-body">
               <h5 class="activity-title">{{ session.activity_name }}</h5>
+              <span
+                class="attendance-state-badge"
+                :class="
+                  session.attendance_complete
+                    ? 'attendance-state-complete'
+                    : 'attendance-state-pending'
+                "
+              >
+                <i
+                  class="bi"
+                  :class="
+                    session.attendance_complete
+                      ? 'bi-check-circle-fill'
+                      : 'bi-hourglass-split'
+                  "
+                ></i>
+                {{
+                  session.attendance_complete
+                    ? "Presensi sudah lengkap"
+                    : "Presensi belum lengkap"
+                }}
+              </span>
               <div class="meta-info">
                 <p class="mb-1">
                   <i class="bi bi-clock me-2"></i>
                   {{ formatDate(session.date) }}
+                </p>
+                <p class="mb-1">
+                  <i class="bi bi-person-check me-2"></i>
+                  Presensi: {{ session.attendance_count }}/{{
+                    session.total_teachers
+                  }}
+                  guru
                 </p>
                 <p class="mb-0">
                   <i class="bi bi-people me-2"></i>
@@ -172,7 +285,11 @@
             </div>
 
             <button @click="selectSession(session.id)" class="action-btn">
-              <span>Buka Absensi</span>
+              <span>{{
+                session.attendance_count
+                  ? "Lihat / Perbarui Presensi"
+                  : "Isi Presensi"
+              }}</span>
               <i class="bi bi-arrow-right"></i>
             </button>
           </div>
@@ -510,8 +627,11 @@ import {
   getAcademicPeriod,
   getActivities,
   getActiveActivitySessions,
+  getTodayActivityCancellations,
   getTeachers,
   openActivitySession,
+  cancelRoutineActivity,
+  restoreRoutineActivity,
 } from "@/services/api";
 
 const props = defineProps({
@@ -534,6 +654,11 @@ const teachers = ref([]);
 const loadingTeachers = ref(false);
 const teacherLoadError = ref("");
 const selectedPicTeacherByActivity = ref({});
+const todayCancellations = ref([]);
+const cancellationReasons = ref({});
+const cancellingActivityId = ref(null);
+const restoringCancellationId = ref(null);
+const attendanceDataError = ref("");
 
 const selectedSessionId = ref(props.sessionId || null);
 const sessionInfo = ref(null);
@@ -571,6 +696,11 @@ const getCurrentPeriodAssignments = (activity) =>
       assignment.semester === academicPeriod.value?.semester,
   );
 
+const getRoutineDay = (activity) =>
+  activity.day_of_week ||
+  getCurrentPeriodAssignments(activity).find((assignment) => assignment.day_of_week)
+    ?.day_of_week;
+
 const todayActivities = computed(() => {
   const todayDay = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -578,31 +708,36 @@ const todayActivities = computed(() => {
 
   return activities.value.filter((activity) => {
     if (activity.type === "tentative") return isToday(activity.date);
-    return getCurrentPeriodAssignments(activity).some(
-      (assignment) => assignment.day_of_week === todayDay,
-    );
+    return getRoutineDay(activity) === todayDay;
   });
 });
 
 const pendingActivities = computed(() =>
   todayActivities.value.filter(
     (activity) =>
+      !todayCancellations.value.some(
+        (cancellation) =>
+          Number(cancellation.activity_id) === Number(activity.id),
+      ) &&
       !todaySessions.value.some(
         (session) => session.activity_id === activity.id,
       ),
   ),
 );
 
+const getActivitySessionValue = (activity) =>
+  activity.Activitysessions?.find(
+    (item) =>
+      isToday(item.date) &&
+      (activity.type !== "routine" ||
+        (item.academic_year === academicPeriod.value?.academic_year &&
+          item.semester === academicPeriod.value?.semester)),
+  )?.session ||
+  getCurrentPeriodAssignments(activity).find((item) => item.session)?.session ||
+  activity.session;
+
 const getActivitySessionLabel = (activity) => {
-  const session =
-    activity.Activitysessions?.find(
-      (item) =>
-        isToday(item.date) &&
-        (activity.type !== "routine" ||
-          (item.academic_year === academicPeriod.value?.academic_year &&
-            item.semester === academicPeriod.value?.semester)),
-    )?.session ||
-    getCurrentPeriodAssignments(activity).find((item) => item.session)?.session;
+  const session = getActivitySessionValue(activity);
 
   return (
     {
@@ -611,6 +746,48 @@ const getActivitySessionLabel = (activity) => {
       all_day: "Seharian",
     }[session] || "Belum ditentukan"
   );
+};
+
+const sessionLabel = (session) =>
+  ({
+    morning: "Pagi",
+    afternoon: "Siang",
+    all_day: "Seharian",
+  })[session] || "Sesi belum ditentukan";
+
+const cancelRoutine = async (activity) => {
+  cancellingActivityId.value = activity.id;
+  try {
+    const session = getActivitySessionValue(activity);
+    if (!session) throw new Error("Sesi kegiatan belum ditentukan.");
+    await cancelRoutineActivity({
+      activity_id: activity.id,
+      session,
+      reason: cancellationReasons.value[activity.id],
+    });
+    cancellationReasons.value[activity.id] = "";
+    await fetchAttendanceData();
+    if (pendingActivities.value.length === 0) {
+      showPendingActivitiesModal.value = false;
+    }
+  } catch (error) {
+    alert(error.message || "Gagal menandai kegiatan ditiadakan.");
+  } finally {
+    cancellingActivityId.value = null;
+  }
+};
+
+const restoreCancellation = async (cancellation) => {
+  restoringCancellationId.value = cancellation.id;
+  try {
+    await restoreRoutineActivity(cancellation.id);
+    await fetchAttendanceData();
+    showPendingActivitiesModal.value = true;
+  } catch (error) {
+    alert(error.message || "Gagal membatalkan penandaan kegiatan.");
+  } finally {
+    restoringCancellationId.value = null;
+  }
 };
 
 const loadTeachers = async () => {
@@ -656,31 +833,45 @@ const openActivity = async (activity) => {
 const fetchAttendanceData = async () => {
   loadingActivities.value = true;
   loadingSessions.value = true;
+  attendanceDataError.value = "";
   try {
-    const [activityResponse, sessionResponse, periodResponse] = await Promise.all([
+    const [
+      activityResponse,
+      sessionResponse,
+      periodResponse,
+      cancellationResponse,
+    ] = await Promise.all([
       getActivities(),
       getActiveActivitySessions(),
       getAcademicPeriod(),
+      getTodayActivityCancellations(),
     ]);
     academicPeriod.value = periodResponse;
 
-    if (activityResponse.success) {
-      activities.value = activityResponse.data || [];
-      const selections = { ...selectedPicTeacherByActivity.value };
-      for (const activity of activities.value) {
-        if (!(activity.id in selections)) {
-          selections[activity.id] =
-            activity.pic_teacher_id ||
-            activity.Activitysessions?.find((item) => isToday(item.date))
-              ?.pic_teacher_id ||
-            null;
-        }
-      }
-      selectedPicTeacherByActivity.value = selections;
+    if (!activityResponse.success) {
+      throw new Error(activityResponse.message || "Gagal memuat kegiatan.");
     }
-    if (sessionResponse.success) todaySessions.value = sessionResponse.data || [];
+    if (!sessionResponse.success) {
+      throw new Error(sessionResponse.message || "Gagal memuat sesi kegiatan.");
+    }
+    activities.value = activityResponse.data || [];
+    const selections = { ...selectedPicTeacherByActivity.value };
+    for (const activity of activities.value) {
+      if (!(activity.id in selections)) {
+        selections[activity.id] =
+          activity.pic_teacher_id ||
+          activity.Activitysessions?.find((item) => isToday(item.date))
+            ?.pic_teacher_id ||
+          null;
+      }
+    }
+    selectedPicTeacherByActivity.value = selections;
+    todaySessions.value = sessionResponse.data || [];
+    todayCancellations.value = cancellationResponse || [];
   } catch (error) {
     console.error("Gagal mengambil data kegiatan dan session:", error);
+    attendanceDataError.value =
+      error.message || "Gagal memuat kegiatan dan sesi hari ini.";
   } finally {
     loadingActivities.value = false;
     loadingSessions.value = false;
@@ -852,6 +1043,16 @@ onUnmounted(() => {
   transition: all 0.25s ease;
 }
 
+.session-card-complete {
+  border-color: rgba(34, 197, 94, 0.45);
+  background: rgba(20, 83, 45, 0.2);
+}
+
+.session-card-pending {
+  border-color: rgba(251, 191, 36, 0.45);
+  background: rgba(120, 53, 15, 0.16);
+}
+
 .session-card:hover {
   transform: translateY(-4px);
   background: rgba(255, 255, 255, 0.05);
@@ -887,6 +1088,27 @@ onUnmounted(() => {
   text-transform: uppercase;
 }
 
+.attendance-state-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 12px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.attendance-state-complete {
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.16);
+}
+
+.attendance-state-pending {
+  color: #fde68a;
+  background: rgba(251, 191, 36, 0.16);
+}
+
 .activity-title {
   color: white;
   font-size: 16px;
@@ -905,6 +1127,112 @@ onUnmounted(() => {
   border: 1px solid rgba(251, 191, 36, 0.2);
   border-radius: 14px;
   padding: 12px;
+}
+
+.cancel-routine-action {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(251, 191, 36, 0.18);
+}
+
+.cancel-routine-action .form-control {
+  color: #f8fafc;
+  background: rgba(15, 23, 42, 0.65);
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+.cancel-routine-action .form-control::placeholder {
+  color: #94a3b8;
+}
+
+.cancel-activity-btn,
+.restore-cancellation-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  border-radius: 10px;
+  padding: 9px 12px;
+  color: #fecaca;
+  background: rgba(127, 29, 29, 0.25);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.cancel-activity-btn {
+  width: 100%;
+}
+
+.cancel-activity-btn:disabled,
+.restore-cancellation-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.cancelled-activities {
+  margin-bottom: 24px;
+  padding: 18px;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  border-radius: 18px;
+  background: rgba(127, 29, 29, 0.12);
+}
+
+.cancelled-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  color: #fecaca;
+}
+
+.cancelled-heading h5 {
+  color: #fecaca;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.cancelled-heading p,
+.cancelled-activity-card p {
+  color: #cbd5e1;
+  font-size: 13px;
+}
+
+.cancelled-heading > span {
+  display: grid;
+  min-width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fecaca;
+  background: rgba(248, 113, 113, 0.18);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cancelled-activity-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-top: 1px solid rgba(248, 113, 113, 0.16);
+}
+
+.cancelled-activity-card strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #f8fafc;
+}
+
+.cancelled-activity-card p {
+  margin-bottom: 0;
+  overflow-wrap: anywhere;
+}
+
+.restore-cancellation-btn {
+  flex-shrink: 0;
 }
 
 .pending-activity-alert {
@@ -1008,6 +1336,15 @@ onUnmounted(() => {
 }
 
 @media (max-width: 576px) {
+  .cancelled-activity-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .restore-cancellation-btn {
+    width: 100%;
+  }
+
   .pending-activity-alert {
     align-items: flex-start;
     flex-direction: column;

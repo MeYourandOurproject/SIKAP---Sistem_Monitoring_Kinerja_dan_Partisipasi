@@ -26,6 +26,21 @@ module.exports = (sequelize, DataTypes) => {
     name: { type: DataTypes.STRING },
     type: { type: DataTypes.ENUM("routine", "tentative") },
     date: { type: DataTypes.DATEONLY, allowNull: true },
+    day_of_week: {
+      type: DataTypes.ENUM(
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday"
+      ),
+      allowNull: true,
+    },
+    session: {
+      type: DataTypes.ENUM("morning", "afternoon", "all_day"),
+      allowNull: true,
+    },
     start_time: { type: DataTypes.TIME, allowNull: true },
     end_time: { type: DataTypes.TIME, allowNull: true },
     responsiblePerson: { type: DataTypes.STRING, allowNull: true },

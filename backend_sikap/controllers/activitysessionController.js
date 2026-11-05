@@ -1,6 +1,7 @@
 const {
   Activitysession,
   Activity,
+  Activitycancellation,
   Teacherassignment,
   Teacher,
   Activityateacherattendance,
@@ -14,6 +15,12 @@ function formatDateOnly(value) {
   if (!value) return null;
   if (value instanceof Date) return value.toISOString().slice(0, 10);
   return String(value).slice(0, 10);
+}
+
+function getTodayInJakarta() {
+  return new Date().toLocaleDateString("sv-SE", {
+    timeZone: "Asia/Jakarta",
+  });
 }
 
 class ActivitysessionController {
@@ -39,7 +46,15 @@ class ActivitysessionController {
         include: [
           {
             model: Activity,
-            attributes: ["id", "name", "type", "description", "target_type"],
+            attributes: [
+              "id",
+              "name",
+              "type",
+              "description",
+              "target_type",
+              "day_of_week",
+              "session",
+            ],
           },
         ],
       });
@@ -79,34 +94,57 @@ class ActivitysessionController {
             session.semester === academicPeriod.semester),
       );
 
-      const sessionIds = currentPeriodSessions.map((session) => session.id);
-      const attendanceRecords = sessionIds.length
-        ? await Activityateacherattendance.findAll({
-            where: {
-              session_id: { [Op.in]: sessionIds },
-              teacher_id: user.teacher_id,
-            },
-            attributes: [
-              "id",
-              "session_id",
-              "status",
-              "notes",
-              "createdAt",
-              "updatedAt",
+      const attendanceRecords = await Activityateacherattendance.findAll({
+        where: { teacher_id: user.teacher_id },
+        attributes: [
+          "id",
+          "session_id",
+          "status",
+          "notes",
+          "createdAt",
+          "updatedAt",
+        ],
+        include: [
+          {
+            model: Activitysession,
+            required: true,
+            include: [
+              {
+                model: Activity,
+                required: true,
+                attributes: ["id", "name", "type", "description", "target_type"],
+              },
             ],
-          })
-        : [];
+          },
+        ],
+      });
+      const relevantAttendanceRecords = attendanceRecords.filter((record) => {
+        const session = record.Activitysession;
+        return (
+          session?.Activity?.type !== "routine" ||
+          (session?.academic_year === academicPeriod.academic_year &&
+            session?.semester === academicPeriod.semester)
+        );
+      });
+      const sessionsById = new Map(
+        currentPeriodSessions.map((session) => [String(session.id), session]),
+      );
+      relevantAttendanceRecords.forEach((record) => {
+        const session = record.Activitysession;
+        if (session) sessionsById.set(String(session.id), session);
+      });
+      const teacherSessions = [...sessionsById.values()];
       const attendanceBySession = new Map(
-        attendanceRecords.map((record) => [
-          record.session_id,
+        relevantAttendanceRecords.map((record) => [
+          String(record.session_id),
           record.toJSON(),
         ]),
       );
 
-      const scheduledSessions = currentPeriodSessions.map((session) => ({
+      const scheduledSessions = teacherSessions.map((session) => ({
         ...session.toJSON(),
         date: formatDateOnly(session.date),
-        attendance: attendanceBySession.get(session.id) || null,
+        attendance: attendanceBySession.get(String(session.id)) || null,
       }));
 
       const existingScheduleKeys = new Set(
@@ -134,12 +172,14 @@ class ActivitysessionController {
 
       relevantAssignments.forEach((assignment) => {
         const activity = assignment.Activity;
-        const scheduledWeekday = weekdayNumbers[assignment.day_of_week];
+        if (!activity) return;
+        const scheduledWeekday =
+          weekdayNumbers[assignment.day_of_week || activity.day_of_week];
+        const scheduledSession = assignment.session || activity.session;
         if (
-          !activity ||
           activity.type !== "routine" ||
           scheduledWeekday === undefined ||
-          !assignment.session
+          !scheduledSession
         ) {
           return;
         }
@@ -150,7 +190,7 @@ class ActivitysessionController {
         )
           .toISOString()
           .slice(0, 10);
-        const scheduleKey = `${assignment.activity_id}:${scheduledDate}:${assignment.session}`;
+        const scheduleKey = `${assignment.activity_id}:${scheduledDate}:${scheduledSession}`;
         if (existingScheduleKeys.has(scheduleKey)) return;
 
         existingScheduleKeys.add(scheduleKey);
@@ -158,7 +198,36 @@ class ActivitysessionController {
           id: `planned-${assignment.id}-${scheduledDate}`,
           activity_id: assignment.activity_id,
           date: scheduledDate,
-          session: assignment.session,
+          session: scheduledSession,
+          start_time: activity.start_time || null,
+          end_time: activity.end_time || null,
+          Activity: activity.toJSON(),
+          attendance: null,
+        });
+      });
+
+      const allTeacherActivities = await Activity.findAll({
+        where: { type: "routine", target_type: "all_teachers" },
+      });
+      allTeacherActivities.forEach((activity) => {
+        const scheduledWeekday = weekdayNumbers[activity.day_of_week];
+        if (scheduledWeekday === undefined || !activity.session) return;
+
+        const daysUntil = (scheduledWeekday - todayWeekday + 7) % 7;
+        const scheduledDate = new Date(
+          Date.UTC(year, month - 1, day + daysUntil),
+        )
+          .toISOString()
+          .slice(0, 10);
+        const scheduleKey = `${activity.id}:${scheduledDate}:${activity.session}`;
+        if (existingScheduleKeys.has(scheduleKey)) return;
+
+        existingScheduleKeys.add(scheduleKey);
+        scheduledSessions.push({
+          id: `planned-${activity.id}-${scheduledDate}`,
+          activity_id: activity.id,
+          date: scheduledDate,
+          session: activity.session,
           start_time: activity.start_time || null,
           end_time: activity.end_time || null,
           Activity: activity.toJSON(),
@@ -227,11 +296,26 @@ class ActivitysessionController {
             timeZone: "Asia/Jakarta",
           }) === today;
         })?.session ||
-        relevantAssignments.find((item) => item.session)?.session;
+        relevantAssignments.find((item) => item.session)?.session ||
+        activity.session;
 
       if (!configuredSession) {
         return res.status(400).json({
           message: "Session belum ditentukan pada activity",
+        });
+      }
+
+      const cancellation = await Activitycancellation.findOne({
+        where: {
+          activity_id: activity.id,
+          date: today,
+          session: configuredSession,
+        },
+      });
+      if (cancellation) {
+        return res.status(409).json({
+          message:
+            "Kegiatan ini sudah ditandai ditiadakan. Batalkan penandaan terlebih dahulu untuk membuka sesi.",
         });
       }
 
@@ -358,31 +442,266 @@ class ActivitysessionController {
         include: [
           {
             model: Activity,
-            attributes: ["name", "target_type", "type"],
+            attributes: ["id", "name", "target_type", "type"],
           },
         ],
         order: [["createdAt", "DESC"]],
       });
 
-      // Flatten objek agar menjadi 1 baris/level per item
-      const formattedResponse = activeSessions
-        .filter(
-          (item) =>
-            item.Activity?.type !== "routine" ||
-            (item.academic_year === academicPeriod.academic_year &&
-              item.semester === academicPeriod.semester),
-        )
-        .map((item) => ({
-        id: item.id,
-        activity_id: item.Activity?.id || item.activity_id,
-        session: item.session,
-        date: item.date,
-        activity_name: item.Activity?.name || null,
-        target_type: item.Activity?.target_type || null,
-        // semester: item.Activity?.semester || null,
-        }));
+      const currentPeriodSessions = activeSessions.filter(
+        (item) =>
+          item.Activity?.type !== "routine" ||
+          (item.academic_year === academicPeriod.academic_year &&
+            item.semester === academicPeriod.semester),
+      );
+      const activityIds = [
+        ...new Set(currentPeriodSessions.map((item) => item.activity_id)),
+      ];
+      const [activeTeachers, assignments, savedRecords] = await Promise.all([
+        Teacher.findAll({
+          where: { status: "active" },
+          attributes: ["id"],
+        }),
+        activityIds.length
+          ? Teacherassignment.findAll({
+              where: { activity_id: { [Op.in]: activityIds } },
+              attributes: [
+                "activity_id",
+                "teacher_id",
+                "academic_year",
+                "semester",
+                "session",
+              ],
+              include: [
+                {
+                  model: Teacher,
+                  where: { status: "active" },
+                  attributes: ["id"],
+                },
+              ],
+            })
+          : [],
+        currentPeriodSessions.length
+          ? Activityateacherattendance.findAll({
+              where: {
+                session_id: {
+                  [Op.in]: currentPeriodSessions.map((item) => item.id),
+                },
+              },
+              attributes: ["session_id", "teacher_id"],
+              include: [
+                {
+                  model: Teacher,
+                  where: { status: "active" },
+                  attributes: ["id"],
+                },
+              ],
+            })
+          : [],
+      ]);
+
+      const formattedResponse = currentPeriodSessions.map((item) => {
+        const activity = item.Activity;
+        const expectedTeacherIds =
+          activity?.target_type === "all_teachers"
+            ? activeTeachers.map((teacher) => teacher.id)
+            : assignments
+                .filter(
+                  (assignment) =>
+                    assignment.activity_id === item.activity_id &&
+                    assignment.session === item.session &&
+                    (activity?.type !== "routine" ||
+                      (assignment.academic_year ===
+                        academicPeriod.academic_year &&
+                        assignment.semester === academicPeriod.semester)),
+                )
+                .map((assignment) => assignment.teacher_id);
+        const expectedTeacherIdSet = new Set(expectedTeacherIds);
+        const savedTeacherIds = new Set(
+          savedRecords
+            .filter(
+              (record) =>
+                record.session_id === item.id &&
+                expectedTeacherIdSet.has(record.teacher_id),
+            )
+            .map((record) => record.teacher_id),
+        );
+        const attendanceCount = savedTeacherIds.size;
+
+        return {
+          id: item.id,
+          activity_id: activity?.id || item.activity_id,
+          session: item.session,
+          date: item.date,
+          activity_name: activity?.name || null,
+          target_type: activity?.target_type || null,
+          attendance_count: attendanceCount,
+          total_teachers: expectedTeacherIdSet.size,
+          attendance_complete:
+            expectedTeacherIdSet.size > 0 &&
+            attendanceCount >= expectedTeacherIdSet.size,
+        };
+      });
 
       res.json(formattedResponse);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getTodayCancellations(req, res, next) {
+    try {
+      const cancellations = await Activitycancellation.findAll({
+        where: { date: getTodayInJakarta() },
+        include: [
+          {
+            model: Activity,
+            attributes: ["id", "name", "type", "target_type"],
+          },
+        ],
+        order: [["createdAt", "DESC"]],
+      });
+
+      res.json(
+        cancellations.map((item) => ({
+          id: item.id,
+          activity_id: item.activity_id,
+          activity_name: item.Activity?.name || "Kegiatan",
+          date: formatDateOnly(item.date),
+          session: item.session,
+          reason: item.reason,
+        })),
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async cancelRoutineActivity(req, res, next) {
+    try {
+      const { activity_id, session, reason } = req.body;
+      const trimmedReason = typeof reason === "string" ? reason.trim() : "";
+      if (!Number.isInteger(Number(activity_id)) || Number(activity_id) < 1) {
+        return res.status(400).json({ message: "ID kegiatan tidak valid" });
+      }
+      if (!["morning", "afternoon", "all_day"].includes(session)) {
+        return res.status(400).json({ message: "Sesi kegiatan tidak valid" });
+      }
+      if (!trimmedReason || trimmedReason.length > 1000) {
+        return res.status(400).json({
+          message: "Alasan wajib diisi dan maksimal 1000 karakter",
+        });
+      }
+
+      const activity = await Activity.findByPk(Number(activity_id));
+      if (!activity || activity.type !== "routine") {
+        return res.status(404).json({ message: "Kegiatan rutin tidak ditemukan" });
+      }
+
+      const academicPeriod = await Academicperiod.findByPk(1);
+      if (!academicPeriod) {
+        return res.status(500).json({ message: "Periode akademik belum diatur" });
+      }
+
+      const today = getTodayInJakarta();
+      const weekdayNames = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ];
+      const todayWeekday = weekdayNames[
+        new Date(`${today}T00:00:00.000Z`).getUTCDay()
+      ];
+      const assignments =
+        activity.target_type === "assigned_teachers"
+          ? await Teacherassignment.findAll({
+              where: {
+                activity_id: activity.id,
+                academic_year: academicPeriod.academic_year,
+                semester: academicPeriod.semester,
+              },
+            })
+          : [];
+      const matchingSchedule =
+        activity.day_of_week === todayWeekday &&
+        activity.session === session;
+      const matchingAssignment = assignments.some(
+        (assignment) =>
+          assignment.day_of_week === todayWeekday &&
+          assignment.session === session,
+      );
+      if (!matchingSchedule && !matchingAssignment) {
+        return res.status(400).json({
+          message: "Kegiatan ini tidak dijadwalkan untuk sesi hari ini",
+        });
+      }
+
+      const existingSession = await Activitysession.findOne({
+        where: {
+          activity_id: activity.id,
+          date: today,
+          session,
+          ...(activity.target_type === "assigned_teachers"
+            ? {
+                academic_year: academicPeriod.academic_year,
+                semester: academicPeriod.semester,
+              }
+            : {}),
+        },
+      });
+      if (existingSession) {
+        return res.status(409).json({
+          message:
+            "Sesi sudah dibuka. Tutup sesi sebelum menandai kegiatan ditiadakan.",
+        });
+      }
+
+      const existingCancellation = await Activitycancellation.findOne({
+        where: { activity_id: activity.id, date: today, session },
+      });
+      if (existingCancellation) {
+        return res.status(409).json({
+          message: "Kegiatan ini sudah ditandai ditiadakan",
+        });
+      }
+
+      const cancellation = await Activitycancellation.create({
+        activity_id: activity.id,
+        date: today,
+        session,
+        reason: trimmedReason,
+        cancelled_by: req.user.id,
+      });
+      res.status(201).json({
+        id: cancellation.id,
+        activity_id: activity.id,
+        activity_name: activity.name,
+        date: today,
+        session,
+        reason: cancellation.reason,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async restoreRoutineActivity(req, res, next) {
+    try {
+      const cancellation = await Activitycancellation.findOne({
+        where: { id: req.params.id, date: getTodayInJakarta() },
+      });
+      if (!cancellation) {
+        return res.status(404).json({
+          message: "Penandaan ditiadakan untuk hari ini tidak ditemukan",
+        });
+      }
+
+      await cancellation.destroy();
+      res.json({ success: true });
     } catch (error) {
       next(error);
     }

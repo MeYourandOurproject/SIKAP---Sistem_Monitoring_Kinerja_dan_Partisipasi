@@ -19,6 +19,24 @@ router.get(
   authorize("responsible"),
   ActivitysessionController.getAttendanceHistory,
 );
+router.get(
+  "/cancellations/today",
+  authen,
+  authorize("responsible"),
+  ActivitysessionController.getTodayCancellations,
+);
+router.post(
+  "/cancellations",
+  authen,
+  authorize("responsible"),
+  ActivitysessionController.cancelRoutineActivity,
+);
+router.delete(
+  "/cancellations/:id",
+  authen,
+  authorize("responsible"),
+  ActivitysessionController.restoreRoutineActivity,
+);
 
 // Endpoint Absensi Sesi
 // Ambil lembar absensi

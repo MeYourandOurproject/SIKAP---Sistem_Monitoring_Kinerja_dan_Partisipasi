@@ -240,6 +240,8 @@ class ActivityController {
           name,
           type: "routine",
           date: null,
+          day_of_week: day_of_week || null,
+          session: session || null,
           start_time: start_time || null,
           end_time: end_time || null,
           responsiblePerson: teacherName,
@@ -319,9 +321,9 @@ class ActivityController {
       delete activityPayload.session_time;
       delete activityPayload.assignments;
       delete activityPayload.semester;
-      delete activityPayload.day_of_week;
-      if (activity.type === "routine") delete activityPayload.session;
       if (activity.type !== "routine") {
+        delete activityPayload.day_of_week;
+        delete activityPayload.session;
         delete activityPayload.start_time;
         delete activityPayload.end_time;
       }
