@@ -150,6 +150,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { getTeacherActivitySessions } from "@/services/api";
+import { applicationClock } from "@/services/applicationClock";
 
 const sessions = ref([]);
 const loading = ref(true);
@@ -240,7 +241,7 @@ function getTodayDateKey() {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).formatToParts(new Date());
+  }).formatToParts(applicationClock.currentTime);
   const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
   return `${values.year}-${values.month}-${values.day}`;
 }

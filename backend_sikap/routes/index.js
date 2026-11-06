@@ -19,6 +19,7 @@ const academicperiodRouter = require("./academicperiodRouter");
 const studentRouter = require("./studentRouter");
 const studentattendanceRouter = require("./studentattendanceRouter");
 const classagendaRouter = require("./classagendaRouter");
+const applicationClockRouter = require("./applicationClockRouter");
 
 router.use("/auth", authRouter);
 router.use("/users", userRouter);
@@ -38,5 +39,6 @@ router.use("/academic-period", academicperiodRouter);
 router.use("/students", studentRouter);
 router.use("/studentattendances", studentattendanceRouter);
 router.use("/classagendas", classagendaRouter);
+router.use("/app-clock", applicationClockRouter);
 
 module.exports = router;

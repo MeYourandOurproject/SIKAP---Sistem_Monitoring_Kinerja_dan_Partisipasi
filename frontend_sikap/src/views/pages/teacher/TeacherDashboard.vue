@@ -170,11 +170,12 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import {
   getTeacherActivitySessions,
   getTeacherSchedules,
 } from "@/services/api";
+import { applicationClock } from "@/services/applicationClock";
 
 const userName = ref("Guru");
 const schedules = ref([]);
@@ -183,8 +184,7 @@ const scheduleLoading = ref(true);
 const activityLoading = ref(true);
 const scheduleError = ref("");
 const activityError = ref("");
-const now = ref(new Date());
-let clockInterval;
+const now = computed(() => applicationClock.currentTime);
 
 const todayDate = computed(() => new Intl.DateTimeFormat("en-CA", {
   timeZone: "Asia/Jakarta",
@@ -339,12 +339,7 @@ onMounted(() => {
   loadUser();
   loadSchedules();
   loadActivities();
-  clockInterval = window.setInterval(() => {
-    now.value = new Date();
-  }, 30000);
 });
-
-onUnmounted(() => window.clearInterval(clockInterval));
 </script>
 
 <style scoped>

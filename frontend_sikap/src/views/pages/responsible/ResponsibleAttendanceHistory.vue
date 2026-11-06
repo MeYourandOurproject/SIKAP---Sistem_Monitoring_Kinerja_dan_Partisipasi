@@ -163,18 +163,28 @@
 <script setup>
 import { computed, onMounted, ref, watch } from "vue";
 import {
+  applicationClock,
+  getApplicationDateKey,
+} from "@/services/applicationClock";
+import {
   getActivities,
   getActivityAttendanceHistory,
   getTeachers,
 } from "@/services/api";
 
-const todayDate = getTodayDateKey();
+const todayDate = computed(() => getTodayDateKey());
 const filters = ref({
-  start_date: getMonthStartDate(todayDate),
-  end_date: todayDate,
+  start_date: getMonthStartDate(todayDate.value),
+  end_date: todayDate.value,
   teacher_id: "",
   activity_type: "",
   activity_id: "",
+});
+watch(todayDate, (date, previousDate) => {
+  if (filters.value.end_date === previousDate) filters.value.end_date = date;
+  if (filters.value.start_date === getMonthStartDate(previousDate)) {
+    filters.value.start_date = getMonthStartDate(date);
+  }
 });
 const teachers = ref([]);
 const activities = ref([]);
@@ -195,7 +205,7 @@ const availableActivities = computed(() =>
 
 const isDateRangeValid = computed(() => {
   const { start_date, end_date } = filters.value;
-  if (!start_date || !end_date || start_date > end_date || end_date > todayDate) {
+  if (!start_date || !end_date || start_date > end_date || end_date > todayDate.value) {
     return false;
   }
   const range = (Date.parse(`${end_date}T00:00:00Z`) - Date.parse(`${start_date}T00:00:00Z`)) / 86_400_000;
@@ -277,7 +287,7 @@ async function exportHistory() {
     workbook.creator = "SIKAP";
     workbook.subject = "Laporan riwayat kehadiran guru";
     workbook.title = "Riwayat Kehadiran Guru";
-    workbook.created = new Date();
+    workbook.created = applicationClock.currentTime;
 
     const summary = workbook.addWorksheet("Ringkasan", {
       views: [{ state: "frozen", ySplit: 1 }],
@@ -426,14 +436,7 @@ function formatDate(value) {
 }
 
 function getTodayDateKey() {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Jakarta",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(new Date());
-  const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
-  return `${values.year}-${values.month}-${values.day}`;
+  return getApplicationDateKey();
 }
 
 function getMonthStartDate(date) {
@@ -449,7 +452,7 @@ function formatCreatedAtWib() {
     minute: "2-digit",
     hourCycle: "h23",
     timeZone: "Asia/Jakarta",
-  }).format(new Date());
+  }).format(applicationClock.currentTime);
 }
 
 function sanitizeFilename(value) {

@@ -72,24 +72,38 @@ cd sikap
 ## Backend Setup
 
 ```bash
-cd backend
+cd backend_sikap
 
 npm install
 ```
 
-Create `.env`
+Create a `.env` file for local development. Set `CORS_ORIGINS` to the exact
+origin(s) where the frontend is hosted, separated by commas. The hosting
+provider's `PORT` environment variable is used automatically; `3000` is the
+local fallback.
 
 ```env
 PORT=3000
+NODE_ENV=development
 
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=sikap
-DB_USER=root
+HOST=127.0.0.1
+DB_USERNAME=root
 DB_PASSWORD=your_password
+DATABASE_DEVELOPMENT=sikap_development
+DATABASE_PRODUCTION=sikap_production
 
-JWT_SECRET=your_secret_key
+CORS_ORIGINS=http://localhost:5173,http://localhost:8080
 ```
+
+In hosting, set `NODE_ENV=production`, the production database variables
+(`HOST`, `DB_USERNAME`, `DB_PASSWORD`, and `DATABASE_PRODUCTION`), and
+`CORS_ORIGINS` in the hosting control panel. Run database migrations with
+`npm run migrate` after configuring the production environment.
+
+Administrators can change the application clock from **Super Admin → Pengaturan
+→ Jam Aplikasi**. Simulation starts from a WIB date and time and continues at
+normal speed for all users; choose **Waktu sebenarnya** to turn it off. Apply
+the database migrations after deploying this feature before starting the API.
 
 Run server
 

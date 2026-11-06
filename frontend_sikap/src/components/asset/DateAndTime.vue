@@ -28,42 +28,34 @@
       </template>
 
       <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+      import { computed } from "vue";
+      import { applicationClock } from "@/services/applicationClock";
 
-const now = ref(new Date());
+      const dayName = computed(() =>
+        applicationClock.currentTime.toLocaleDateString("id-ID", {
+          weekday: "long",
+          timeZone: "Asia/Jakarta",
+        }),
+      );
 
-const dayName = computed(() =>
-  now.value.toLocaleDateString("id-ID", {
-    weekday: "long",
-  }),
-);
+      const fullDate = computed(() =>
+        applicationClock.currentTime.toLocaleDateString("id-ID", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+          timeZone: "Asia/Jakarta",
+        }),
+      );
 
-const fullDate = computed(() =>
-  now.value.toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }),
-);
-
-const currentTime = computed(() =>
-  now.value.toLocaleTimeString("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  }),
-);
-
-let timer;
-
-onMounted(() => {
-  timer = setInterval(() => {
-    now.value = new Date();
-  }, 1000);
-});
-
-onUnmounted(() => clearInterval(timer));
-</script>
+      const currentTime = computed(() =>
+        applicationClock.currentTime.toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          timeZone: "Asia/Jakarta",
+        }),
+      );
+      </script>
 
 <style scoped>
 .datetime-bar {

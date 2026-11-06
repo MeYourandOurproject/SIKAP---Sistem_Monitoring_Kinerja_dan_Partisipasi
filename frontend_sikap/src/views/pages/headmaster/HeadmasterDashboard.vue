@@ -203,6 +203,7 @@ import TeacherParticipan from "@/components/headmaster/dashboard/TeacherParticip
 import HeadmasterNavbar from "@/components/headmaster/HeadmasterNavbar.vue";
 
 import { getTeachers } from "@/services/api.js";
+import { applicationClock } from "@/services/applicationClock";
 
 const teachers = ref([]);
 
@@ -231,7 +232,7 @@ function loadHeadmasterData(){
 
 function updateRealtimeClock() {
 
-  const now = new Date();
+  const now = applicationClock.currentTime;
 
   const tanggal = now.toLocaleDateString("id-ID", {
     weekday: "long",

@@ -1,10 +1,11 @@
 "use strict";
 
 const { Classagenda, Classschedule, Timeslot, User } = require("../models");
+const { getApplicationNow } = require("../utils/applicationClock");
 
 const activityStatuses = ["teaching", "assignment", "empty"];
 
-function getJakartaDateTime(date = new Date()) {
+function getJakartaDateTime(date = getApplicationNow()) {
   const parts = new Intl.DateTimeFormat("id-ID", {
     timeZone: "Asia/Jakarta",
     weekday: "long",

@@ -13,6 +13,7 @@ const {
 } = require("../models");
 const Sequelize = require("sequelize");
 const { Op } = Sequelize;
+const { getApplicationNow } = require("../utils/applicationClock");
 
 const dayNamesByUtcDay = [
   "Minggu",
@@ -24,7 +25,7 @@ const dayNamesByUtcDay = [
   "Sabtu",
 ];
 
-function getJakartaDateTime(date = new Date()) {
+function getJakartaDateTime(date = getApplicationNow()) {
   const parts = new Intl.DateTimeFormat("id-ID", {
     timeZone: "Asia/Jakarta",
     weekday: "long",
@@ -144,7 +145,7 @@ class ClassscheduleController {
         });
       }
 
-      const today = new Date();
+      const today = getApplicationNow();
 
       const days = [
         "Minggu",

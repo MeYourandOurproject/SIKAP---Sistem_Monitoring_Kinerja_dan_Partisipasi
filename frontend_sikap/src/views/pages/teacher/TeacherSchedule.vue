@@ -31,15 +31,8 @@
           </div>
           <strong>{{ currentTimeLabel }}</strong>
           <span>{{ formattedToday }}</span>
-          <div class="clock-simulation">
-            <label class="simulation-toggle">
-              <input v-model="isClockSimulated" type="checkbox" @change="toggleClockSimulation">
-              <span>Simulasikan jam</span>
-            </label>
-            <label v-if="isClockSimulated" class="simulation-time-field">
-              <span>Atur jam untuk mencoba jadwal</span>
-              <input v-model="simulatedTime" type="time" aria-label="Atur jam simulasi">
-            </label>
+          <div v-if="isClockSimulated" class="clock-simulation">
+            <span>Waktu simulasi diatur oleh admin untuk seluruh aplikasi.</span>
           </div>
         </div>
         <div class="realtime-summary">
@@ -280,7 +273,7 @@
                   </div>
                 </div>
                 <div v-if="isClockSimulated" class="attendance-feedback info" role="status">
-                  Presensi hanya dapat disimpan menggunakan waktu WIB aktual, bukan simulasi.
+                  Presensi mengikuti jadwal pada waktu simulasi yang diatur admin.
                 </div>
                 <div v-if="attendanceFor(schedule.id).success" class="attendance-feedback success" role="status">
                   {{ attendanceFor(schedule.id).success }}
@@ -415,7 +408,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import {
   getTeacherScheduleAgenda,
   getTeacherScheduleAttendance,
@@ -423,18 +416,18 @@ import {
   saveTeacherScheduleAgenda,
   saveTeacherScheduleAttendance,
 } from "@/services/api";
+import { applicationClock } from "@/services/applicationClock";
 
 const days = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
 const schedules = ref([]);
 const loading = ref(true);
 const errorMessage = ref("");
-const now = ref(new Date());
+const now = computed(() => applicationClock.currentTime);
 const agendaDrafts = ref({});
 const agendaStates = ref({});
 const attendanceBySchedule = ref({});
 const expandedScheduleDetails = ref({});
-const isClockSimulated = ref(false);
-const simulatedTime = ref("");
+const isClockSimulated = computed(() => applicationClock.mode === "simulation");
 const attendanceStateDefaults = () => ({
   loading: false,
   saving: false,
@@ -446,8 +439,6 @@ const attendanceStateDefaults = () => ({
   searchQuery: "",
   listCollapsed: false,
 });
-let clockInterval;
-
 const todayName = computed(() => new Intl.DateTimeFormat("id-ID", {
   weekday: "long",
   timeZone: "Asia/Jakarta",
@@ -463,19 +454,15 @@ const formattedToday = computed(
     }).format(now.value),
 );
 const currentTimeLabel = computed(() =>
-  isClockSimulated.value
-    ? `${simulatedTime.value || getCurrentWibTime()}:00`
-    : new Intl.DateTimeFormat("id-ID", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hourCycle: "h23",
-      timeZone: "Asia/Jakarta",
-    }).format(now.value),
+  new Intl.DateTimeFormat("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+    timeZone: "Asia/Jakarta",
+  }).format(now.value),
 );
-const currentMinutes = computed(() => parseTime(
-  isClockSimulated.value ? simulatedTime.value : getCurrentWibTime(),
-));
+const currentMinutes = computed(() => parseTime(getCurrentWibTime()));
 const todaySchedules = computed(() =>
   schedules.value
     .filter((schedule) => schedule.day === todayName.value)
@@ -527,12 +514,6 @@ function getCurrentWibTime() {
   }).format(now.value);
 }
 
-function toggleClockSimulation() {
-  if (isClockSimulated.value) {
-    simulatedTime.value = getCurrentWibTime();
-  }
-}
-
 function scheduleStatus(schedule) {
   const start = parseTime(schedule.startTimeslot?.start);
   const end = parseTime(schedule.endTimeslot?.end);
@@ -568,11 +549,11 @@ function isActualScheduleActive(schedule) {
 }
 
 function canEditAttendance(schedule) {
-  return !isClockSimulated.value && isActualScheduleActive(schedule);
+  return isActualScheduleActive(schedule);
 }
 
 function canEditAgenda(schedule) {
-  return !isClockSimulated.value && isActualScheduleActive(schedule);
+  return isActualScheduleActive(schedule);
 }
 
 function agendaStateFor(scheduleId) {
@@ -817,12 +798,7 @@ watch(actualActiveScheduleIds, () => {
 
 onMounted(() => {
   loadSchedules();
-  clockInterval = window.setInterval(() => {
-    now.value = new Date();
-  }, 1000);
 });
-
-onUnmounted(() => window.clearInterval(clockInterval));
 </script>
 
 <style scoped>

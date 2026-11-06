@@ -8,6 +8,7 @@ const {
   sequelize,
 } = require("../models");
 const { getActivityStatus } = require("../utils/statusHelper");
+const { getApplicationNow } = require("../utils/applicationClock");
 
 function validateActivityTimes(startTime, endTime) {
   if (!startTime && !endTime) return null;
@@ -103,7 +104,7 @@ class ActivityController {
       transaction = await sequelize.transaction();
       const academicPeriod = await Academicperiod.findByPk(1, { transaction });
       if (!academicPeriod) throw new Error("Periode akademik belum diatur");
-      const todayWib = new Date().toLocaleDateString("sv-SE", {
+      const todayWib = getApplicationNow().toLocaleDateString("sv-SE", {
         timeZone: "Asia/Jakarta",
       });
 

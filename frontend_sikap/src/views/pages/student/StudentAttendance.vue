@@ -293,6 +293,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import { applicationClock } from "@/services/applicationClock";
 import {
   getClassSchedules,
   createClassTeacherAttendance,
@@ -368,12 +369,12 @@ async function submitValidationForm() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   const payload = {
-    date: new Date().toISOString(),
+    date: applicationClock.currentTime.toISOString(),
     classschedule_id: (selectedInline.value || dashboard.value.current).id,
     attendance_status: validationForm.value.attendance_status,
     activity_status: validationForm.value.activity_status,
     validator_id: user.id || null,
-    validated_at: new Date().toISOString(),
+    validated_at: applicationClock.currentTime.toISOString(),
     lateness: Number(validationForm.value.lateness) || 0,
     notes: validationForm.value.notes,
   };
