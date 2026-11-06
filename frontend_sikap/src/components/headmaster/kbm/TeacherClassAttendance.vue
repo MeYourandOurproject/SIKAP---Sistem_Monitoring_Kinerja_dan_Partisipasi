@@ -285,8 +285,11 @@
           <select
             v-model="historyQuery.class_id"
             aria-label="Filter riwayat berdasarkan kelas"
+            :disabled="historyOptionsLoading"
           >
-            <option value="">Pilih kelas</option>
+            <option value="">
+              {{ historyOptionsLoading ? "Memuat daftar kelas..." : "Pilih kelas" }}
+            </option>
             <option
               v-for="item in historyOptions.classes"
               :key="item.id"
@@ -301,8 +304,11 @@
           <select
             v-model="historyQuery.teacher_id"
             aria-label="Filter riwayat berdasarkan guru"
+            :disabled="historyOptionsLoading"
           >
-            <option value="">Pilih guru</option>
+            <option value="">
+              {{ historyOptionsLoading ? "Memuat daftar guru..." : "Pilih guru" }}
+            </option>
             <option
               v-for="item in historyOptions.teachers"
               :key="item.id"
@@ -488,7 +494,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { useRoute } from "vue-router";
 import { getClasses, getClassScheduleHistory } from "@/services/api";
 import { applicationClock } from "@/services/applicationClock";
@@ -516,23 +522,36 @@ const loadError = ref("");
 const selectedClass = ref(null);
 const historyData = ref([]);
 const historyOptions = ref({ classes: [], teachers: [] });
+const historyOptionsLoading = ref(false);
+const historyOptionsLoaded = ref(false);
 const historyLoading = ref(false);
 const historyError = ref("");
 const exportingHistory = ref(false);
 const exportError = ref("");
-const todayDate = getTodayDateKey();
+const todayDate = computed(getTodayDateKey);
 const historyQuery = ref({
   class_id: "",
   teacher_id: "",
-  start_date: getMonthStartDate(todayDate),
-  end_date: todayDate,
+  start_date: getMonthStartDate(todayDate.value),
+  end_date: todayDate.value,
+});
+watch(todayDate, (date, previousDate) => {
+  if (historyQuery.value.end_date === previousDate) {
+    historyQuery.value.end_date = date;
+  }
+  if (historyQuery.value.start_date === getMonthStartDate(previousDate)) {
+    historyQuery.value.start_date = getMonthStartDate(date);
+  }
+  if (props.mode === "history" && !historyOptionsLoaded.value && !historyLoading.value) {
+    loadHistory();
+  }
 });
 const hasHistoryFilter = computed(() =>
   Boolean(
     historyQuery.value.start_date &&
     historyQuery.value.end_date &&
     historyQuery.value.start_date <= historyQuery.value.end_date &&
-    historyQuery.value.end_date <= todayDate &&
+    historyQuery.value.end_date <= todayDate.value &&
     (historyQuery.value.class_id || historyQuery.value.teacher_id),
   ),
 );
@@ -706,18 +725,28 @@ function formatHistoryDate(value) {
 
 async function loadHistory() {
   if (historyLoading.value) return;
+  const requestedEndDate = historyQuery.value.end_date;
   historyLoading.value = true;
+  if (!historyOptionsLoaded.value) historyOptionsLoading.value = true;
   historyError.value = "";
   try {
     const result = await getClassScheduleHistory(historyQuery.value);
     historyData.value = result?.data || [];
     historyOptions.value = result?.filters || { classes: [], teachers: [] };
+    historyOptionsLoaded.value = true;
   } catch (error) {
     console.error("Gagal memuat riwayat keterisian kelas:", error);
     historyData.value = [];
     historyError.value = `Riwayat keterisian kelas gagal dimuat: ${error.message}`;
   } finally {
     historyLoading.value = false;
+    historyOptionsLoading.value = false;
+    if (
+      !historyOptionsLoaded.value &&
+      requestedEndDate !== historyQuery.value.end_date
+    ) {
+      loadHistory();
+    }
   }
 }
 
@@ -1038,18 +1067,12 @@ onMounted(() => {
   if (props.mode === "realtime") {
     currentTime.value = formatWibTime();
     loadMonitoring();
-  } else {
-    loadHistory();
-  }
-
-  interval = setInterval(() => {
-    if (props.mode === "realtime") {
+    interval = setInterval(() => {
       currentTime.value = formatWibTime();
       loadMonitoring();
-    } else {
-      loadHistory();
-    }
-  }, 15000);
+    }, 15000);
+  }
+  if (props.mode === "history") loadHistory();
 });
 
 onBeforeUnmount(() => {
