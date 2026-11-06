@@ -1,5 +1,5 @@
 <template>
-  <section class="fitur-section py-5">
+  <section id="fitur" class="fitur-section py-5">
     <div class="container-xxl">
       <!-- HEADER -->
       <div class="text-center mb-5">
@@ -89,61 +89,6 @@
 
       </div>
 
-      <!-- STATS -->
-      <div class="stats-wrapper">
-
-        <div class="stat-item">
-          <div class="stat-icon blue">
-            <i class="bi bi-buildings"></i>
-          </div>
-
-          <div>
-            <h3>250+</h3>
-            <span>Sekolah Pengguna</span>
-          </div>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="stat-item">
-          <div class="stat-icon green">
-            <i class="bi bi-people-fill"></i>
-          </div>
-
-          <div>
-            <h3>5.000+</h3>
-            <span>Guru Aktif</span>
-          </div>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="stat-item">
-          <div class="stat-icon purple">
-            <i class="bi bi-clipboard-check"></i>
-          </div>
-
-          <div>
-            <h3>100.000+</h3>
-            <span>Data Kehadiran Tercatat</span>
-          </div>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="stat-item">
-          <div class="stat-icon yellow">
-            <i class="bi bi-shield-check"></i>
-          </div>
-
-          <div>
-            <h3>99.9%</h3>
-            <span>Uptime Sistem</span>
-          </div>
-        </div>
-
-      </div>
-
       <!-- CTA -->
       <div class="cta-wrapper">
 
@@ -151,10 +96,10 @@
           Siap meningkatkan kinerja dan profesionalisme guru di sekolah Anda?
         </p>
 
-        <button class="cta-btn">
+        <router-link to="/login" class="cta-btn">
           Mulai Sekarang
           <i class="bi bi-arrow-right"></i>
-        </button>
+        </router-link>
 
       </div>
     </div>
@@ -170,6 +115,7 @@ export default {
 <style scoped>
 .fitur-section {
   position: relative;
+  scroll-margin-top: 90px;
 
   background:
     radial-gradient(circle at top, rgba(37, 99, 235, 0.18), transparent 35%),
@@ -293,69 +239,6 @@ export default {
   color: #facc15;
 }
 
-/* STATS */
-.stats-wrapper {
-  margin-top: 18px;
-
-  background: rgba(15, 23, 42, 0.95);
-
-  border: 1px solid rgba(255,255,255,0.06);
-
-  border-radius: 20px;
-
-  padding: 26px 34px;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  gap: 20px;
-}
-
-.stat-item {
-  display: flex;
-  align-items: center;
-
-  gap: 16px;
-
-  flex: 1;
-}
-
-.stat-icon {
-  width: 60px;
-  height: 60px;
-
-  border-radius: 18px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  font-size: 28px;
-}
-
-.stat-item h3 {
-  color: white;
-
-  font-size: 2rem;
-  font-weight: 700;
-
-  margin: 0;
-}
-
-.stat-item span {
-  color: #cbd5e1;
-
-  font-size: 14px;
-}
-
-.divider {
-  width: 1px;
-  height: 60px;
-
-  background: rgba(255,255,255,0.08);
-}
-
 /* CTA */
 .cta-wrapper {
   margin-top: 24px;
@@ -379,6 +262,7 @@ export default {
 
 .cta-btn {
   border: none;
+  text-decoration: none;
 
   background: linear-gradient(
     135deg,
@@ -416,14 +300,6 @@ export default {
 }
 
 @media (max-width: 991px) {
-  .stats-wrapper {
-    flex-wrap: wrap;
-  }
-
-  .divider {
-    display: none;
-  }
-
   .feature-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -432,14 +308,6 @@ export default {
 @media (max-width: 767px) {
   .feature-grid {
     grid-template-columns: 1fr;
-  }
-
-  .stats-wrapper {
-    padding: 20px;
-  }
-
-  .stat-item h3 {
-    font-size: 1.5rem;
   }
 
   .cta-wrapper {

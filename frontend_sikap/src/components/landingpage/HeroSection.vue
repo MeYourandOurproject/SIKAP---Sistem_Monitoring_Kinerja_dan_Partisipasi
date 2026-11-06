@@ -1,5 +1,6 @@
 <template>
   <div
+    id="beranda"
     class="container-fluid home-heroes d-flex align-items-center justify-content-start py-5 py-md-4 px-4 px-md-0"
   >
     <!-- HERO -->
@@ -38,19 +39,14 @@
           <div
             class="hero-buttons d-flex gap-3 flex-nowrap justify-content-start"
           >
-            <router-link to="/artikel"
-              ><button class="btn-hero btn-primary-hero">
-                <i class="bi bi-rocket-takeoff me-3 fs-4"></i
-                ><small>Mulai Sekarang</small>
-              </button></router-link
-            >
-
-            <router-link to="/project"
-              ><button class="btn-hero btn-secondary-hero">
-                <i class="bi bi-play-circle me-3 fs-4"></i>
-                <small>Lihat Demo</small>
-              </button></router-link
-            >
+            <router-link to="/login" class="btn-hero btn-primary-hero">
+              <i class="bi bi-box-arrow-in-right me-3 fs-4"></i>
+              <small>Akses Login</small>
+            </router-link>
+            <a href="#fitur" class="btn-hero btn-secondary-hero">
+              <i class="bi bi-grid me-3 fs-4"></i>
+              <small>Lihat Fitur</small>
+            </a>
           </div>
           <!-- <div
             class="info d-flex flex-wrap text-secondary small fw-medium text-white mt-3 gap-3"
@@ -221,6 +217,12 @@
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
+  text-decoration: none;
+}
+
+.btn-hero:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 3px;
 }
 
 .btn-primary-hero {

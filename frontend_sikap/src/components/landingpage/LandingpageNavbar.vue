@@ -6,8 +6,8 @@
         <div class="row align-items-center justify-content-between">
           <!-- LOGO -->
           <div class="col-2 col-md-2">
-            <router-link
-              to="/"
+            <a
+              href="#beranda"
               class="d-flex align-items-center justify-content-center text-decoration-none"
             >
               <div class="col-8 d-flex align-items-center gap-3">
@@ -28,30 +28,17 @@
                   </div>
                 </div>
               </div>
-            </router-link>
+            </a>
           </div>
 
           <!-- MENU DESKTOP -->
           <div class="col-7 col-md-8 d-none d-lg-block">
             <ul class="nav justify-content-end fw-medium">
               <li class="nav-item">
-                <router-link class="nav-link" to="/">Beranda</router-link>
+                <a class="nav-link" href="#beranda">Beranda</a>
               </li>
               <li class="nav-item">
-                <router-link class="nav-link" to="/fitur">Fitur</router-link>
-              </li>
-              <li class="nav-item">
-                <router-link class="nav-link" to="/untuk-siapa"
-                  >Untuk Siapa</router-link
-                >
-              </li>
-              <li class="nav-item">
-                <router-link class="nav-link" to="/tentang"
-                  >Tentang</router-link
-                >
-              </li>
-              <li class="nav-item">
-                <router-link class="nav-link" to="/kontak">Kontak</router-link>
+                <a class="nav-link" href="#fitur">Fitur</a>
               </li>
             </ul>
           </div>
@@ -77,21 +64,10 @@
         <div v-if="showMenuMobile" class="mobile-menu d-lg-none">
           <ul class="navbar-nav text-center">
             <li class="nav-item">
-              <router-link class="nav-link" to="/">Beranda</router-link>
+              <a class="nav-link" href="#beranda" @click="closeMenu">Beranda</a>
             </li>
             <li class="nav-item">
-              <router-link class="nav-link" to="/fitur">Fitur</router-link>
-            </li>
-            <li class="nav-item">
-              <router-link class="nav-link" to="/untuk-siapa"
-                >Untuk Siapa</router-link
-              >
-            </li>
-            <li class="nav-item">
-              <router-link class="nav-link" to="/tentang">Tentang</router-link>
-            </li>
-            <li class="nav-item">
-              <router-link class="nav-link" to="/kontak">Kontak</router-link>
+              <a class="nav-link" href="#fitur" @click="closeMenu">Fitur</a>
             </li>
 
             <li class="nav-item mt-3">
@@ -114,6 +90,10 @@ const navbarRef = ref(null);
 
 const toggleMenu = () => {
   showMenuMobile.value = !showMenuMobile.value;
+};
+
+const closeMenu = () => {
+  showMenuMobile.value = false;
 };
 
 const handleClickOutside = (event) => {
@@ -218,7 +198,7 @@ onUnmounted(() => {
 .mobile-menu {
   margin-top: 12px;
   padding: 20px;
-  background: white;
+  background: #0F172A;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
 }

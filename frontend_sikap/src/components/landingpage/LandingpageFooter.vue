@@ -13,11 +13,9 @@
         </div>
 
         <div class="d-flex gap-3 small">
-          <a href="#" class="footer-link">Home</a>
-          <a href="#" class="footer-link">Artikel</a>
-          <a href="#" class="footer-link">Project</a>
-          <a href="#" class="footer-link">e-Book</a>
-          <a href="#" class="footer-link">About</a>
+          <a href="#beranda" class="footer-link">Beranda</a>
+          <a href="#fitur" class="footer-link">Fitur</a>
+          <router-link to="/login" class="footer-link">Akses Login</router-link>
         </div>
       </div>
     </div>
