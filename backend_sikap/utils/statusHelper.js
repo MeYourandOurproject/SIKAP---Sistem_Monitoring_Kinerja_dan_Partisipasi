@@ -1,10 +1,12 @@
 // utils/statusHelper.js
+const { getApplicationNow } = require("./applicationClock");
+
 function getActivityStatus(activity) {
   if (activity.type === "routine" || !activity.date) {
     return "ongoing";
   }
 
-  const todayWib = new Date().toLocaleDateString("sv-SE", {
+  const todayWib = getApplicationNow().toLocaleDateString("sv-SE", {
     timeZone: "Asia/Jakarta",
   });
 

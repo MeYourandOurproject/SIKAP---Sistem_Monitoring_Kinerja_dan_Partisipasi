@@ -10,6 +10,7 @@ const {
   sequelize,
 } = require("../models");
 const { Op } = require("sequelize");
+const { getApplicationNow } = require("../utils/applicationClock");
 
 function formatDateOnly(value) {
   if (!value) return null;
@@ -18,7 +19,7 @@ function formatDateOnly(value) {
 }
 
 function getTodayInJakarta() {
-  return new Date().toLocaleDateString("sv-SE", {
+  return getApplicationNow().toLocaleDateString("sv-SE", {
     timeZone: "Asia/Jakarta",
   });
 }
@@ -153,7 +154,7 @@ class ActivitysessionController {
             `${session.activity_id}:${formatDateOnly(session.date)}:${session.session || ""}`,
         ),
       );
-      const today = new Date().toLocaleDateString("sv-SE", {
+      const today = getApplicationNow().toLocaleDateString("sv-SE", {
         timeZone: "Asia/Jakarta",
       });
       const [year, month, day] = today.split("-").map(Number);
@@ -250,7 +251,7 @@ class ActivitysessionController {
       const { activity_id, pic_teacher_id } = req.body;
 
       // Mendapatkan tanggal lokal WIB (Asia/Jakarta) dengan format YYYY-MM-DD
-      const today = new Date().toLocaleDateString("sv-SE", {
+      const today = getApplicationNow().toLocaleDateString("sv-SE", {
         timeZone: "Asia/Jakarta",
       });
 
@@ -419,7 +420,7 @@ class ActivitysessionController {
   static async getActiveSessions(req, res, next) {
     try {
       // const today = new Date().toISOString().split("T")[0];
-      const today = new Date().toLocaleDateString("sv-SE", {
+      const today = getApplicationNow().toLocaleDateString("sv-SE", {
         timeZone: "Asia/Jakarta",
       });
       const academicPeriod = await Academicperiod.findByPk(1);

@@ -491,6 +491,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRoute } from "vue-router";
 import { getClasses, getClassScheduleHistory } from "@/services/api";
+import { applicationClock } from "@/services/applicationClock";
 
 const route = useRoute();
 const props = defineProps({
@@ -538,7 +539,7 @@ const hasHistoryFilter = computed(() =>
 
 let interval = null;
 
-function formatWibTime(date = new Date()) {
+function formatWibTime(date = applicationClock.currentTime) {
   return new Intl.DateTimeFormat("id-ID", {
     hour: "2-digit",
     minute: "2-digit",
@@ -671,7 +672,7 @@ function getTodayDateKey() {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).formatToParts(new Date());
+  }).formatToParts(applicationClock.currentTime);
   const values = Object.fromEntries(
     parts.map(({ type, value }) => [type, value]),
   );
@@ -731,7 +732,7 @@ async function exportHistory() {
     workbook.creator = "SIKAP";
     workbook.subject = "Laporan riwayat keterisian kelas";
     workbook.title = "Riwayat Keterisian Kelas";
-    workbook.created = new Date();
+    workbook.created = applicationClock.currentTime;
     const createdAtWib = `${new Intl.DateTimeFormat("id-ID", {
       day: "2-digit",
       month: "long",
@@ -740,7 +741,7 @@ async function exportHistory() {
       minute: "2-digit",
       hourCycle: "h23",
       timeZone: "Asia/Jakarta",
-    }).format(new Date())} WIB`;
+    }).format(applicationClock.currentTime)} WIB`;
 
     const summarySheet = workbook.addWorksheet("Ringkasan", {
       views: [{ state: "frozen", ySplit: 4 }],

@@ -299,7 +299,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import {
   getActivities,
   getAcademicPeriod,
@@ -307,6 +307,7 @@ import {
   deleteActivity,
 } from "@/services/api";
 import ActivityFormModal from "./ActivityFormModal.vue";
+import { getApplicationDateKey } from "@/services/applicationClock";
 
 const activities = ref([]);
 const academicPeriod = ref(null);
@@ -323,10 +324,20 @@ const searchQuery = ref("");
 const filterTime = ref("all");
 const filterStatus = ref("all");
 const weekdays = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
-const todayDateKey = toDateKey(new Date());
-const calendarMonth = ref(parseDateKey(`${todayDateKey.slice(0, 7)}-01`));
-const selectedDate = ref(todayDateKey);
+const todayDateKey = computed(() => getApplicationDateKey());
+const calendarMonth = ref(parseDateKey(`${todayDateKey.value.slice(0, 7)}-01`));
+const selectedDate = ref(todayDateKey.value);
 const calendarExpanded = ref(false);
+
+watch(todayDateKey, (date, previousDate) => {
+  if (selectedDate.value === previousDate) selectedDate.value = date;
+  if (
+    calendarMonth.value.getFullYear() === Number(previousDate.slice(0, 4)) &&
+    calendarMonth.value.getMonth() === Number(previousDate.slice(5, 7)) - 1
+  ) {
+    calendarMonth.value = parseDateKey(`${date.slice(0, 7)}-01`);
+  }
+});
 
 // Fetch Data
 const loadActivities = async () => {
@@ -378,8 +389,8 @@ const getCalculatedStatus = (act) => {
   const endDate = normalizeDate(act.end_date || startDate);
 
   if (!startDate) return "upcoming";
-  if (todayDateKey > endDate) return "completed";
-  if (todayDateKey >= startDate && todayDateKey <= endDate) return "ongoing";
+  if (todayDateKey.value > endDate) return "completed";
+  if (todayDateKey.value >= startDate && todayDateKey.value <= endDate) return "ongoing";
   return "upcoming";
 };
 
@@ -501,9 +512,9 @@ const filteredActivities = computed(() => {
       let matchesTime = true;
 
       if (filterTime.value === "today") {
-        matchesTime = activityOccursOnDate(act, todayDateKey);
+        matchesTime = activityOccursOnDate(act, todayDateKey.value);
       } else if (filterTime.value === "week") {
-        const today = parseDateKey(todayDateKey);
+        const today = parseDateKey(todayDateKey.value);
         const startOfWeek = new Date(today);
         startOfWeek.setDate(today.getDate() - ((today.getDay() + 6) % 7));
         matchesTime = Array.from({ length: 7 }, (_, index) => {
@@ -512,11 +523,11 @@ const filteredActivities = computed(() => {
           return activityOccursOnDate(act, toDateKey(date));
         }).some(Boolean);
       } else if (filterTime.value === "month") {
-        matchesTime = getMonthDateKeys(todayDateKey).some((date) =>
+        matchesTime = getMonthDateKeys(todayDateKey.value).some((date) =>
           activityOccursOnDate(act, date),
         );
       } else if (filterTime.value === "year") {
-        matchesTime = getYearDateKeys(todayDateKey).some((date) =>
+        matchesTime = getYearDateKeys(todayDateKey.value).some((date) =>
           activityOccursOnDate(act, date),
         );
       }
@@ -696,8 +707,8 @@ function changeMonth(offset) {
 }
 
 function goToToday() {
-  calendarMonth.value = parseDateKey(`${todayDateKey.slice(0, 7)}-01`);
-  selectedDate.value = todayDateKey;
+  calendarMonth.value = parseDateKey(`${todayDateKey.value.slice(0, 7)}-01`);
+  selectedDate.value = todayDateKey.value;
 }
 
 // Modal Actions

@@ -1,5 +1,6 @@
 const { Classteacherattendance } = require('../models');
 const { Op } = require('sequelize');
+const { getApplicationNow } = require('../utils/applicationClock');
 
 class ClassteacherattendanceController {
   static async getAll(req, res, next) {
@@ -24,14 +25,14 @@ class ClassteacherattendanceController {
   static async create(req, res, next) {
     try {
       const payload = {
-        date: req.body.date ? new Date(req.body.date) : new Date(),
+        date: req.body.date ? new Date(req.body.date) : getApplicationNow(),
         classschedule_id: req.body.classschedule_id,
         attendance_status: req.body.attendance_status,
         activity_status: req.body.activity_status,
         validator_id: req.user?.id || req.body.validator_id || null,
         validated_at: req.body.validated_at
           ? new Date(req.body.validated_at)
-          : new Date(),
+          : getApplicationNow(),
         lateness: req.body.lateness || 0,
         notes: req.body.notes || null,
       };

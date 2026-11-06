@@ -1,13 +1,29 @@
 <template>
   <div id="app">
+    <ApplicationClockIndicator />
     <router-view />
   </div>
 </template>
 
 <script>
+import ApplicationClockIndicator from "@/components/asset/ApplicationClockIndicator.vue";
+import {
+  startApplicationClock,
+  stopApplicationClock,
+} from "@/services/applicationClock";
 import 'bootstrap-icons/font/bootstrap-icons.css'
+
 export default {
   name: 'App',
+  components: {
+    ApplicationClockIndicator,
+  },
+  mounted() {
+    startApplicationClock();
+  },
+  beforeUnmount() {
+    stopApplicationClock();
+  },
 }
 </script>
 

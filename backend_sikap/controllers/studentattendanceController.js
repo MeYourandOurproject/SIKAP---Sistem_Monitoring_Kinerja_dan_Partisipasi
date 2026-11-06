@@ -8,10 +8,11 @@ const {
   User,
   sequelize,
 } = require("../models");
+const { getApplicationNow } = require("../utils/applicationClock");
 
 const attendanceStatuses = ["present", "permission", "sick", "absent"];
 
-function getJakartaDateTime(date = new Date()) {
+function getJakartaDateTime(date = getApplicationNow()) {
   const parts = new Intl.DateTimeFormat("id-ID", {
     timeZone: "Asia/Jakarta",
     weekday: "long",
@@ -161,7 +162,7 @@ class StudentattendanceController {
         });
       }
 
-      const timestamp = new Date();
+      const timestamp = getApplicationNow();
       await sequelize.transaction(async (transaction) => {
         if (attendance.length) {
           await Studentattendance.bulkCreate(

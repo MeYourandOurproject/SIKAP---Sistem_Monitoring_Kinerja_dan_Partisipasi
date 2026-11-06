@@ -121,6 +121,66 @@
       </div>
     </div>
 
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card shadow-sm">
+          <div class="card-header bg-light">
+            <h5 class="mb-0">
+              <i class="bi bi-clock-history me-2"></i>Jam Aplikasi
+            </h5>
+          </div>
+          <div class="card-body">
+            <p class="text-muted">
+              Atur waktu untuk demonstrasi. Mode simulasi berlaku untuk semua
+              pengguna dan waktu jadwal/absensi mengikuti tanggal serta jam ini.
+              Waktu simulasi akan terus berjalan normal.
+            </p>
+            <div class="row align-items-end">
+              <div class="col-md-4 mb-3">
+                <label class="form-label" for="application-clock-mode">Mode waktu</label>
+                <select
+                  id="application-clock-mode"
+                  v-model="applicationClockSettings.mode"
+                  class="form-select"
+                  :disabled="loadingApplicationClock || savingApplicationClock"
+                >
+                  <option value="realtime">Waktu sebenarnya</option>
+                  <option value="simulation">Waktu simulasi</option>
+                </select>
+              </div>
+              <div v-if="applicationClockSettings.mode === 'simulation'" class="col-md-5 mb-3">
+                <label class="form-label" for="application-clock-start">
+                  Mulai dari tanggal dan jam (WIB)
+                </label>
+                <input
+                  id="application-clock-start"
+                  v-model="applicationClockSettings.simulatedAt"
+                  type="datetime-local"
+                  class="form-control"
+                  :disabled="loadingApplicationClock || savingApplicationClock"
+                  required
+                />
+              </div>
+              <div class="col-md-3 mb-3">
+                <button
+                  type="button"
+                  class="btn btn-success w-100"
+                  :disabled="loadingApplicationClock || savingApplicationClock"
+                  @click="saveApplicationClock"
+                >
+                  <span v-if="savingApplicationClock" class="spinner-border spinner-border-sm me-1"></span>
+                  {{ savingApplicationClock ? "Menyimpan..." : "Simpan Jam" }}
+                </button>
+              </div>
+            </div>
+            <div v-if="applicationClockError" class="alert alert-danger mb-0" role="alert">
+              {{ applicationClockError }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Email Configuration -->
     <div class="row mb-4">
       <div class="col-12">
@@ -229,7 +289,13 @@
 </template>
 
 <script>
-import { getAcademicPeriod, updateAcademicPeriod } from "@/services/api";
+import {
+  getAcademicPeriod,
+  getApplicationClock,
+  updateAcademicPeriod,
+  updateApplicationClock,
+} from "@/services/api";
+import { applyApplicationClock } from "@/services/applicationClock";
 
 export default {
   name: "SuperAdminSettings",
@@ -242,6 +308,13 @@ export default {
       loadingAcademicPeriod: false,
       savingAcademicPeriod: false,
       academicPeriodError: "",
+      applicationClockSettings: {
+        mode: "realtime",
+        simulatedAt: "",
+      },
+      loadingApplicationClock: false,
+      savingApplicationClock: false,
+      applicationClockError: "",
       settings: {
         schoolName: "SMK Negeri 4 Bandung",
         schoolAddress: "Jl. Soekarno Hatta No. 556, Bandung",
@@ -257,8 +330,79 @@ export default {
   mounted() {
     this.loadSettings();
     this.loadAcademicPeriod();
+    this.loadApplicationClock();
   },
   methods: {
+    async loadApplicationClock() {
+      this.loadingApplicationClock = true;
+      this.applicationClockError = "";
+      try {
+        const clock = await getApplicationClock();
+        this.applicationClockSettings = {
+          mode: clock.mode,
+          simulatedAt: clock.simulated_at
+            ? this.formatJakartaDateTime(clock.simulated_at)
+            : "",
+        };
+        applyApplicationClock(clock);
+      } catch (error) {
+        console.error("Gagal memuat jam aplikasi:", error);
+        this.applicationClockError = error.message || "Gagal memuat jam aplikasi.";
+      } finally {
+        this.loadingApplicationClock = false;
+      }
+    },
+    formatJakartaDateTime(value) {
+      return new Intl.DateTimeFormat("sv-SE", {
+        timeZone: "Asia/Jakarta",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+      })
+        .format(new Date(value))
+        .replace(" ", "T");
+    },
+    async saveApplicationClock() {
+      this.savingApplicationClock = true;
+      this.applicationClockError = "";
+      try {
+        let simulatedAt = null;
+        if (this.applicationClockSettings.mode === "simulation") {
+          if (!this.applicationClockSettings.simulatedAt) {
+            throw new Error("Tanggal dan jam simulasi harus diisi.");
+          }
+
+          simulatedAt = new Date(
+            `${this.applicationClockSettings.simulatedAt}:00+07:00`,
+          );
+          if (Number.isNaN(simulatedAt.getTime())) {
+            throw new Error("Tanggal dan jam simulasi tidak valid.");
+          }
+        }
+
+        const clock = await updateApplicationClock({
+          mode: this.applicationClockSettings.mode,
+          simulated_at: simulatedAt?.toISOString() || null,
+        });
+        this.applicationClockSettings.simulatedAt = clock.simulated_at
+          ? this.formatJakartaDateTime(clock.simulated_at)
+          : "";
+        applyApplicationClock(clock);
+        alert(
+          clock.mode === "simulation"
+            ? "Jam simulasi berhasil diaktifkan untuk seluruh aplikasi."
+            : "Jam aplikasi kembali menggunakan waktu sebenarnya.",
+        );
+      } catch (error) {
+        console.error("Gagal menyimpan jam aplikasi:", error);
+        this.applicationClockError = error.message || "Gagal menyimpan jam aplikasi.";
+      } finally {
+        this.savingApplicationClock = false;
+      }
+    },
     async loadAcademicPeriod() {
       this.loadingAcademicPeriod = true;
       this.academicPeriodError = "";

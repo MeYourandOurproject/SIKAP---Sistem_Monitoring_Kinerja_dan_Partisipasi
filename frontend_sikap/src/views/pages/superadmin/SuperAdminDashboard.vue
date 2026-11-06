@@ -201,6 +201,7 @@ import {
   getManagedUsers,
   getScheduleManagementData,
 } from "@/services/api.js";
+import { applicationClock } from "@/services/applicationClock";
 
 export default {
   name: "SuperAdminDashboard",
@@ -211,14 +212,26 @@ export default {
       activeTeachers: 0,
       totalSchedules: 0,
       totalUsers: 0,
-      currentDate: "",
       statisticsError: "",
     };
   },
   mounted() {
     this.loadUserName();
     this.loadAdminStatistics();
-    this.setCurrentDate();
+  },
+  computed: {
+    currentDate() {
+      return applicationClock.currentTime.toLocaleDateString("id-ID", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        timeZone: "Asia/Jakarta",
+      });
+    },
   },
   methods: {
     loadUserName() {
@@ -272,18 +285,6 @@ export default {
       } catch (error) {
         this.statisticsError = `Gagal memuat statistik: ${error.message}`;
       }
-    },
-    setCurrentDate() {
-      const options = {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      };
-      this.currentDate = new Date().toLocaleDateString("id-ID", options);
     },
   },
 };

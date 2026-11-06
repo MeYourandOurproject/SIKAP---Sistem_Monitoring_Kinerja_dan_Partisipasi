@@ -624,6 +624,11 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from "vue";
 import {
+  applicationClock,
+  formatApplicationDateKey,
+  getApplicationDateKey,
+} from "@/services/applicationClock";
+import {
   getAcademicPeriod,
   getActivities,
   getActiveActivitySessions,
@@ -686,7 +691,7 @@ const checkScreenSize = () => {
 
 const isToday = (date) => {
   if (!date) return false;
-  return new Date(date).toDateString() === new Date().toDateString();
+  return formatApplicationDateKey(new Date(date)) === getApplicationDateKey();
 };
 
 const getCurrentPeriodAssignments = (activity) =>
@@ -702,8 +707,9 @@ const getRoutineDay = (activity) =>
     ?.day_of_week;
 
 const todayActivities = computed(() => {
-  const todayDay = new Date().toLocaleDateString("en-US", {
+  const todayDay = applicationClock.currentTime.toLocaleDateString("en-US", {
     weekday: "long",
+    timeZone: "Asia/Jakarta",
   });
 
   return activities.value.filter((activity) => {

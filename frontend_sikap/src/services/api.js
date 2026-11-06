@@ -62,6 +62,22 @@ export async function updateAcademicPeriod(payload) {
   });
 }
 
+export async function getApplicationClock() {
+  return fetchJson(`${API_URL}/api/app-clock`);
+}
+
+export async function updateApplicationClock(payload) {
+  const token = localStorage.getItem("token");
+  return fetchJson(`${API_URL}/api/app-clock`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
 // ======================
 // GET TEACHERS
 // ======================

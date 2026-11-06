@@ -200,6 +200,10 @@
 
 <script>
 import { getActivities, getActiveActivitySessions } from "@/services/api";
+import {
+  applicationClock,
+  getApplicationDateKey,
+} from "@/services/applicationClock";
 
 export default {
   name: "PersonResponsibleDashboard",
@@ -215,7 +219,7 @@ export default {
   computed: {
     todayActivities() {
       const today = this.getTodayDateKey();
-      const weekday = new Date(`${today}T00:00:00`).getDay();
+      const weekday = new Date(`${today}T00:00:00.000Z`).getUTCDay();
       return this.activities.filter((activity) =>
         this.activityOccursToday(activity, today, weekday),
       );
@@ -224,11 +228,12 @@ export default {
       return this.activities.filter((activity) => activity.type === "routine").length;
     },
     todayLabel() {
-      return new Date().toLocaleDateString("id-ID", {
+      return applicationClock.currentTime.toLocaleDateString("id-ID", {
         weekday: "long",
         day: "numeric",
         month: "long",
         year: "numeric",
+        timeZone: "Asia/Jakarta",
       });
     },
   },
@@ -272,11 +277,7 @@ export default {
       }
     },
     getTodayDateKey() {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, "0");
-      const day = String(today.getDate()).padStart(2, "0");
-      return `${year}-${month}-${day}`;
+      return getApplicationDateKey();
     },
     activityOccursToday(activity, today, weekday) {
       if (activity.type === "routine") {
