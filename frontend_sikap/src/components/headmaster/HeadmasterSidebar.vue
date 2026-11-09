@@ -86,13 +86,13 @@
 
           <li class="nav-item">
             <router-link
-              to="/kepala-sekolah/partisipasi-guru"
+              to="/kepala-sekolah/aktivitas-piket"
               class="nav-link"
-              :class="{ active: isActive('/kepala-sekolah/partisipasi-guru') }"
+              :class="{ active: isActive('/kepala-sekolah/aktivitas-piket') }"
               @click="closeSidebar"
             >
-              <i class="bi bi-calendar-check-fill text-white"></i>
-              <span class="text-white">Partisipasi Guru</span>
+              <i class="bi bi-calendar2-check text-white"></i>
+              <span class="text-white">Kegiatan & Piket</span>
             </router-link>
           </li>
 
@@ -107,18 +107,6 @@
               <span class="text-white">Penilaian</span>
             </router-link>
           </li> -->
-
-          <li class="nav-item">
-            <router-link
-              to="/kepala-sekolah/laporan"
-              class="nav-link"
-              :class="{ active: isActive('/kepala-sekolah/laporan') }"
-              @click="closeSidebar"
-            >
-              <i class="bi bi-file-earmark-bar-graph text-white"></i>
-              <span class="text-white">Laporan</span>
-            </router-link>
-          </li>
 
           <!-- <li class="nav-item">
             <router-link

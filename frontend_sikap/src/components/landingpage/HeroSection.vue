@@ -1,12 +1,12 @@
 <template>
   <div
     id="beranda"
-    class="container-fluid home-heroes d-flex align-items-center justify-content-start py-5 py-md-4 px-4 px-md-0"
+    class="container-fluid home-heroes d-flex align-items-center justify-content-start"
   >
     <!-- HERO -->
     <div class="container-xxl">
       <div
-        class="row d-flex align-items-center justify-content-center justify-content-md-start pt-5"
+        class="row d-flex align-items-center justify-content-center justify-content-md-start"
       >
         <div class="col-12 col-md-6 gap-2 d-flex flex-column order-2 order-md-1 ">
           <div class="hero-badge d-none d-md-flex">
@@ -31,9 +31,8 @@
         </div>
 
           <p class="hero-subtitle text-white text-start text-md-start">
-            SIKAP membantu sekolah dalam memantau kehadiran, jadwal mengajar,
-            partisipasi kegiatan, hingga penilaian kinerja guru dalam satu
-            sistem terintegrasi dan realtime.
+            SIKAP membantu sekolah mengelola jadwal mengajar, memantau
+            kehadiran, dan mengatur agenda kegiatan sekolah dalam satu sistem.
           </p>
 
           <div
@@ -110,8 +109,9 @@
    HERO SECTION
 ========================= */
 .home-heroes {
-  max-height: 100vh;
-  /* margin-top: 70px; */
+  min-height: clamp(560px, calc(100svh - 76px), 900px);
+  scroll-margin-top: 76px;
+  padding: clamp(3rem, 7vh, 6rem) 1.5rem;
   background-size: cover;
   background-position: top;
   position: relative;
@@ -119,6 +119,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
 .home-heroes .container-xxl {
@@ -142,11 +143,11 @@
    TEXT
 ========================= */
 .home-title {
-  font-size: 3rem;
+  font-size: clamp(2.35rem, 3.2vw, 3.5rem);
   line-height: 1.2;
-  letter-spacing: 1px;
+  letter-spacing: 0.01em;
   text-align: start;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .hero-subtitle {
@@ -277,18 +278,17 @@
   width: 100%;
   z-index: 1;
   padding: 0;
-  margin-left: -350px;
   pointer-events: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-bottom: 50px;
-  /* overflow: hidden; */
+  margin-left: -300px
 }
 
 .hero-image {
+  display: block;
   width: 100%;
-  width: 1100px;
+  width: 1000px;
   height: auto;
   opacity: 0.95;
   animation: floating 4s ease-in-out infinite;
@@ -313,12 +313,11 @@
 @media (max-width: 768px) {
   .home-heroes {
     min-height: auto;
-    padding: 0;
-    margin-top: 50px;
+    padding: 2.5rem 1rem 3rem;
   }
 
   .home-title {
-    font-size: 1.75rem;
+    font-size: clamp(1.75rem, 7vw, 2.35rem);
     line-height: 1.3;
     text-align: center;
     margin-bottom: 1rem;
@@ -359,16 +358,13 @@
   }
 
   .hero-image-wrapper {
-    min-height: 250px;
-    /* margin-bottom: -20px; */
-    margin: -40px 0 ;
-    margin-left: -200px;
-    padding-bottom: 0px;
+    min-height: 190px;
+    margin: -1.5rem 0 0;
   }
 
   .hero-image {
     width: 100%;
-    width: 500px;
+    max-width: 440px;
   }
 
   .info {
@@ -398,6 +394,20 @@
   .info small {
     display: block;
     margin-top: 4px;
+  }
+}
+
+@media (max-width: 420px) {
+  .home-heroes {
+    padding-inline: 0.75rem;
+  }
+
+  .hero-buttons {
+    gap: 0.5rem;
+  }
+
+  .btn-hero {
+    padding-inline: 0.8rem;
   }
 }
 </style>

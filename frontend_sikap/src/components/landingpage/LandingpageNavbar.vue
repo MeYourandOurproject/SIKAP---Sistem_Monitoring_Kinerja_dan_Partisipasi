@@ -1,38 +1,31 @@
 <template>
   <div>
     <!-- NAVBAR -->
-    <div ref="navbarRef" class="container-fluid fixed-top custom-navbar">
+    <div ref="navbarRef" class="container-fluid custom-navbar">
       <div class="container-xxl py-3">
         <div class="row align-items-center justify-content-between">
           <!-- LOGO -->
-          <div class="col-2 col-md-2">
+          <div class="col-auto">
             <a
               href="#beranda"
-              class="d-flex align-items-center justify-content-center text-decoration-none"
+              class="brand-link d-flex align-items-center text-decoration-none"
             >
-              <div class="col-8 d-flex align-items-center gap-3">
-                <img
-                  src="../../assets/sikap_logo.PNG"
-                  alt="SIKAP Logo"
-                  style="height: 50px"
-                />
-                <div class="row text-start">
-                  <div
-                    class="col-12 text-success fw-bold"
-                    style="font-size: 20px; letter-spacing: 10px"
-                  >
-                    SIKAP
-                  </div>
-                  <div class="col-12 text-white" style="font-size: 9px">
-                    Sitem Informasi Kinerja & Partisipasi
-                  </div>
+              <img
+                src="../../assets/sikap_logo.PNG"
+                alt="SIKAP Logo"
+                class="brand-logo"
+              />
+              <div class="brand-copy text-start">
+                <div class="brand-name text-success fw-bold">SIKAP</div>
+                <div class="brand-tagline text-white">
+                  Sistem Informasi Kinerja &amp; Partisipasi
                 </div>
               </div>
             </a>
           </div>
 
           <!-- MENU DESKTOP -->
-          <div class="col-7 col-md-8 d-none d-lg-block">
+          <div class="col d-none d-lg-block">
             <ul class="nav justify-content-end fw-medium">
               <li class="nav-item">
                 <a class="nav-link" href="#beranda">Beranda</a>
@@ -44,16 +37,14 @@
           </div>
 
           <!-- BUTTON -->
-          <div class="col-2 d-none d-lg-flex justify-content-center">
+          <div class="col-auto d-none d-lg-flex justify-content-center">
             <router-link to="/login" class="btn-login">
               Akses Login <i class="bi bi-box-arrow-in-right ms-2"></i>
             </router-link>
           </div>
 
           <!-- HAMBURGER -->
-          <div
-            class="col-2 d-lg-none text-center justify-content-center d-flex"
-          >
+          <div class="col-auto d-lg-none text-center justify-content-center d-flex">
             <button class="navbar-toggler" @click.stop="toggleMenu">
               <i class="bi bi-list fs-1 hamburger-icon text-success"></i>
             </button>
@@ -112,8 +103,8 @@ onUnmounted(() => {
 });
 </script>
 
-<style>
-:root {
+<style scoped>
+.custom-navbar {
   --primary-color: #1d4ed8;
   --primary-hover: #fff;
   --text-color: #94a3b8;
@@ -121,14 +112,34 @@ onUnmounted(() => {
 
 /* NAVBAR */
 .custom-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1020;
   background: #0F172A;
   backdrop-filter: blur(40px);
   border-bottom: 1px solid #000000;
 }
 
-/* LOGO */
-.logo-brand {
-  height: 45px;
+.brand-link {
+  gap: 12px;
+}
+
+.brand-logo {
+  width: 50px;
+  height: 50px;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.brand-name {
+  font-size: 20px;
+  letter-spacing: 0.35em;
+  line-height: 1.2;
+}
+
+.brand-tagline {
+  font-size: 9px;
+  white-space: nowrap;
 }
 
 /* NAV */
@@ -207,6 +218,7 @@ onUnmounted(() => {
 .navbar-toggler {
   border: none;
   background: transparent;
+  padding: 0;
 }
 
 .hamburger-icon {
@@ -229,5 +241,24 @@ onUnmounted(() => {
 .nav-link.active {
   color: var(--primary-hover) !important;
   font-weight: 600;
+}
+
+@media (max-width: 575px) {
+  .brand-link {
+    gap: 8px;
+  }
+
+  .brand-logo {
+    width: 42px;
+    height: 42px;
+  }
+
+  .brand-name {
+    font-size: 17px;
+  }
+
+  .brand-tagline {
+    font-size: 8px;
+  }
 }
 </style>

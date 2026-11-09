@@ -47,7 +47,7 @@
           <h3>Kegiatan Guru</h3>
 
           <p>
-            Catat dan pantau partisipasi guru dalam setiap kegiatan.
+            Kelola agenda kegiatan dan sesi kehadiran guru.
           </p>
         </div>
 
@@ -60,18 +60,6 @@
 
           <p>
             Penilaian kinerja berbasis data yang objektif dan transparan.
-          </p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon blue">
-            <i class="bi bi-file-earmark-text"></i>
-          </div>
-
-          <h3>Laporan</h3>
-
-          <p>
-            Laporan lengkap siap cetak dan ekspor berbagai format.
           </p>
         </div>
 
@@ -149,7 +137,7 @@ export default {
 .feature-grid {
   display: grid;
 
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 
   gap: 14px;
 
@@ -293,12 +281,6 @@ export default {
 }
 
 /* RESPONSIVE */
-@media (max-width: 1400px) {
-  .feature-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
 @media (max-width: 991px) {
   .feature-grid {
     grid-template-columns: repeat(2, 1fr);

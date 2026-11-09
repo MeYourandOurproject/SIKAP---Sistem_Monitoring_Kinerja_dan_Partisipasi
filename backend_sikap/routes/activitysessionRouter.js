@@ -7,6 +7,12 @@ const authorize = require("../middlewares/authorizationHandler");
 // Sesi Aktif Hari Ini (untuk dropdown/pilihan di FE)
 router.get("/active", ActivitysessionController.getActiveSessions);
 router.get(
+  "/headmaster/active-sessions",
+  authen,
+  authorize("headmaster"),
+  ActivitysessionController.getActiveSessions,
+);
+router.get(
   "/teacher",
   authen,
   authorize("teacher"),
@@ -16,7 +22,7 @@ router.post("/open", ActivitysessionController.openOrCreateTodaySession);
 router.get(
   "/attendance-history",
   authen,
-  authorize("responsible"),
+  authorize("responsible", "headmaster"),
   ActivitysessionController.getAttendanceHistory,
 );
 router.get(
