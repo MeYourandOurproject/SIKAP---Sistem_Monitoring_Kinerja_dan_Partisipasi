@@ -115,9 +115,14 @@ onUnmounted(() => {
   position: sticky;
   top: 0;
   z-index: 1020;
-  background: #0F172A;
-  backdrop-filter: blur(40px);
-  border-bottom: 1px solid #000000;
+  background: rgba(8, 20, 38, 0.94);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.custom-navbar > .container-xxl {
+  padding-top: 0.75rem !important;
+  padding-bottom: 0.75rem !important;
 }
 
 .brand-link {
@@ -152,8 +157,8 @@ onUnmounted(() => {
   color: var(--text-color);
   font-weight: 500;
   position: relative;
-  padding: 8px 14px;
-  transition: all 0.3s ease;
+  padding: 0.65rem 0.85rem;
+  transition: color 0.2s ease;
 }
 
 /* HOVER (BIRU) */
@@ -190,28 +195,36 @@ onUnmounted(() => {
 
 /* BUTTON LOGIN (BISA DIATUR WARNA) */
 .btn-login {
-  background: var(--primary-color);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
   color: white;
-  padding: 8px 18px;
-  border-radius: 8px;
-  font-weight: 500;
+  padding: 0.7rem 1.1rem;
+  border-radius: 10px;
+  font-weight: 650;
   text-align: center;
-  transition: 0.3s;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
   text-decoration: none;
 }
 
 .btn-login:hover {
-  background: var(--primary-hover);
-  color: #0f172a;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.28);
+  color: white;
 }
 
 /* MOBILE MENU */
 .mobile-menu {
-  margin-top: 12px;
-  padding: 20px;
-  background: #0F172A;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  margin: 0.5rem 0 0;
+  padding: 0.85rem;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  background: #111f34;
+  border-radius: 14px;
+  box-shadow: 0 16px 35px rgba(0, 0, 0, 0.24);
 }
 
 /* HAMBURGER */
@@ -222,7 +235,7 @@ onUnmounted(() => {
 }
 
 .hamburger-icon {
-  color: var(--primary-color);
+  color: #4ade80;
 }
 
 /* DEFAULT HITAM */
@@ -259,6 +272,34 @@ onUnmounted(() => {
 
   .brand-tagline {
     font-size: 8px;
+  }
+
+  .custom-navbar > .container-xxl {
+    padding-top: 0.55rem !important;
+    padding-bottom: 0.55rem !important;
+  }
+
+  .navbar-toggler {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border-radius: 10px;
+  }
+
+  .navbar-toggler:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .hamburger-icon {
+    font-size: 1.6rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-login,
+  .nav-link {
+    transition: none;
   }
 }
 </style>

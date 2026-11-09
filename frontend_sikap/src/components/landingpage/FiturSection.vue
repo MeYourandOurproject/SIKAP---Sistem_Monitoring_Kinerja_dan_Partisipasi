@@ -1,94 +1,51 @@
 <template>
-  <section id="fitur" class="fitur-section py-5">
-    <div class="container-xxl">
-      <!-- HEADER -->
-      <div class="text-center mb-5">
-        <div class="section-label">
-          FITUR UNGGULAN
-        </div>
+  <section id="fitur" class="fitur-section">
+    <div class="container-xxl features-container">
+      <header class="features-heading">
+        <p class="section-label">FITUR UNGGULAN</p>
+        <h2 class="section-title">Semua yang Anda Butuhkan dalam Satu Sistem</h2>
+      </header>
 
-        <h2 class="section-title">
-          Semua yang Anda Butuhkan dalam Satu Sistem
-        </h2>
-      </div>
-
-      <!-- FEATURE GRID -->
       <div class="feature-grid">
-
-        <div class="feature-card">
-          <div class="feature-icon blue">
-            <i class="bi bi-person-check"></i>
+        <article class="feature-card blue">
+          <div class="feature-icon">
+            <i class="bi bi-person-check" aria-hidden="true"></i>
           </div>
-
           <h3>Kehadiran</h3>
+          <p>Informasi kehadiran tersusun rapi dan mudah diakses.</p>
+        </article>
 
-          <p>
-            Monitoring kehadiran guru secara real-time dan akurat.
-          </p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon green">
-            <i class="bi bi-calendar-event"></i>
+        <article class="feature-card green">
+          <div class="feature-icon">
+            <i class="bi bi-calendar-event" aria-hidden="true"></i>
           </div>
-
           <h3>Jadwal Mengajar</h3>
+          <p>Kelola jadwal mengajar dengan mudah dan fleksibel.</p>
+        </article>
 
-          <p>
-            Kelola jadwal mengajar dengan mudah dan fleksibel.
-          </p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon purple">
-            <i class="bi bi-people"></i>
+        <article class="feature-card purple">
+          <div class="feature-icon">
+            <i class="bi bi-people" aria-hidden="true"></i>
           </div>
-
           <h3>Kegiatan Guru</h3>
+          <p>Kelola agenda kegiatan dan pembagian tugas sekolah dengan praktis.</p>
+        </article>
 
-          <p>
-            Kelola agenda kegiatan dan sesi kehadiran guru.
-          </p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon yellow">
-            <i class="bi bi-bar-chart-line"></i>
+        <article class="feature-card yellow">
+          <div class="feature-icon">
+            <i class="bi bi-bar-chart-line" aria-hidden="true"></i>
           </div>
+          <h3>Pengembangan Profesional</h3>
+          <p>Dukung pengembangan profesional melalui informasi yang terarah.</p>
+        </article>
 
-          <h3>Penilaian Kinerja</h3>
-
-          <p>
-            Penilaian kinerja berbasis data yang objektif dan transparan.
-          </p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon green">
-            <i class="bi bi-people-fill"></i>
+        <article class="feature-card green">
+          <div class="feature-icon">
+            <i class="bi bi-people-fill" aria-hidden="true"></i>
           </div>
-
           <h3>Manajemen Guru</h3>
-
-          <p>
-            Kelola data guru dengan lebih terstruktur.
-          </p>
-        </div>
-
-      </div>
-
-      <!-- CTA -->
-      <div class="cta-wrapper">
-
-        <p>
-          Siap meningkatkan kinerja dan profesionalisme guru di sekolah Anda?
-        </p>
-
-        <router-link to="/login" class="cta-btn">
-          Mulai Sekarang
-          <i class="bi bi-arrow-right"></i>
-        </router-link>
-
+          <p>Kelola data guru dengan lebih terstruktur.</p>
+        </article>
       </div>
     </div>
   </section>
@@ -102,199 +59,172 @@ export default {
 
 <style scoped>
 .fitur-section {
-  position: relative;
   scroll-margin-top: 90px;
-
-  background:
-    radial-gradient(circle at top, rgba(37, 99, 235, 0.18), transparent 35%),
-    #020817;
-
+  padding: clamp(3.75rem, 6vw, 5rem) 1.25rem !important;
   overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(30, 64, 110, 0.18), transparent 58%),
+    #081321;
 }
 
-/* HEADER */
+.features-container {
+  max-width: 1380px;
+}
+
+.features-heading {
+  max-width: 850px;
+  margin: 0 auto clamp(1.5rem, 3vw, 2.25rem);
+  text-align: center;
+}
+
 .section-label {
-  color: #06b6d4;
-
-  font-size: 13px;
+  margin: 0 0 0.45rem;
+  color: #22d3ee;
+  font-size: 0.72rem;
   font-weight: 700;
-
   letter-spacing: 0.12em;
-
-  margin-bottom: 10px;
 }
 
 .section-title {
-  color: white;
-
-  font-size: clamp(2rem, 4vw, 3rem);
+  margin: 0;
+  color: #f1f5f9;
+  font-size: clamp(1.7rem, 3.2vw, 2.55rem);
   font-weight: 700;
-
-  margin-bottom: 0;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
 }
 
-/* FEATURE GRID */
 .feature-grid {
   display: grid;
-
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-
-  gap: 14px;
-
-  margin-top: 50px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.8rem;
 }
 
 .feature-card {
-  background: rgba(15, 23, 42, 0.9);
-
-  border: 1px solid rgba(255,255,255,0.06);
-
-  border-radius: 18px;
-
-  padding: 24px 20px;
-
-  text-align: center;
-
-  transition: 0.25s ease;
-
-  min-height: 180px;
-
+  position: relative;
   display: flex;
-  flex-direction: column;
+  min-width: 0;
+  min-height: 178px;
   align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  padding: 1rem 1rem 1.1rem;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 13px;
+  background: rgba(16, 29, 47, 0.88);
+  text-align: center;
+  transition:
+    transform 0.25s ease,
+    border-color 0.22s ease,
+    background 0.22s ease,
+    box-shadow 0.22s ease;
 }
 
 .feature-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--feature-color) 38%, transparent);
+  background: rgba(20, 36, 57, 0.96);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+}
 
-  border-color: rgba(59,130,246,0.35);
+.feature-card.blue {
+  --feature-color: #1687ff;
+}
 
-  background: rgba(15, 23, 42, 1);
+.feature-card.green {
+  --feature-color: #10b981;
+}
+
+.feature-card.purple {
+  --feature-color: #8b5cf6;
+}
+
+.feature-card.yellow {
+  --feature-color: #f59e0b;
 }
 
 .feature-icon {
-  width: 56px;
-  height: 56px;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  margin: 0.05rem 0 0.7rem;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--feature-color) 45%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--feature-color) 17%, transparent);
+  box-shadow: 0 5px 16px color-mix(in srgb, var(--feature-color) 12%, transparent);
+  color: var(--feature-color);
+  font-size: 1.25rem;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
 
-  border-radius: 16px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  font-size: 24px;
-
-  margin-bottom: 18px;
+.feature-card:hover .feature-icon {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 20px color-mix(in srgb, var(--feature-color) 24%, transparent);
 }
 
 .feature-card h3 {
-  color: white;
-
-  font-size: 17px;
+  margin: 0 0 0.4rem;
+  color: #f1f5f9;
+  font-size: 0.95rem;
   font-weight: 700;
-
-  margin-bottom: 10px;
+  line-height: 1.35;
 }
 
 .feature-card p {
-  color: #cbd5e1;
-
-  font-size: 13px;
-  line-height: 1.6;
-
+  max-width: 240px;
   margin: 0;
+  color: #aab6c7;
+  font-size: 0.78rem;
+  line-height: 1.55;
 }
 
-/* ICON COLORS */
-.blue {
-  background: rgba(37,99,235,0.16);
-  color: #3b82f6;
-}
-
-.green {
-  background: rgba(34,197,94,0.16);
-  color: #22c55e;
-}
-
-.purple {
-  background: rgba(168,85,247,0.16);
-  color: #a855f7;
-}
-
-.yellow {
-  background: rgba(250,204,21,0.16);
-  color: #facc15;
-}
-
-/* CTA */
-.cta-wrapper {
-  margin-top: 24px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  gap: 18px;
-
-  flex-wrap: wrap;
-}
-
-.cta-wrapper p {
-  color: #e2e8f0;
-
-  margin: 0;
-
-  font-size: 16px;
-}
-
-.cta-btn {
-  border: none;
-  text-decoration: none;
-
-  background: linear-gradient(
-    135deg,
-    #2563eb,
-    #3b82f6
-  );
-
-  color: white;
-
-  padding: 12px 22px;
-
-  border-radius: 12px;
-
-  font-weight: 600;
-
-  display: flex;
-  align-items: center;
-
-  gap: 10px;
-
-  transition: 0.25s ease;
-}
-
-.cta-btn:hover {
-  transform: translateY(-2px);
-
-  box-shadow: 0 10px 30px rgba(37,99,235,0.35);
-}
-
-/* RESPONSIVE */
-@media (max-width: 991px) {
+@media (max-width: 1050px) {
   .feature-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .feature-card {
+    min-height: 168px;
   }
 }
 
-@media (max-width: 767px) {
-  .feature-grid {
-    grid-template-columns: 1fr;
+@media (max-width: 700px) {
+  .fitur-section {
+    padding: 3.75rem 1rem !important;
   }
 
-  .cta-wrapper {
-    flex-direction: column;
-    text-align: center;
+  .section-title {
+    font-size: clamp(1.7rem, 6vw, 2.1rem);
+  }
+
+  .feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
+  }
+
+  .feature-card {
+    min-height: 168px;
+    padding: 0.9rem 0.7rem;
+  }
+}
+
+@media (max-width: 390px) {
+  .feature-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .feature-card {
+    min-height: 0;
+    padding: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feature-card,
+  .feature-icon {
+    transition: none;
   }
 }
 </style>

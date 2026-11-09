@@ -1,6 +1,6 @@
 <template>
   <div>
-    <LandingpageNavbar class="landingpage-navbar" />
+    <!-- <LandingpageNavbar class="landingpage-navbar" /> -->
     <div class="landingpage-layout">
       <router-view />
     </div>

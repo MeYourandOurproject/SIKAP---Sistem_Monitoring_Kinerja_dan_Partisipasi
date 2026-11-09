@@ -35,7 +35,7 @@ const scrollToTop = () => {
 
 <style scoped>
 .footer {
-  background: #0F172A;
+  background:rgba(8, 20, 38, 0.94) ;
   /* border-top: 1px solid #e5e7eb; */
   position: relative;
 }
@@ -49,7 +49,7 @@ const scrollToTop = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #1d4ed8;
+  color: #0c2364;
   transition: 0.2s;
 }
 
