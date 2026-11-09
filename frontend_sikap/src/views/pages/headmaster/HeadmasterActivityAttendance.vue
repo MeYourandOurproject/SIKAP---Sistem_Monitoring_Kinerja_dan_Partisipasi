@@ -1725,10 +1725,14 @@ function getMonthStartDate(date) {
 
   .session-progress {
     grid-column: 1 / -1;
+    grid-row: 2;
   }
 
   .session-row .status-chip {
+    grid-column: 3;
+    grid-row: 1;
     justify-self: end;
+    align-self: start;
     font-size: 0.62rem;
   }
 

@@ -134,7 +134,7 @@
             <div v-if="loadError" class="alert alert-danger" role="alert">
               {{ loadError }}
             </div>
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 text-start">
               <div>
                 <h6 class="problem-title mb-1">Monitoring Semua Kelas</h6>
 
@@ -155,7 +155,7 @@
               v-if="!loading && allClasses.length === 0"
               class="text-center text-white-50 py-5"
             >
-              Belum ada jadwal kelas yang dimulai hari ini.
+              <i class="bi bi-info-circle me-2 text-warning"></i> Tidak ada jadwal yang berjalan pada waktu ini.
             </div>
 
             <!-- GRID -->
