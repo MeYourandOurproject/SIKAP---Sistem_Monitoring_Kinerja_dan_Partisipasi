@@ -134,7 +134,9 @@
             <div v-if="loadError" class="alert alert-danger" role="alert">
               {{ loadError }}
             </div>
-            <div class="d-flex justify-content-between align-items-center mb-4 text-start">
+            <div
+              class="d-flex justify-content-between align-items-center mb-4 text-start"
+            >
               <div>
                 <h6 class="problem-title mb-1">Monitoring Semua Kelas</h6>
 
@@ -155,7 +157,8 @@
               v-if="!loading && allClasses.length === 0"
               class="text-center text-white-50 py-5"
             >
-              <i class="bi bi-info-circle me-2 text-warning"></i> Tidak ada jadwal yang berjalan pada waktu ini.
+              <i class="bi bi-info-circle me-2 text-warning"></i> Tidak ada
+              jadwal yang berjalan pada waktu ini.
             </div>
 
             <!-- GRID -->
@@ -173,7 +176,7 @@
                     <div class="problem-icon" :class="item.statusClass">
                       <i :class="item.icon"></i>
                     </div>
-                    <div class="text-start">
+                    <div class="text-start ms-3">
                       <h6 class="class-name">
                         {{ item.class }}
                       </h6>
@@ -288,7 +291,9 @@
             :disabled="historyOptionsLoading"
           >
             <option value="">
-              {{ historyOptionsLoading ? "Memuat daftar kelas..." : "Pilih kelas" }}
+              {{
+                historyOptionsLoading ? "Memuat daftar kelas..." : "Pilih kelas"
+              }}
             </option>
             <option
               v-for="item in historyOptions.classes"
@@ -307,7 +312,9 @@
             :disabled="historyOptionsLoading"
           >
             <option value="">
-              {{ historyOptionsLoading ? "Memuat daftar guru..." : "Pilih guru" }}
+              {{
+                historyOptionsLoading ? "Memuat daftar guru..." : "Pilih guru"
+              }}
             </option>
             <option
               v-for="item in historyOptions.teachers"
@@ -542,7 +549,11 @@ watch(todayDate, (date, previousDate) => {
   if (historyQuery.value.start_date === getMonthStartDate(previousDate)) {
     historyQuery.value.start_date = getMonthStartDate(date);
   }
-  if (props.mode === "history" && !historyOptionsLoaded.value && !historyLoading.value) {
+  if (
+    props.mode === "history" &&
+    !historyOptionsLoaded.value &&
+    !historyLoading.value
+  ) {
     loadHistory();
   }
 });
@@ -1487,7 +1498,7 @@ onBeforeUnmount(() => {
 
 .problem-header {
   display: flex;
-  justify-content: space-between;
+  /* justify-content: space-between; */
   align-items: center;
 
   margin-bottom: 12px;
@@ -1520,7 +1531,7 @@ onBeforeUnmount(() => {
 
   font-size: 12px;
 
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 
   overflow: hidden;
   text-overflow: ellipsis;
