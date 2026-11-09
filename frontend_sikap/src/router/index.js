@@ -11,9 +11,8 @@ import DataTest from "@/views/DataTest.vue";
 import HeadmasterLayout from "@/views/layouts/headmaster/HeadmasterLayout.vue";
 import HeadmasterDashboard from "@/views/pages/headmaster/HeadmasterDashboard.vue";
 import HeadmasterKbm from "@/views/pages/headmaster/HeadmasterKbm.vue";
-import HeadmasterTeacherParticipan from "@/views/pages/headmaster/HeadmasterTeacherParticipian.vue";
+import HeadmasterActivityAttendance from "@/views/pages/headmaster/HeadmasterActivityAttendance.vue";
 import headmasterTeacherScore from "@/views/pages/headmaster/HeadmasterTeacherScores.vue";
-import HeadmasterReport from "@/views/pages/headmaster/HeadmasterReport.vue";
 import HeadmasterAnnouncement from "@/views/pages/headmaster/HeadmasterAnnouncement.vue";
 
 // STUDENT
@@ -139,9 +138,13 @@ const routes = [
         props: { mode: "history" },
       },
       {
+        path: "aktivitas-piket",
+        name: "HeadmasterActivityAttendance",
+        component: HeadmasterActivityAttendance,
+      },
+      {
         path: "partisipasi-guru",
-        name: "HeadmasterTeacherParticipan",
-        component: HeadmasterTeacherParticipan,
+        redirect: { name: "HeadmasterDashboard" },
       },
       {
         path: "penilaian",
@@ -150,8 +153,7 @@ const routes = [
       },
       {
         path: "laporan",
-        name: "HeadmasterReport",
-        component: HeadmasterReport,
+        redirect: { name: "HeadmasterDashboard" },
       },
       {
         path: "pengumuman",

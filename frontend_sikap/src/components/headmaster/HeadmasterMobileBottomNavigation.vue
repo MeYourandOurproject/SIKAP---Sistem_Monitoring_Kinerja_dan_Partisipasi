@@ -20,21 +20,12 @@
     </router-link>
 
     <router-link
-      to="/kepala-sekolah/partisipasi-guru"
+      to="/kepala-sekolah/aktivitas-piket"
       class="bottom-nav-item"
       active-class="active"
     >
-      <i class="bi bi-bar-chart-fill"></i>
-      <span>Partisipasi</span>
-    </router-link>
-
-    <router-link
-      to="/kepala-sekolah/laporan"
-      class="bottom-nav-item"
-      active-class="active"
-    >
-      <i class="bi bi-file-earmark-text-fill"></i>
-      <span>Laporan</span>
+      <i class="bi bi-calendar2-check"></i>
+      <span>Kegiatan & Piket</span>
     </router-link>
 
     <!-- <router-link

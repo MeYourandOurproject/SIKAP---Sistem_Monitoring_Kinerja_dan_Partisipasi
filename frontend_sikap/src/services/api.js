@@ -283,6 +283,24 @@ export async function getActiveActivitySessions() {
   }
 }
 
+export async function getHeadmasterActivitySessions() {
+  const token = localStorage.getItem("token");
+  try {
+    const data = await fetchJson(
+      `${API_URL}/api/activitysessions/headmaster/active-sessions`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+}
+
 export async function openActivitySession(payload) {
   const token = localStorage.getItem("token");
   try {

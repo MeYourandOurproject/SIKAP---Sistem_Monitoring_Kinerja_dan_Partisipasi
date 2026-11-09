@@ -1,510 +1,942 @@
 <template>
-  <div class="row d-md-none"><HeadmasterNavbar/></div>
-  <div class="headmaster-dashboard mt-3">
-    <div class="row g-3 mb-4">
-      <div class="col-12 col-md-6 col-xl-4">
-        <div class="card stat-card shadow-sm">
-          <div class="card-body bg-img">
-            <div class="row text-start px-2">
-              <div class="col-8">
-                <p class="text-1 mb-2 text-success fw-bold">
-                  Selamat datang kembali, <br />
-                  <span class="text-dark text-2">{{ headmasterName }} 👋</span>
-                  <br /><span class="text-muted text-3"
-                    >Kepala Sekolah SMK Negeri 4 Bandung <br />
-                    {{realtimeDateTime}}
-                  </span>
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-6 col-md-2">
-        <div class="card stat-card shadow-sm">
-          <div class="card-body gap-0 px-3">
-            <div
-              class="row d-flex align-items-center justify-content-center mb-3"
-            >
-              <div class="col-4">
-                <div class="stat-icon bg-blue text-white">
-                  <i class="bi bi-briefcase-fill fs-5"></i>
-                </div>
-              </div>
-              <div class="col-8">
-                <p class="col stat-label mb-2 fw-bold text-start">
-                  Total Guru
-                </p>
-              </div>
-            </div>
-            <div class="stat-value text-start">
-              <div class="status-main">{{totalGuruAktif}} Guru</div>
-              <div class="status-sub text-success">
-                Aktif: {{ totalGuruAktif }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-6 col-md-2">
-        <div class="card stat-card shadow-sm">
-          <div class="card-body gap-0 px-3">
-            <div
-              class="row d-flex align-items-center justify-content-center mb-3"
-            >
-              <div class="col-4">
-                <div class="stat-icon bg-green text-white">
-                  <i class="bi bi-journal-check fs-5"></i>
-                </div>
-              </div>
-              <div class="col-8">
-                <p class="col stat-label mb-2 fw-bold text-start">
-                  Kehadiran Guru Dikelas
-                </p>
-              </div>
-            </div>
-            <div class="stat-value text-start">
-              <div class="status-main">75 %</div>
-              <!-- PROGRESS BAR -->
-              <div
-                class="progress my-2"
-                role="progressbar"
-                aria-label="Example 1px high"
-                aria-valuenow="25"
-                aria-valuemin="0"
-                aria-valuemax="100"
-                style="height: 10px"
-              >
-                <div class="progress-bar bg-success" style="width: 75%"></div>
-              </div>
-
-              <div class="status-sub">24 dari 32 Kelas</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-6 col-md-2">
-        <div class="card stat-card shadow-sm">
-          <div class="card-body gap-0 px-3">
-            <div
-              class="row d-flex align-items-center justify-content-center mb-3"
-            >
-              <div class="col-4">
-                <div class="stat-icon bg-yellow text-white">
-                  <i class="bi bi-check2-circle fs-5"></i>
-                </div>
-              </div>
-              <div class="col-8">
-                <p class="col stat-label mb-2 fw-bold text-start">
-                  Partisipasi Guru
-                </p>
-              </div>
-            </div>
-            <div class="stat-value text-start">
-              <div class="status-main">93%</div>
-              <div
-                class="progress my-2"
-                role="progressbar"
-                aria-label="Example 1px high"
-                aria-valuenow="25"
-                aria-valuemin="0"
-                aria-valuemax="100"
-                style="height: 10px"
-              >
-                <div class="progress-bar bg-yellow" style="width: 93%"></div>
-              </div>
-              <div class="status-sub">28 dari 30 hari</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-6 col-md-2">
-        <div class="card stat-card shadow-sm">
-          <div class="card-body gap-0 px-md-3">
-            <div
-              class="row d-flex align-items-center justify-content-center mb-3"
-            >
-              <div class="col-4">
-                <div class="stat-icon bg-purple text-white">
-                  <i class="bi bi-star-fill fs-5"></i>
-                </div>
-              </div>
-              <div class="col-8">
-                <p class="col stat-label mb-2 fw-bold text-start">
-                  Penilaian Sementara
-                </p>
-              </div>
-            </div>
-            <div class="stat-value text-start">
-              <div class="status-main">
-                80 <span class="text-secondary">/ 100</span>
-              </div>
-
-              <!-- RATING BINTANG -->
-              <div class="rating-stars my-1">
-                <!-- FULL STAR -->
-                <i
-                  v-for="n in fullStars"
-                  :key="'full' + n"
-                  class="bi bi-star-fill text-warning"
-                ></i>
-
-                <!-- HALF STAR -->
-                <i v-if="hasHalfStar" class="bi bi-star-half text-warning"></i>
-
-                <!-- EMPTY STAR -->
-                <i
-                  v-for="n in emptyStars"
-                  :key="'empty' + n"
-                  class="bi bi-star text-warning"
-                ></i>
-              </div>
-
-              <!-- <div class="status-sub">oleh Pembimbing Industri</div> -->
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- BARIS 2 -->
-    <div class="row g-3 mb-4">
-      <!-- GRAFIK -->
-      <div class="col-12 col-xl-6">
-        <div class="card chart-card shadow-sm h-100">
-          <div class="card-body">
-            <!-- CHART -->
-            <TeacherAttendanceChart />
-          </div>
-        </div>
-      </div>
-
-      <!-- JURNAL -->
-      <div class="col-12 col-xl-6">
-        <div class="card info-card shadow-sm h-100">
-          <div class="card-body">
-            <!-- HEADER -->
-            <TeacherParticipan />
-          </div>
-        </div>
-      </div>
-    </div>
+  <div class="row d-md-none">
+    <HeadmasterNavbar />
   </div>
+
+  <main class="headmaster-dashboard text-start">
+    <section class="welcome-panel">
+      <div class="welcome-copy">
+        <span class="eyebrow"><span class="live-dot"></span> Ringkasan sekolah</span>
+        <h1>{{ greeting }}, {{ headmasterName }}</h1>
+        <p>
+          Pantau kegiatan belajar mengajar yang sedang berlangsung dan lihat
+          ringkasan data guru dari satu tempat.
+        </p>
+        <div class="welcome-meta">
+          <span><i class="bi bi-calendar3"></i>{{ dateLabel }}</span>
+          <span><i class="bi bi-clock"></i>{{ timeLabel }} WIB</span>
+        </div>
+      </div>
+      <RouterLink class="welcome-action" to="/kepala-sekolah/kbm/realtime">
+        Pantau KBM
+        <i class="bi bi-arrow-up-right"></i>
+      </RouterLink>
+      <div class="welcome-decoration" aria-hidden="true">
+        <i class="bi bi-easel2"></i>
+      </div>
+    </section>
+
+    <section class="metrics-grid" aria-label="Ringkasan data">
+      <article class="metric-card">
+        <div class="metric-top">
+          <span class="metric-icon blue"><i class="bi bi-people-fill"></i></span>
+          <span class="metric-caption ms-3">Data guru</span>
+        </div>
+        <strong class="metric-value">
+          <span v-if="teachersLoading" class="metric-loading" aria-label="Memuat">…</span>
+          <span v-else-if="hasTeacherData">{{ teachers.length }}</span>
+          <span v-else>—</span>
+        </strong>
+        <span class="metric-label">Guru terdaftar</span>
+        <span v-if="hasTeacherData" class="metric-footnote">
+          {{ activeTeacherCount }} berstatus aktif
+        </span>
+        <span v-else-if="teachersError" class="metric-footnote error-text">Data tidak tersedia</span>
+        <span v-else class="metric-footnote">Mengambil data guru…</span>
+      </article>
+
+      <article class="metric-card">
+        <div class="metric-top">
+          <span class="metric-icon violet"><i class="bi bi-easel"></i></span>
+          <span class="metric-caption ms-3">Saat ini</span>
+        </div>
+        <strong class="metric-value">
+          <span v-if="monitoringLoading && !hasMonitoringData" class="metric-loading" aria-label="Memuat">…</span>
+          <span v-else-if="hasMonitoringData">{{ monitoringTotal }}</span>
+          <span v-else>—</span>
+        </strong>
+        <span class="metric-label">Jadwal KBM berlangsung</span>
+        <span class="metric-footnote">Berdasarkan waktu aplikasi</span>
+      </article>
+
+      <article class="metric-card">
+        <div class="metric-top">
+          <span class="metric-icon green"><i class="bi bi-check2-circle"></i></span>
+          <span class="metric-caption ms-3">Kehadiran</span>
+        </div>
+        <strong class="metric-value">
+          <span v-if="monitoringLoading && !hasMonitoringData" class="metric-loading" aria-label="Memuat">…</span>
+          <span v-else-if="hasMonitoringData">{{ validatedCount }}</span>
+          <span v-else>—</span>
+        </strong>
+        <span class="metric-label">Jadwal tervalidasi</span>
+        <span class="metric-footnote">Presensi kelas telah tercatat</span>
+      </article>
+
+      <article class="metric-card">
+        <div class="metric-top">
+          <span class="metric-icon orange"><i class="bi bi-exclamation-circle"></i></span>
+          <span class="metric-caption ms-3">Perlu ditinjau</span>
+        </div>
+        <strong class="metric-value">
+          <span v-if="monitoringLoading && !hasMonitoringData" class="metric-loading" aria-label="Memuat">…</span>
+          <span v-else-if="hasMonitoringData">{{ attentionCount }}</span>
+          <span v-else>—</span>
+        </strong>
+        <span class="metric-label">Jadwal belum tuntas</span>
+        <span class="metric-footnote">Belum divalidasi atau kelas kosong</span>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <article class="monitoring-panel">
+        <header class="panel-header">
+          <div>
+            <span class="section-kicker">PEMANTAUAN HARI INI</span>
+            <h2>KBM yang sedang berlangsung</h2>
+            <p>Status kelas yang berjalan berdasarkan jadwal dan pencatatan kehadiran.</p>
+          </div>
+          <div class="panel-actions">
+            <span v-if="lastUpdated" class="updated-label">
+              <i class="bi bi-arrow-repeat"></i> Diperbarui {{ lastUpdated }}
+            </span>
+            <button
+              class="refresh-button"
+              type="button"
+              :disabled="isRefreshing"
+              :aria-busy="isRefreshing"
+              @click="loadDashboard"
+            >
+              <i class="bi" :class="isRefreshing ? 'bi-arrow-repeat spin' : 'bi-arrow-clockwise'"></i>
+              <span>{{ isRefreshing ? "Memuat" : "Perbarui" }}</span>
+            </button>
+          </div>
+        </header>
+
+        <div v-if="teachersError || monitoringError" class="data-alert" role="alert">
+          <i class="bi bi-exclamation-triangle"></i>
+          <div>
+            <strong>Beberapa data belum dapat dimuat.</strong>
+            <span v-if="teachersError">{{ teachersError }}</span>
+            <span v-if="monitoringError">{{ monitoringError }}</span>
+          </div>
+        </div>
+
+        <div v-if="monitoringLoading && !hasMonitoringData" class="empty-state">
+          <span class="spinner-border spinner-border-sm" role="status"></span>
+          Memuat status KBM…
+        </div>
+        <div v-else-if="monitoringError && !hasMonitoringData" class="empty-state">
+          <i class="bi bi-cloud-slash"></i>
+          <span>Status KBM belum tersedia. Coba perbarui data.</span>
+        </div>
+        <div v-else-if="monitoringTotal === 0" class="empty-state">
+          <span class="empty-icon"><i class="bi bi-calendar2-check"></i></span>
+          <strong>Tidak ada jadwal yang sedang berlangsung</strong>
+          <span>Jadwal akan muncul di sini saat waktu KBM dimulai.</span>
+        </div>
+        <div v-else-if="attentionClasses.length === 0" class="all-clear-state">
+          <span class="empty-icon"><i class="bi bi-check2-circle"></i></span>
+          <div>
+            <strong>Semua jadwal yang berjalan sudah tervalidasi</strong>
+            <span>{{ validatedCount }} dari {{ monitoringTotal }} jadwal telah tercatat.</span>
+          </div>
+        </div>
+        <div v-else class="class-list">
+          <article
+            v-for="item in attentionClasses"
+            :key="item.schedule_id"
+            class="class-row"
+          >
+            <span class="class-status-icon" :class="item.status === 'Kelas Kosong' ? 'is-empty' : 'is-pending'">
+              <i class="bi" :class="item.status === 'Kelas Kosong' ? 'bi-door-closed' : 'bi-hourglass-split'"></i>
+            </span>
+            <div class="class-details">
+              <strong>{{ item.class_name || "Kelas" }}</strong>
+              <span>{{ item.subject_name || "Mata pelajaran" }} · {{ item.teacher_name || "Guru" }}</span>
+            </div>
+            <span class="class-time">{{ formatTime(item.start) }}–{{ formatTime(item.end) }}</span>
+            <span class="status-pill" :class="item.status === 'Kelas Kosong' ? 'pill-empty' : 'pill-pending'">
+              {{ item.status || "Belum divalidasi" }}
+            </span>
+          </article>
+          <p v-if="attentionCount > attentionClasses.length" class="more-items">
+            {{ attentionCount - attentionClasses.length }} jadwal lainnya perlu ditinjau.
+          </p>
+        </div>
+
+        <RouterLink class="panel-link" to="/kepala-sekolah/kbm/realtime">
+          Buka pemantauan KBM
+          <i class="bi bi-arrow-right"></i>
+        </RouterLink>
+      </article>
+
+      <aside class="quick-panel">
+        <span class="section-kicker">AKSES CEPAT</span>
+        <h2>Menu kepala sekolah</h2>
+        <p class="quick-intro">Pilih tampilan sesuai informasi yang ingin ditinjau.</p>
+
+        <RouterLink class="quick-link" to="/kepala-sekolah/kbm/realtime">
+          <span class="quick-icon blue"><i class="bi bi-activity"></i></span>
+          <span><strong>KBM realtime</strong><small>Pantau kelas yang sedang berjalan</small></span>
+          <i class="bi bi-chevron-right"></i>
+        </RouterLink>
+        <RouterLink class="quick-link" to="/kepala-sekolah/kbm/riwayat">
+          <span class="quick-icon violet"><i class="bi bi-clock-history"></i></span>
+          <span><strong>Riwayat keterisian kelas</strong><small>Tinjau data KBM pada periode tertentu</small></span>
+          <i class="bi bi-chevron-right"></i>
+        </RouterLink>
+        <RouterLink class="quick-link" to="/kepala-sekolah/aktivitas-piket">
+          <span class="quick-icon green"><i class="bi bi-calendar2-check"></i></span>
+          <span><strong>Kehadiran kegiatan & piket</strong><small>Lihat rekap presensi guru dan laporan</small></span>
+          <i class="bi bi-chevron-right"></i>
+        </RouterLink>
+
+        <div class="info-note">
+          <i class="bi bi-info-circle"></i>
+          <span>Rekap kehadiran kegiatan dan piket guru tersedia pada menu khusus.</span>
+        </div>
+      </aside>
+    </section>
+  </main>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, onBeforeUnmount } from "vue";
-
-import TeacherAttendanceChart from "@/components/headmaster/dashboard/TeacherAttendanceChart.vue";
-import TeacherParticipan from "@/components/headmaster/dashboard/TeacherParticipan.vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import HeadmasterNavbar from "@/components/headmaster/HeadmasterNavbar.vue";
-
-import { getTeachers } from "@/services/api.js";
+import { getClasses, getTeachers } from "@/services/api.js";
 import { applicationClock } from "@/services/applicationClock";
 
+const headmasterName = ref("Kepala Sekolah");
+const currentTime = ref(applicationClock.currentTime);
 const teachers = ref([]);
+const hasTeacherData = ref(false);
+const teachersLoading = ref(true);
+const teachersError = ref("");
+const monitoringItems = ref([]);
+const monitoringTotal = ref(0);
+const hasMonitoringData = ref(false);
+const monitoringLoading = ref(true);
+const monitoringError = ref("");
+const isRefreshing = ref(false);
+const lastUpdated = ref("");
 
-async function loadTeachers() {
-  try {
-    const data = await getTeachers();
-    teachers.value = data;
-  } catch (error) {
-    console.error("Gagal memuat data guru:", error);
-  }
-}
-
-const rating = ref((80 / 100) * 5); // Contoh nilai rating (80 dari 100)
-const headmasterName = ref("Yudi Kartiwa, S.Pd., M.T.");
-const realtimeDateTime = ref("")
 let clockInterval = null;
+let monitoringInterval = null;
 
-function loadHeadmasterData(){
-  try {
-    const user = JSON.parse(localStorage.getItem("user")||"{}");
-    headmasterName.value = user.name || "Yudi Kartiwa, S.Pd., M.T.";
-  } catch (error) {
-    console.error("Gagal memuat data kepala sekolah:", error);
-  }
-}
+const greeting = computed(() => {
+  const hour = currentTime.value.getHours();
+  if (hour < 11) return "Selamat pagi";
+  if (hour < 15) return "Selamat siang";
+  if (hour < 18) return "Selamat sore";
+  return "Selamat malam";
+});
 
-function updateRealtimeClock() {
-
-  const now = applicationClock.currentTime;
-
-  const tanggal = now.toLocaleDateString("id-ID", {
+const dateLabel = computed(() =>
+  new Intl.DateTimeFormat("id-ID", {
     weekday: "long",
     day: "numeric",
     month: "long",
     year: "numeric",
-  });
+    timeZone: "Asia/Jakarta",
+  }).format(currentTime.value),
+);
 
-  const jam = now.toLocaleTimeString("id-ID", {
+const timeLabel = computed(() =>
+  new Intl.DateTimeFormat("id-ID", {
     hour: "2-digit",
     minute: "2-digit",
-    second: "2-digit",
-  });
+    hourCycle: "h23",
+    timeZone: "Asia/Jakarta",
+  }).format(currentTime.value),
+);
 
-  realtimeDateTime.value = `${tanggal} | ${jam}`;
+const activeTeacherCount = computed(
+  () => teachers.value.filter((teacher) => teacher.status === "active").length,
+);
+
+const validatedCount = computed(
+  () => monitoringItems.value.filter((item) => item.validated === true).length,
+);
+
+const attentionClasses = computed(() =>
+  monitoringItems.value
+    .filter((item) => !item.validated || item.status === "Kelas Kosong")
+    .slice(0, 4),
+);
+
+const attentionCount = computed(
+  () =>
+    monitoringItems.value.filter(
+      (item) => !item.validated || item.status === "Kelas Kosong",
+    ).length,
+);
+
+function loadHeadmasterName() {
+  try {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    headmasterName.value = user.name || "Kepala Sekolah";
+  } catch (error) {
+    console.error("Gagal memuat data kepala sekolah:", error);
+    headmasterName.value = "Kepala Sekolah";
+  }
 }
 
-function formatDate(date) {
-  if (!date) return "-";
+async function loadTeachers() {
+  teachersLoading.value = true;
+  teachersError.value = "";
 
-  const options = {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  };
-
-  return new Date(date).toLocaleDateString("id-ID", options);
+  try {
+    const result = await getTeachers();
+    if (!result?.success) {
+      throw new Error(result?.message || "Data guru gagal dimuat.");
+    }
+    if (!Array.isArray(result.data)) {
+      throw new Error("Format data guru tidak sesuai.");
+    }
+    teachers.value = result.data;
+    hasTeacherData.value = true;
+  } catch (error) {
+    console.error("Gagal memuat data guru:", error);
+    teachersError.value = `Data guru: ${error.message}`;
+    hasTeacherData.value = false;
+  } finally {
+    teachersLoading.value = false;
+  }
 }
 
-function getStatusClass(status) {
-  return {
-    hadir: "bg-success",
-    absen: "bg-danger",
-    libur: "bg-secondary",
-  }[status];
+function formatUpdatedAt(date) {
+  return new Intl.DateTimeFormat("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+    timeZone: "Asia/Jakarta",
+  }).format(date);
 }
 
+async function loadMonitoring() {
+  if (monitoringLoading.value && hasMonitoringData.value) return;
+  monitoringLoading.value = true;
+  monitoringError.value = "";
 
-// ======================
-// COMPUTED
-// ======================
+  try {
+    const result = await getClasses();
+    if (!Array.isArray(result?.data) || !Number.isFinite(Number(result?.total))) {
+      throw new Error("Format data monitoring KBM tidak sesuai.");
+    }
+    monitoringItems.value = result.data;
+    monitoringTotal.value = Number(result.total);
+    hasMonitoringData.value = true;
+    lastUpdated.value = formatUpdatedAt(applicationClock.currentTime);
+  } catch (error) {
+    console.error("Gagal memuat status KBM:", error);
+    monitoringError.value = `Status KBM: ${error.message}`;
+    hasMonitoringData.value = false;
+  } finally {
+    monitoringLoading.value = false;
+  }
+}
 
-const fullStars = computed(() => {
-  return Math.floor(rating.value);
-});
+async function loadDashboard() {
+  if (isRefreshing.value) return;
+  isRefreshing.value = true;
+  await Promise.all([loadTeachers(), loadMonitoring()]);
+  isRefreshing.value = false;
+}
 
-const hasHalfStar = computed(() => {
-  return rating.value % 1 >= 0.5;
-});
-
-const emptyStars = computed(() => {
-  return 5 - fullStars.value - (hasHalfStar.value ? 1 : 0);
-});
-
-const totalGuru = computed(() => {
-  return teachers.value.length;
-});
-
-const totalGuruAktif = computed(() => {
-  return teachers.value.filter((guru) => guru.status === "active").length;
-});
+function formatTime(value) {
+  return value ? String(value).slice(0, 5) : "--:--";
+}
 
 onMounted(() => {
-  loadHeadmasterData();
-  loadTeachers();
-
-  // update pertama
-  updateRealtimeClock();
-
-  // update waktu setiap detik, tanpa memanggil fetch ulang data guru
-  clockInterval = setInterval(() => {
-    updateRealtimeClock();
+  loadHeadmasterName();
+  currentTime.value = applicationClock.currentTime;
+  loadDashboard();
+  clockInterval = window.setInterval(() => {
+    currentTime.value = applicationClock.currentTime;
   }, 1000);
+  monitoringInterval = window.setInterval(loadMonitoring, 30000);
 });
 
 onBeforeUnmount(() => {
-  clearInterval(clockInterval);
+  if (clockInterval) window.clearInterval(clockInterval);
+  if (monitoringInterval) window.clearInterval(monitoringInterval);
 });
-
 </script>
 
 <style scoped>
 .headmaster-dashboard {
-  animation: fadeIn 0.25s ease-in;
-}
-.page-header {
-  padding: 1.6rem 1.5rem;
-  border-radius: 24px;
-  background: linear-gradient(
-    180deg,
-    rgba(59, 130, 246, 0.15),
-    rgba(59, 130, 246, 0.05)
-  );
-  border: 1px solid rgba(148, 163, 184, 0.18);
-}
-.greeting {
-  color: #2563eb;
-  font-weight: 600;
-}
-.page-title {
-  font-size: 2.1rem;
-  font-weight: 700;
-}
-.page-subtitle {
-  color: #475569;
-}
-.btn-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 18px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  position: relative;
-}
-.btn-icon .badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  font-size: 0.65rem;
-  padding: 0.35rem 0.45rem;
-}
-.profile-chip {
-  background: #ffffff;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  border-radius: 18px;
-  padding: 0.55rem 0.9rem;
-}
-.profile-chip .avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #dbeafe;
-  color: #1d4ed8;
+  --ink: #f1f5f9;
+  --muted: #94a3b8;
+  --line: rgba(255, 255, 255, 0.06);
   display: grid;
-  place-items: center;
-  font-weight: 700;
-}
-.stat-card,
-.info-card,
-.chart-card,
-.journal-card {
-  border: none;
-  border-radius: 1rem;
-  overflow: hidden;
-  /* background: #0e276f; */
-  background: linear-gradient(180deg, #071426 0%, #0b1d35 100%) !important;
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #ffffff;
+  gap: 1.25rem;
+  padding: 0.25rem 0 1.5rem;
+  color: var(--ink);
+  animation: rise-in 0.3s ease both;
 }
 
-.stat-card {
-  height: 160px;
-}
-
-.stat-label {
-  font-size: 0.9rem;
-  margin-bottom: 0.35rem;
-}
-.stat-value {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-.stat-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-}
-.bg-blue {
-  background-color: #2563eb !important;
-}
-.bg-green {
-  background-color: #16a34a !important;
-}
-.bg-yellow {
-  background-color: #f59e0b !important;
-}
-.bg-purple {
-  background-color: #8b5cf6 !important;
-}
-.info-badge {
-  width: 52px;
-  height: 52px;
-  display: grid;
-  place-items: center;
-  border-radius: 18px;
-}
-.info-row {
-  /* display: flex; */
-  /* justify-content: space-between; */
-  gap: 1rem;
-  /* flex-wrap: wrap; */
-}
-.info-row span {
-  color: #64748b;
-}
-.info-row strong {
-  font-weight: 600;
-}
-.attendance-chart {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0.8rem;
-  align-items: end;
-  min-height: 210px;
-}
-.chart-bar {
+.welcome-panel {
   position: relative;
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  border-radius: 18px 18px 0 0;
-  padding-bottom: 1.1rem;
-  min-height: 24px;
-  transition: transform 0.2s ease;
+  min-height: 220px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  overflow: hidden;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 82% 10%, rgba(59, 130, 246, 0.28), transparent 28%),
+    linear-gradient(120deg, #0d1b32, #17365b 68%, #1c4770);
+  color: #fff;
 }
-.chart-bar:hover {
-  transform: translateY(-4px);
+
+.welcome-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 700px;
 }
-.chart-bar span {
+
+.eyebrow,
+.welcome-meta,
+.welcome-meta span {
+  display: flex;
+  align-items: center;
+}
+
+.eyebrow {
+  gap: 0.55rem;
+  color: #a9c5e8;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #54d6a0;
+  box-shadow: 0 0 0 4px rgba(84, 214, 160, 0.14);
+}
+
+.welcome-panel h1 {
+  margin: 0.85rem 0 0.55rem;
+  font-size: clamp(1.65rem, 3.2vw, 2.4rem);
+  font-weight: 750;
+  letter-spacing: -0.035em;
+}
+
+.welcome-panel p {
+  max-width: 580px;
+  margin: 0;
+  color: #c4d2e3;
+  line-height: 1.65;
+}
+
+.welcome-meta {
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  margin-top: 1.2rem;
+  color: #d7e3f0;
+  font-size: 0.85rem;
+}
+
+.welcome-meta span {
+  gap: 0.45rem;
+}
+
+.welcome-meta i {
+  color: #71d5ae;
+}
+
+.welcome-action {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.85rem 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.welcome-action:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+.welcome-decoration {
   position: absolute;
-  bottom: -1.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  color: #334155;
+  right: 12%;
+  bottom: -3.5rem;
+  color: rgba(255, 255, 255, 0.055);
+  font-size: 15rem;
+  line-height: 1;
+  transform: rotate(-12deg);
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.metric-card,
+.monitoring-panel,
+.quick-panel {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.metric-card {
+  min-height: 178px;
+  padding: 1.2rem;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.metric-top {
+  display: flex;
+  align-items: center;
+  /* justify-content: space-between; */
+}
+
+.metric-icon,
+.quick-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 13px;
+}
+
+.metric-icon {
+  width: 42px;
+  height: 42px;
+  font-size: 1.1rem;
+}
+
+.metric-icon.blue,
+.quick-icon.blue {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+
+.metric-icon.violet,
+.quick-icon.violet {
+  background: rgba(139, 92, 246, 0.15);
+  color: #a78bfa;
+}
+
+.metric-icon.green,
+.quick-icon.green {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.metric-icon.orange {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+.metric-caption {
+  color: #94a3b8;
   font-size: 0.8rem;
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
-.chart-legend {
-  color: #475569;
-  font-size: 0.9rem;
+
+.metric-value {
+  display: block;
+  margin-top: 1rem;
+  color: #f8fafc;
+  font-size: 2rem;
+  line-height: 1;
 }
-.legend-dot {
-  width: 0.85rem;
-  height: 0.85rem;
-  display: inline-block;
-  border-radius: 999px;
-  margin-right: 0.45rem;
+
+.metric-loading {
+  color: #94a3b8;
 }
-.journal-item {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 1.35rem;
-}
-.journal-item h6 {
-  font-size: 1rem;
+
+.metric-label {
+  display: block;
+  margin-top: 0.45rem;
+  color: #e2e8f0;
+  font-size: 0.92rem;
   font-weight: 700;
 }
-.journal-item p {
-  margin-bottom: 0;
+
+.metric-footnote {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--muted);
+  font-size: 0.78rem;
 }
-@media (max-width: 767px) {
-  .page-header {
-    padding: 1.25rem;
-  }
-  .stat-card {
-    min-height: auto;
-  }
-  .stat-label {
-    font-size: 0.8rem;
-    margin-bottom: 0.35rem;
-  }
+
+.error-text {
+  color: #fca5a5;
 }
-@keyframes fadeIn {
+
+.content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(290px, 0.9fr);
+  align-items: stretch;
+  gap: 1rem;
+}
+
+.monitoring-panel,
+.quick-panel {
+  padding: clamp(1.15rem, 2.3vw, 1.65rem);
+}
+
+.panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.section-kicker {
+  color: #94a3b8;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.panel-header h2,
+.quick-panel h2 {
+  margin: 0.35rem 0;
+  color: #f8fafc;
+  font-size: 1.2rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+
+.panel-header p,
+.quick-intro {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.panel-actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.6rem;
+}
+
+.updated-label {
+  color: #8390a3;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.updated-label i {
+  margin-right: 0.25rem;
+}
+
+.refresh-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #cbd5e1;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.refresh-button:hover:not(:disabled) {
+  border-color: rgba(74, 222, 128, 0.25);
+  background: rgba(34, 197, 94, 0.1);
+  color: #86efac;
+}
+
+.refresh-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+.data-alert {
+  display: flex;
+  gap: 0.7rem;
+  margin: 0.75rem 0 1rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 12px;
+  background: rgba(245, 158, 11, 0.08);
+  color: #fbbf24;
+  font-size: 0.8rem;
+}
+
+.data-alert > i {
+  margin-top: 0.1rem;
+}
+
+.data-alert div,
+.data-alert span {
+  display: block;
+}
+
+.data-alert span {
+  margin-top: 0.2rem;
+}
+
+.empty-state,
+.all-clear-state {
+  display: flex;
+  min-height: 190px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.empty-state > i {
+  font-size: 1.5rem;
+}
+
+.empty-state strong,
+.all-clear-state strong {
+  color: #e2e8f0;
+  font-size: 0.9rem;
+}
+
+.empty-state span,
+.all-clear-state span {
+  font-size: 0.8rem;
+}
+
+.empty-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  font-size: 1.2rem;
+}
+
+.all-clear-state {
+  flex-direction: row;
+  text-align: left;
+}
+
+.all-clear-state > div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.class-list {
+  display: grid;
+}
+
+.class-row {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.class-row:last-child {
+  border-bottom: 0;
+}
+
+.class-status-icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 11px;
+}
+
+.class-status-icon.is-empty {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.class-status-icon.is-pending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+.class-details {
+  display: grid;
+  min-width: 0;
+  gap: 0.22rem;
+}
+
+.class-details strong {
+  overflow: hidden;
+  color: #f1f5f9;
+  font-size: 0.87rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.class-details span {
+  overflow: hidden;
+  color: #94a3b8;
+  font-size: 0.77rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.class-time {
+  color: #cbd5e1;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.status-pill {
+  justify-self: end;
+  padding: 0.34rem 0.55rem;
+  border-radius: 99px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pill-empty {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+}
+
+.pill-pending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fcd34d;
+}
+
+.more-items {
+  margin: 0.35rem 0 0;
+  color: #94a3b8;
+  font-size: 0.76rem;
+}
+
+.panel-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  color: #86efac;
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.panel-link:hover {
+  color: #4ade80;
+}
+
+.quick-panel h2 {
+  margin-top: 0.4rem;
+}
+
+.quick-intro {
+  margin-bottom: 1rem;
+}
+
+.quick-link {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 16px;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.9rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  color: inherit;
+  text-decoration: none;
+}
+
+.quick-link:hover strong,
+.quick-link:hover > i {
+  color: #86efac;
+}
+
+.quick-icon {
+  width: 40px;
+  height: 40px;
+  font-size: 1rem;
+}
+
+.quick-link > span:nth-child(2) {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.quick-link strong {
+  color: #e2e8f0;
+  font-size: 0.83rem;
+}
+
+.quick-link small {
+  color: #94a3b8;
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.quick-link > i {
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+.info-note {
+  display: flex;
+  gap: 0.55rem;
+  margin-top: 0.8rem;
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #94a3b8;
+  font-size: 0.73rem;
+  line-height: 1.5;
+}
+
+.info-note i {
+  flex: 0 0 auto;
+  color: #60a5fa;
+}
+
+@keyframes rise-in {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -512,85 +944,110 @@ onBeforeUnmount(() => {
   }
 }
 
-.text-1 {
-  font-size: 0.8rem;
-  /* color: #2563eb; */
-  font-weight: 600;
-}
-.text-2 {
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-.text-3 {
-  font-size: 0.6rem;
-  /* color: #64748b; */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.bg-img {
-  background: url("@/assets/student-bg.png") no-repeat center center;
-  background-size: cover;
+@media (max-width: 1100px) {
+  .metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .content-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
-.stat-label {
-  margin-bottom: 4px !important;
+@media (max-width: 700px) {
+  .headmaster-dashboard {
+    gap: 0.9rem;
+  }
+
+  .welcome-panel {
+    min-height: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.2rem;
+    border-radius: 20px;
+  }
+
+  .welcome-panel h1 {
+    font-size: 1.6rem;
+  }
+
+  .welcome-action {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .welcome-decoration {
+    right: -0.6rem;
+    bottom: 3rem;
+    font-size: 8rem;
+  }
+
+  .metrics-grid {
+    gap: 0.7rem;
+  }
+
+  .metric-card {
+    min-height: 160px;
+    padding: 0.95rem;
+    border-radius: 16px;
+  }
+
+  .metric-caption {
+    font-size: 0.62rem;
+  }
+
+  .metric-value {
+    font-size: 1.75rem;
+  }
+
+  .metric-label {
+    font-size: 0.82rem;
+  }
+
+  .metric-footnote {
+    font-size: 0.7rem;
+  }
+
+  .panel-header {
+    flex-direction: column;
+  }
+
+  .panel-actions {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .class-row {
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    gap: 0.55rem;
+  }
+
+  .class-time {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .status-pill {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+  }
 }
 
-.stat-value {
-  line-height: 1.2;
-}
+@media (prefers-reduced-motion: reduce) {
+  .headmaster-dashboard {
+    animation: none;
+  }
 
-.status-main {
-  font-size: 23px;
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-
-.status-sub {
-  font-size: 12px;
-  color: #6c757d;
-  margin: 0;
-}
-
-.rating-stars i {
-  font-size: 20px;
-  margin-right: 2px;
-}
-
-.info-with-image {
-  position: relative;
-  overflow: hidden;
-}
-
-.info-content {
-  z-index: 2;
-  max-width: 65%;
-  text-align: left;
-}
-
-.info-image {
-  position: relative;
-  right: 10px;
-  bottom: 0;
-}
-
-.info-image img {
-  width: 180px;
-  opacity: 0.95;
-  align-items: center;
-}
-
-.status-circle {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  margin: auto;
-}
-
-.bg-success-subtle {
-  background-color: #e6f4ea;
-}
-
-.text-success {
-  color: #2e7d32 !important;
+  .spin {
+    animation-duration: 2s;
+  }
 }
 </style>
